@@ -308,13 +308,18 @@ function renderTable(){
   // footer totals (over filtered view)
   const sum=k=>view.reduce((s,a)=>s+(a[k]||0),0);
   const hasPow=view.some(a=>a.power!=null);
+  // 합계 비율 = (해당되는 행들의 KvK합) ÷ (전투력합 / 멤버합)
+  const wP=view.filter(a=>a.power!=null&&a.kvk!=null);
+  const wM=view.filter(a=>a.members!=null&&a.kvk!=null);
+  const spAgg = wP.length ? wP.reduce((s,a)=>s+a.kvk,0)/wP.reduce((s,a)=>s+a.power,0) : null;
+  const sppAgg = wM.length ? Math.round(wM.reduce((s,a)=>s+a.kvk,0)/wM.reduce((s,a)=>s+a.members,0)) : null;
   document.getElementById("afoot").innerHTML=`<tr>
     <td class="l"></td><td class="l">합계 (${view.length})</td>
     <td>${hasPow?nf(sum("power")):'<span class="muted">—</span>'}</td>
     <td>${view.some(a=>a.members!=null)?nf(sum("members")):'<span class="muted">—</span>'}</td>
     <td>${nf(sum("kvk"))}</td>
-    <td class="muted">—</td>
-    <td class="muted">—</td>
+    <td>${rfmt(spAgg)}</td>
+    <td>${sppAgg!=null?nf(sppAgg):'<span class="muted">—</span>'}</td>
     <td>${view.some(a=>a.in200!=null)?nf(sum("in200")):'<span class="muted">—</span>'}</td>
   </tr>`;
   // pending-data note
@@ -349,12 +354,13 @@ function renderCompareAlliance(){
     </tr>`).join("");
     const tp=list.reduce((s,a)=>s+(a.power||0),0), tk=list.reduce((s,a)=>s+(a.kvk||0),0);
     const hasPow=list.some(a=>a.power!=null);
+    const spTot = (tp>0) ? tk/tp : null;   // 합계 점수/전투력 = KvK합계 ÷ 전투력합계
     return `<div class="cmpcol">
       <h3><span class="dot" style="background:${color}"></span>Kingdom #${k}</h3>
       <div class="cmpscroll"><table class="cmptable">
         <thead><tr><th class="l">이름</th><th>전투력</th><th>KvK점수</th><th>점수/전투력</th></tr></thead>
         <tbody>${rows}</tbody>
-        <tfoot><tr><td class="l">합계</td><td>${hasPow?nf(tp):'—'}</td><td>${nf(tk)}</td><td class="muted">—</td></tr></tfoot>
+        <tfoot><tr><td class="l">합계</td><td>${hasPow?nf(tp):'—'}</td><td>${nf(tk)}</td><td>${rfmt(spTot)}</td></tr></tfoot>
       </table></div>
     </div>`;
   }).join("");
