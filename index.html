@@ -51,9 +51,9 @@
   .chip{border:none;cursor:pointer;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:700;
     color:var(--sub);background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
   .chip.on{color:#fff}
-  .chip.on[data-k="all"],.chip.on[data-pk="all"]{background:var(--gold2)}
-  .chip.on[data-k="737"],.chip.on[data-pk="737"]{background:var(--k737)}
-  .chip.on[data-k="777"],.chip.on[data-pk="777"]{background:var(--k777)}
+  .chip.allchip.on{background:var(--gold2)}
+  .chip.uschip.on{background:var(--k737)}
+  .chip.themchip.on{background:var(--k777)}
 
   .tablecard{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
   .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -147,9 +147,9 @@
         <input id="q" type="search" placeholder="연맹 이름·태그 검색…" autocomplete="off">
       </div>
       <div class="filter">
-        <button class="chip on" data-k="all">전체</button>
-        <button class="chip" data-k="737">#737</button>
-        <button class="chip" data-k="777">#777</button>
+        <button class="chip allchip on" data-k="all">전체</button>
+        <button class="chip uschip" data-k="737">#737</button>
+        <button class="chip themchip" id="aThem" data-k="777">#777</button>
         <button class="chip cmpchip" data-k="compare">⚔️ 비교</button>
       </div>
     </div>
@@ -176,9 +176,9 @@
         <input id="pq" type="search" placeholder="플레이어·연맹 검색…" autocomplete="off">
       </div>
       <div class="filter">
-        <button class="chip on" data-pk="all">전체</button>
-        <button class="chip" data-pk="737">#737</button>
-        <button class="chip" data-pk="777">#777</button>
+        <button class="chip allchip on" data-pk="all">전체</button>
+        <button class="chip uschip" data-pk="737">#737</button>
+        <button class="chip themchip" id="pThem" data-pk="777">#777</button>
         <button class="chip cmpchip" data-pk="compare">⚔️ 비교</button>
       </div>
     </div>
@@ -212,7 +212,7 @@
 <script>
 const D = window.KVK_DATA;
 const MY_ALLIANCE = "KeepersOfRoyal";
-const PLAYER_ME = "JASON";
+const isMe = nm => { const s=(nm||"").toUpperCase(); return s.includes("JASON") || (nm||"").includes("제이슨"); };
 
 /* ---------- helpers ---------- */
 const nf = n => (n==null ? null : n.toLocaleString("en-US"));
@@ -240,15 +240,55 @@ const monthSel = document.getElementById("month");
 D.months.forEach((m,i)=>{ const o=document.createElement("option"); o.value=m.id; o.textContent=m.label; monthSel.appendChild(o); });
 curMonth = D.months[0].id;
 monthSel.value = curMonth;
-monthSel.onchange = ()=>{ curMonth=monthSel.value; renderAll(); };
+monthSel.onchange = ()=>{
+  curMonth=monthSel.value;
+  // 월 변경 시 필터·모드 초기화 (상대 서버가 바뀌므로)
+  curFilter="all"; pFilter="all"; aMode="list"; pMode="list";
+  document.querySelectorAll('#view-alliance .chip').forEach(x=>x.classList.toggle('on', x.dataset.k==='all'));
+  document.querySelectorAll('#view-player .chip').forEach(x=>x.classList.toggle('on', x.dataset.pk==='all'));
+  document.getElementById("aCompare").style.display="none"; document.getElementById("aList").style.display="";
+  document.getElementById("pCompare").style.display="none"; document.getElementById("pList").style.display="";
+  renderAll();
+};
 
 function month(){ return D.months.find(m=>m.id===curMonth); }
+
+// 이 달의 두 왕국(우리=737 먼저, 상대는 데이터에서 자동 인식) — KvK 상대는 매달 다름
+function monthKingdoms(){
+  const m=month(), set=new Set();
+  (m.alliances||[]).forEach(a=>set.add(a.kingdom));
+  (m.players||[]).forEach(p=>set.add(p.kingdom));
+  let arr=[...set];
+  if(!arr.includes(737)) arr.unshift(737);
+  arr.sort((a,b)=> a===737?-1 : b===737?1 : a-b);
+  // 737 + 상대(가장 많이 등장하는 비-737 왕국) 2개로 정리
+  const them=arr.filter(k=>k!==737);
+  let opp = them[0];
+  if(them.length>1){
+    const cnt={}; (m.players||[]).forEach(p=>{ if(p.kingdom!==737) cnt[p.kingdom]=(cnt[p.kingdom]||0)+1; });
+    opp = them.sort((a,b)=>(cnt[b]||0)-(cnt[a]||0))[0];
+  }
+  return opp!=null ? [737, opp] : [737];
+}
+function opponent(){ const k=monthKingdoms(); return k[1]!=null?k[1]:777; }
+
+// 필터칩의 '상대' 값·라벨을 이 달 상대로 갱신
+function updateThemChips(){
+  const opp=opponent();
+  ["aThem","pThem"].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.textContent="#"+opp;
+    if(el.dataset.k!=null) el.dataset.k=String(opp);
+    if(el.dataset.pk!=null) el.dataset.pk=String(opp);
+  });
+}
 
 /* ---------- enrich alliances with derived fields ---------- */
 function enriched(){
   const ps = month().players || [];
+  const canCompute = ps.length>=150; // 상위 200 근접 데이터일 때만 In200th 자동계산(부분 데이터로 오계산 방지)
   return month().alliances.map(a=>{
-    const computedIn200 = ps.length ? ps.filter(p=>p.kingdom===a.kingdom && p.tag===a.tag).length : null;
+    const computedIn200 = canCompute ? ps.filter(p=>p.kingdom===a.kingdom && p.tag===a.tag).length : null;
     return {
       ...a,
       in200: (a.in200!=null ? a.in200 : computedIn200),
@@ -340,7 +380,7 @@ function renderTable(){
 function renderCompareAlliance(){
   document.getElementById("aCmpCap").textContent = `${month().label} · ${month().stage} · 상위 6개 연맹 · 전투력·KvK점수·점수/전투력`;
   const grid=document.getElementById("aCmpGrid");
-  grid.innerHTML=D.kingdoms.map(k=>{
+  grid.innerHTML=monthKingdoms().map(k=>{
     const color = k===737?"var(--k737)":"var(--k777)";
     const list=enriched().filter(a=>a.kingdom===k).sort((a,b)=>(b.kvk??-1)-(a.kvk??-1)).slice(0,6);
     const rows=list.map(a=>`<tr>
@@ -388,7 +428,7 @@ function renderCompareIndividual(){
 
   const inRange=ps.filter(p=>p.rank>=iN1 && p.rank<=iN2);
   const totals={};
-  grid.innerHTML=D.kingdoms.map(k=>{
+  grid.innerHTML=monthKingdoms().map(k=>{
     const color=k===737?"var(--k737)":"var(--k777)";
     const list=inRange.filter(p=>p.kingdom===k);
     totals[k]=list.reduce((s,p)=>s+(p.score||0),0);
@@ -407,10 +447,11 @@ function renderCompareIndividual(){
     </div>`;
   }).join("");
 
-  const t737=totals[737]||0, t777=totals[777]||0, diff=Math.abs(t737-t777);
-  const lead = t737===t777 ? "동점" : (t737>t777 ? "#737 우세" : "#777 우세");
+  const opp=opponent();
+  const tUs=totals[737]||0, tThem=totals[opp]||0, diff=Math.abs(tUs-tThem);
+  const lead = tUs===tThem ? "동점" : (tUs>tThem ? "#737 우세" : "#"+opp+" 우세");
   cs.className="cmpsum";
-  cs.innerHTML=`${iN1}~${iN2}위 KvK 합계 · #737 <b>${nf(t737)}</b> vs #777 <b>${nf(t777)}</b><br><span class="win">${lead}</span> (차이 ${nf(diff)})`;
+  cs.innerHTML=`${iN1}~${iN2}위 KvK 합계 · #737 <b>${nf(tUs)}</b> vs #${opp} <b>${nf(tThem)}</b><br><span class="win">${lead}</span> (차이 ${nf(diff)})`;
 }
 
 /* ---------- individual (player) ranking ---------- */
@@ -422,7 +463,7 @@ function renderPlayers(){
   document.getElementById("pnote").style.display=hasData?"":"none";
   document.getElementById("psoon").style.display=hasData?"none":"";
   document.querySelector('#view-player .controls').style.display=hasData?"":"none";
-  if(!hasData) return;
+  if(!hasData){ document.getElementById("pbody").innerHTML=""; return; }
   const view=ps.filter(p=>{
     if(pFilter!=="all" && p.kingdom!==+pFilter) return false;
     if(pQ){ const s=(p.name+" "+p.tag).toLowerCase(); if(!s.includes(pQ.toLowerCase())) return false; }
@@ -432,7 +473,7 @@ function renderPlayers(){
   if(!view.length){ body.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:30px" class="muted">결과가 없어요.</td></tr>`; }
   else body.innerHTML=view.map(p=>{
     const kcls=p.kingdom===737?"k737":"k777";
-    const me=p.name===PLAYER_ME;
+    const me=isMe(p.name);
     const rankCell=p.rank<=3?`<span class="medal m${p.rank}">${p.rank}</span>`:p.rank;
     return `<tr class="${me?'me':''}">
       <td class="rankc">${rankCell}</td>
@@ -494,6 +535,7 @@ document.getElementById("q").oninput=e=>{ curQ=e.target.value; if(aMode==="list"
 /* ---------- render ---------- */
 function renderAll(){
   document.getElementById("stage").textContent = month().stage;
+  updateThemChips();
   aMode==="compare"?renderCompareAlliance():renderTable();
   pMode==="compare"?renderCompareIndividual():renderPlayers();
 }
