@@ -51,9 +51,9 @@
   .chip{border:none;cursor:pointer;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:700;
     color:var(--sub);background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
   .chip.on{color:#fff}
-  .chip.on[data-k="all"]{background:var(--gold2)}
-  .chip.on[data-k="737"]{background:var(--k737)}
-  .chip.on[data-k="777"]{background:var(--k777)}
+  .chip.on[data-k="all"],.chip.on[data-pk="all"]{background:var(--gold2)}
+  .chip.on[data-k="737"],.chip.on[data-pk="737"]{background:var(--k737)}
+  .chip.on[data-k="777"],.chip.on[data-pk="777"]{background:var(--k777)}
 
   .tablecard{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
   .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -154,10 +154,30 @@
   </div>
 
   <div id="view-player" style="display:none">
-    <div class="soon">
+    <div class="controls">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input id="pq" type="search" placeholder="플레이어·연맹 검색…" autocomplete="off">
+      </div>
+      <div class="filter">
+        <button class="chip on" data-pk="all">전체</button>
+        <button class="chip" data-pk="737">#737</button>
+        <button class="chip" data-pk="777">#777</button>
+      </div>
+    </div>
+    <div id="pcard" class="tablecard"><div class="scroller">
+      <table>
+        <thead><tr>
+          <th class="l">순위</th><th class="l">이름</th><th>KvK Score</th>
+        </tr></thead>
+        <tbody id="pbody"></tbody>
+      </table>
+    </div></div>
+    <div class="note" id="pnote"></div>
+    <div id="psoon" class="soon" style="display:none">
       <div class="big">👤</div>
       <p style="font-weight:700;color:var(--ink);margin:10px 0 4px">개인 랭킹 준비 중</p>
-      <p style="margin:0">개인별 KvK 순위·점수 스크린샷이 들어오면<br>여기에 순위표가 표시됩니다.</p>
+      <p style="margin:0">이 달의 개인 순위 데이터가 아직 없습니다.</p>
     </div>
   </div>
 
@@ -178,6 +198,7 @@
 <script>
 const D = window.KVK_DATA;
 const MY_ALLIANCE = "KeepersOfRoyal";
+const PLAYER_ME = "JASON";
 
 /* ---------- helpers ---------- */
 const nf = n => (n==null ? null : n.toLocaleString("en-US"));
@@ -211,11 +232,16 @@ function month(){ return D.months.find(m=>m.id===curMonth); }
 
 /* ---------- enrich alliances with derived fields ---------- */
 function enriched(){
-  return month().alliances.map(a=>({
-    ...a,
-    sp: ratio(a.kvk,a.power),
-    spp: perPlayer(a.kvk,a.members),
-  }));
+  const ps = month().players || [];
+  return month().alliances.map(a=>{
+    const computedIn200 = ps.length ? ps.filter(p=>p.kingdom===a.kingdom && p.tag===a.tag).length : null;
+    return {
+      ...a,
+      in200: (a.in200!=null ? a.in200 : computedIn200),
+      sp: ratio(a.kvk,a.power),
+      spp: perPlayer(a.kvk,a.members),
+    };
+  });
 }
 
 /* ---------- alliance table ---------- */
@@ -320,6 +346,42 @@ document.getElementById("cmpBtn").onclick=()=>{ renderCompare(); document.getEle
 document.getElementById("xBtn").onclick=()=>document.getElementById("modal").classList.remove("open");
 document.getElementById("modal").onclick=e=>{ if(e.target.id==="modal") e.target.classList.remove("open"); };
 
+/* ---------- individual (player) ranking ---------- */
+let pFilter="all", pQ="";
+function renderPlayers(){
+  const ps=(month().players||[]).slice().sort((a,b)=>a.rank-b.rank);
+  const hasData=ps.length>0;
+  document.getElementById("pcard").style.display=hasData?"":"none";
+  document.getElementById("pnote").style.display=hasData?"":"none";
+  document.getElementById("psoon").style.display=hasData?"none":"";
+  document.querySelector('#view-player .controls').style.display=hasData?"":"none";
+  if(!hasData) return;
+  const view=ps.filter(p=>{
+    if(pFilter!=="all" && p.kingdom!==+pFilter) return false;
+    if(pQ){ const s=(p.name+" "+p.tag).toLowerCase(); if(!s.includes(pQ.toLowerCase())) return false; }
+    return true;
+  });
+  const body=document.getElementById("pbody");
+  if(!view.length){ body.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:30px" class="muted">결과가 없어요.</td></tr>`; }
+  else body.innerHTML=view.map(p=>{
+    const kcls=p.kingdom===737?"k737":"k777";
+    const me=p.name===PLAYER_ME;
+    const rankCell=p.rank<=3?`<span class="medal m${p.rank}">${p.rank}</span>`:p.rank;
+    return `<tr class="${me?'me':''}">
+      <td class="rankc">${rankCell}</td>
+      <td class="namec"><div class="nm" title="[${p.tag}] ${p.name}"><b>${p.name}</b><span class="kb ${kcls}">[${p.tag}] #${p.kingdom}</span></div></td>
+      <td>${cell(p.score)}</td>
+    </tr>`;
+  }).join("");
+  const n737=ps.filter(p=>p.kingdom===737).length, n777=ps.filter(p=>p.kingdom===777).length;
+  document.getElementById("pnote").innerHTML=`상위 <b>${ps.length}명</b> · #737 ${n737}명 · #777 ${n777}명`;
+}
+document.querySelectorAll('#view-player .chip').forEach(c=>c.onclick=()=>{
+  document.querySelectorAll('#view-player .chip').forEach(x=>x.classList.remove("on"));
+  c.classList.add("on"); pFilter=c.dataset.pk; renderPlayers();
+});
+document.getElementById("pq").oninput=e=>{ pQ=e.target.value; renderPlayers(); };
+
 /* ---------- tabs / filters / search ---------- */
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
@@ -327,6 +389,7 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   const v=t.dataset.view;
   document.getElementById("view-alliance").style.display=v==="alliance"?"":"none";
   document.getElementById("view-player").style.display=v==="player"?"":"none";
+  if(v==="player") renderPlayers();
 });
 document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
   document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
@@ -338,6 +401,7 @@ document.getElementById("q").oninput=e=>{ curQ=e.target.value; renderTable(); };
 function renderAll(){
   document.getElementById("stage").textContent = month().stage;
   renderTable();
+  renderPlayers();
 }
 renderAll();
 </script>
