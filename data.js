@@ -232,6 +232,47 @@ window.KVK_DATA = {
         { rank:199, kingdom:737, tag:"GGw", name:"songsong", score:23792042 },
         { rank:200, kingdom:777, tag:"LOV", name:"Golfopololis", score:23687972 }
       ]
+    },
+    {
+      id: "2024-05",
+      label: "2024년 5월",
+      stage: "준비 단계",
+      alliances: [
+        { tag:"KOR", name:"KeepersOfRoyal", kingdom:737, power:24315115653, members:88, kvk:2164993785, in200:74 },
+        { tag:"GGw", name:"칼찌클럽", kingdom:737, power:16511302672, members:96, kvk:1235054942, in200:41 },
+        { tag:"DOM", name:"Kumdom", kingdom:737, power:10824361712, members:87, kvk:649667899, in200:13 },
+        { tag:"ICE", name:"IcyCrownEmpire", kingdom:737, power:9067182573, members:95, kvk:397047010, in200:2 },
+        { tag:"HAN", name:"JANHAE", kingdom:737, power:1310000000, members:30, kvk:118454050, in200:0 }
+      ],
+      players: []
+    },
+    {
+      id: "2024-04",
+      label: "2024년 4월",
+      stage: "준비 단계",
+      alliances: [
+        { tag:"KOR", name:"KeepersOfRoyal", kingdom:737, power:21615100000, members:89, kvk:2380997798, in200:85 },
+        { tag:"GGw", name:"칼찌클럽", kingdom:737, power:14195200000, members:95, kvk:968541953, in200:41 },
+        { tag:"DOM", name:"Kumdom", kingdom:737, power:10892300000, members:86, kvk:527191903, in200:14 },
+        { tag:"ICE", name:"IcyCrownEmpire", kingdom:737, power:7433425000, members:81, kvk:278164388, in200:4 },
+        { tag:"RoC", name:"RoC", kingdom:737, power:1452070000, members:43, kvk:7435645, in200:null },
+        { tag:"HAN", name:"JANHAE", kingdom:737, power:1310000000, members:50, kvk:118454050, in200:null }
+      ],
+      players: []
+    },
+    {
+      id: "2024-03",
+      label: "2024년 3월",
+      stage: "준비 단계",
+      alliances: [
+        { tag:"KOR", name:"KeepersOfRoyal", kingdom:737, power:22819200000, members:95, kvk:2502610000, in200:37 },
+        { tag:"GGw", name:"칼찌클럽", kingdom:737, power:13331900000, members:89, kvk:943331000, in200:null },
+        { tag:"DOM", name:"Kumdom", kingdom:737, power:10284900000, members:95, kvk:378472000, in200:null },
+        { tag:"ICE", name:"IcyCrownEmpire", kingdom:737, power:9115150000, members:98, kvk:216890000, in200:null },
+        { tag:"RoC", name:"RoC", kingdom:737, power:3274850000, members:57, kvk:51174600, in200:null },
+        { tag:"HAN", name:"JANHAE", kingdom:737, power:2463010000, members:78, kvk:171002000, in200:null }
+      ],
+      players: []
     }
   ]
 };

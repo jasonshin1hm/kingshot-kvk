@@ -119,6 +119,8 @@
     background-repeat:no-repeat;background-position:right 9px center}
   .cmpsum{margin:14px 4px 2px;padding:12px 14px;background:#fff6e2;border-radius:12px;font-size:13.5px;font-weight:700;text-align:center;box-shadow:inset 0 0 0 1px var(--line)}
   .cmpsum .win{color:var(--gold2);font-weight:800}
+  .cmpchip.on{background:linear-gradient(180deg,var(--gold),var(--gold2))!important;color:#fff}
+  .cmpcap{font-size:12px;color:var(--sub);margin:0 2px 10px;font-weight:700}
 </style>
 </head>
 <body>
@@ -148,17 +150,23 @@
         <button class="chip on" data-k="all">전체</button>
         <button class="chip" data-k="737">#737</button>
         <button class="chip" data-k="777">#777</button>
-        <button class="cmpbtn" id="cmpBtnA">⚔️ 비교</button>
+        <button class="chip cmpchip" data-k="compare">⚔️ 비교</button>
       </div>
     </div>
-    <div class="tablecard"><div class="scroller">
-      <table id="atable">
-        <thead><tr id="ahead"></tr></thead>
-        <tbody id="abody"></tbody>
-        <tfoot id="afoot"></tfoot>
-      </table>
-    </div></div>
-    <div class="note" id="anote"></div>
+    <div id="aList">
+      <div class="tablecard"><div class="scroller">
+        <table id="atable">
+          <thead><tr id="ahead"></tr></thead>
+          <tbody id="abody"></tbody>
+          <tfoot id="afoot"></tfoot>
+        </table>
+      </div></div>
+      <div class="note" id="anote"></div>
+    </div>
+    <div id="aCompare" style="display:none">
+      <div class="cmpcap" id="aCmpCap"></div>
+      <div class="cmpgrid" id="aCmpGrid"></div>
+    </div>
   </div>
 
   <div id="view-player" style="display:none">
@@ -171,38 +179,33 @@
         <button class="chip on" data-pk="all">전체</button>
         <button class="chip" data-pk="737">#737</button>
         <button class="chip" data-pk="777">#777</button>
-        <button class="cmpbtn" id="cmpBtnP">⚔️ 비교</button>
+        <button class="chip cmpchip" data-pk="compare">⚔️ 비교</button>
       </div>
     </div>
-    <div id="pcard" class="tablecard"><div class="scroller">
-      <table>
-        <thead><tr>
-          <th class="l">순위</th><th class="l">이름</th><th>KvK Score</th>
-        </tr></thead>
-        <tbody id="pbody"></tbody>
-      </table>
-    </div></div>
-    <div class="note" id="pnote"></div>
-    <div id="psoon" class="soon" style="display:none">
-      <div class="big">👤</div>
-      <p style="font-weight:700;color:var(--ink);margin:10px 0 4px">개인 랭킹 준비 중</p>
-      <p style="margin:0">이 달의 개인 순위 데이터가 아직 없습니다.</p>
+    <div id="pList">
+      <div id="pcard" class="tablecard"><div class="scroller">
+        <table>
+          <thead><tr>
+            <th class="l">순위</th><th class="l">이름</th><th>KvK Score</th>
+          </tr></thead>
+          <tbody id="pbody"></tbody>
+        </table>
+      </div></div>
+      <div class="note" id="pnote"></div>
+      <div id="psoon" class="soon" style="display:none">
+        <div class="big">👤</div>
+        <p style="font-weight:700;color:var(--ink);margin:10px 0 4px">개인 랭킹 준비 중</p>
+        <p style="margin:0">이 달의 개인 순위 데이터가 아직 없습니다.</p>
+      </div>
+    </div>
+    <div id="pCompare" style="display:none">
+      <div id="pCmpRange"></div>
+      <div class="cmpgrid" id="pCmpGrid"></div>
+      <div id="pCmpSum"></div>
     </div>
   </div>
 
   <footer>데이터는 관리자만 갱신할 수 있습니다 · Made for KvK</footer>
-</div>
-
-<!-- 비교 모달 -->
-<div class="modal" id="modal">
-  <div class="sheet">
-    <button class="xbtn" id="xBtn">✕</button>
-    <h2 id="cmpTitle">서버 비교</h2>
-    <p class="sub" id="cmpSub"></p>
-    <div id="cmpRange"></div>
-    <div class="cmpgrid" id="cmpgrid"></div>
-    <div id="cmpSum"></div>
-  </div>
 </div>
 
 <script src="data.js"></script>
@@ -230,7 +233,7 @@ const COLS = [
   {key:"in200", label:"In 200th", type:"num"},
 ];
 
-let curMonth, curFilter="all", curQ="", sortKey="kvk", sortDir=-1;
+let curMonth, curFilter="all", curQ="", sortKey="kvk", sortDir=-1, aMode="list";
 
 /* ---------- month select ---------- */
 const monthSel = document.getElementById("month");
@@ -332,17 +335,11 @@ function renderTable(){
     : `열 클릭 시 정렬됩니다.`;
 }
 
-/* ---------- compare modal ---------- */
-function openModal(){ document.getElementById("modal").classList.add("open"); }
-function closeModal(){ document.getElementById("modal").classList.remove("open"); }
-
+/* ---------- compare (inline view) ---------- */
 // 연맹 비교: 양 서버 상위 6개 연맹 (전투력·KvK점수·점수/전투력 + 합계)
 function renderCompareAlliance(){
-  document.getElementById("cmpTitle").textContent="서버 비교 · 연맹";
-  document.getElementById("cmpSub").textContent = `${month().label} · ${month().stage} · 상위 6개 연맹`;
-  document.getElementById("cmpRange").innerHTML="";
-  const cs=document.getElementById("cmpSum"); cs.innerHTML=""; cs.className="";
-  const grid=document.getElementById("cmpgrid");
+  document.getElementById("aCmpCap").textContent = `${month().label} · ${month().stage} · 상위 6개 연맹 · 전투력·KvK점수·점수/전투력`;
+  const grid=document.getElementById("aCmpGrid");
   grid.innerHTML=D.kingdoms.map(k=>{
     const color = k===737?"var(--k737)":"var(--k777)";
     const list=enriched().filter(a=>a.kingdom===k).sort((a,b)=>(b.kvk??-1)-(a.kvk??-1)).slice(0,6);
@@ -351,10 +348,10 @@ function renderCompareAlliance(){
       <td>${cell(a.power)}</td>
       <td>${cell(a.kvk)}</td>
       <td>${rfmt(a.sp)}</td>
-    </tr>`).join("");
+    </tr>`).join("") || `<tr><td colspan="4" class="muted" style="text-align:center;padding:16px">데이터 없음</td></tr>`;
     const tp=list.reduce((s,a)=>s+(a.power||0),0), tk=list.reduce((s,a)=>s+(a.kvk||0),0);
     const hasPow=list.some(a=>a.power!=null);
-    const spTot = (tp>0) ? tk/tp : null;   // 합계 점수/전투력 = KvK합계 ÷ 전투력합계
+    const spTot = (tp>0) ? tk/tp : null;
     return `<div class="cmpcol">
       <h3><span class="dot" style="background:${color}"></span>Kingdom #${k}</h3>
       <div class="cmpscroll"><table class="cmptable">
@@ -369,23 +366,28 @@ function renderCompareAlliance(){
 // 개인 비교: 순위범위(N1~N2) 필터 → 좌 #737 / 우 #777, 각 합계 + 승패
 let iN1=1, iN2=200;
 function renderCompareIndividual(){
-  document.getElementById("cmpTitle").textContent="서버 비교 · 개인";
   const ps=(month().players||[]).slice().sort((a,b)=>a.rank-b.rank);
-  document.getElementById("cmpSub").textContent = `${month().label} · ${month().stage} · 개인 순위 ${iN1}위 ~ ${iN2}위`;
+  const range=document.getElementById("pCmpRange");
+  const grid=document.getElementById("pCmpGrid");
+  const cs=document.getElementById("pCmpSum");
+  if(!ps.length){
+    range.innerHTML="";
+    grid.innerHTML='<div class="soon" style="grid-column:1/-1"><div class="big">👤</div><p style="margin:8px 0 0">이 달의 개인 순위 데이터가 없습니다.</p></div>';
+    cs.innerHTML=""; cs.className=""; return;
+  }
   const n1opts=[1,10,20,50,100], n2opts=[10,20,50,100,200];
-  document.getElementById("cmpRange").innerHTML=`<div class="rangebar">
+  range.innerHTML=`<div class="rangebar">
     <span>순위</span>
     <select id="iN1">${n1opts.map(v=>`<option ${v===iN1?'selected':''}>${v}</option>`).join("")}</select>
     <span>위 ~</span>
     <select id="iN2">${n2opts.map(v=>`<option ${v===iN2?'selected':''}>${v}</option>`).join("")}</select>
-    <span>위</span>
+    <span>위 구간 비교</span>
   </div>`;
   document.getElementById("iN1").onchange=e=>{ iN1=+e.target.value; renderCompareIndividual(); };
   document.getElementById("iN2").onchange=e=>{ iN2=+e.target.value; renderCompareIndividual(); };
 
   const inRange=ps.filter(p=>p.rank>=iN1 && p.rank<=iN2);
   const totals={};
-  const grid=document.getElementById("cmpgrid");
   grid.innerHTML=D.kingdoms.map(k=>{
     const color=k===737?"var(--k737)":"var(--k777)";
     const list=inRange.filter(p=>p.kingdom===k);
@@ -407,17 +409,12 @@ function renderCompareIndividual(){
 
   const t737=totals[737]||0, t777=totals[777]||0, diff=Math.abs(t737-t777);
   const lead = t737===t777 ? "동점" : (t737>t777 ? "#737 우세" : "#777 우세");
-  const cs=document.getElementById("cmpSum"); cs.className="cmpsum";
+  cs.className="cmpsum";
   cs.innerHTML=`${iN1}~${iN2}위 KvK 합계 · #737 <b>${nf(t737)}</b> vs #777 <b>${nf(t777)}</b><br><span class="win">${lead}</span> (차이 ${nf(diff)})`;
 }
 
-document.getElementById("cmpBtnA").onclick=()=>{ renderCompareAlliance(); openModal(); };
-document.getElementById("cmpBtnP").onclick=()=>{ renderCompareIndividual(); openModal(); };
-document.getElementById("xBtn").onclick=closeModal;
-document.getElementById("modal").onclick=e=>{ if(e.target.id==="modal") closeModal(); };
-
 /* ---------- individual (player) ranking ---------- */
-let pFilter="all", pQ="";
+let pFilter="all", pQ="", pMode="list";
 function renderPlayers(){
   const ps=(month().players||[]).slice().sort((a,b)=>a.rank-b.rank);
   const hasData=ps.length>0;
@@ -446,11 +443,24 @@ function renderPlayers(){
   const n737=ps.filter(p=>p.kingdom===737).length, n777=ps.filter(p=>p.kingdom===777).length;
   document.getElementById("pnote").innerHTML=`상위 <b>${ps.length}명</b> · #737 ${n737}명 · #777 ${n777}명`;
 }
+function setPlayerMode(v){
+  if(v==="compare"){
+    pMode="compare";
+    document.getElementById("pList").style.display="none";
+    document.getElementById("pCompare").style.display="";
+    renderCompareIndividual();
+  }else{
+    pMode="list"; pFilter=v;
+    document.getElementById("pCompare").style.display="none";
+    document.getElementById("pList").style.display="";
+    renderPlayers();
+  }
+}
 document.querySelectorAll('#view-player .chip').forEach(c=>c.onclick=()=>{
   document.querySelectorAll('#view-player .chip').forEach(x=>x.classList.remove("on"));
-  c.classList.add("on"); pFilter=c.dataset.pk; renderPlayers();
+  c.classList.add("on"); setPlayerMode(c.dataset.pk);
 });
-document.getElementById("pq").oninput=e=>{ pQ=e.target.value; renderPlayers(); };
+document.getElementById("pq").oninput=e=>{ pQ=e.target.value; if(pMode==="list") renderPlayers(); };
 
 /* ---------- tabs / filters / search ---------- */
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
@@ -459,19 +469,33 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
   const v=t.dataset.view;
   document.getElementById("view-alliance").style.display=v==="alliance"?"":"none";
   document.getElementById("view-player").style.display=v==="player"?"":"none";
-  if(v==="player") renderPlayers(); else renderTable();
+  if(v==="player"){ pMode==="compare"?renderCompareIndividual():renderPlayers(); }
+  else { aMode==="compare"?renderCompareAlliance():renderTable(); }
 });
+function setAllianceMode(v){
+  if(v==="compare"){
+    aMode="compare";
+    document.getElementById("aList").style.display="none";
+    document.getElementById("aCompare").style.display="";
+    renderCompareAlliance();
+  }else{
+    aMode="list"; curFilter=v;
+    document.getElementById("aCompare").style.display="none";
+    document.getElementById("aList").style.display="";
+    renderTable();
+  }
+}
 document.querySelectorAll('#view-alliance .chip').forEach(c=>c.onclick=()=>{
   document.querySelectorAll('#view-alliance .chip').forEach(x=>x.classList.remove("on"));
-  c.classList.add("on"); curFilter=c.dataset.k; renderTable();
+  c.classList.add("on"); setAllianceMode(c.dataset.k);
 });
-document.getElementById("q").oninput=e=>{ curQ=e.target.value; renderTable(); };
+document.getElementById("q").oninput=e=>{ curQ=e.target.value; if(aMode==="list") renderTable(); };
 
 /* ---------- render ---------- */
 function renderAll(){
   document.getElementById("stage").textContent = month().stage;
-  renderTable();
-  renderPlayers();
+  aMode==="compare"?renderCompareAlliance():renderTable();
+  pMode==="compare"?renderCompareIndividual():renderPlayers();
 }
 renderAll();
 </script>
