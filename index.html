@@ -1,1 +1,252 @@
-<!doctype html><meta charset="utf-8"><title>Kingshot KvK</title><h1>Kingshot KvK — 준비 중</h1>
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>킹샷 KvK 랭킹</title>
+<meta name="description" content="Kingshot KvK 연맹 · 개인 랭킹 보드">
+<style>
+  :root{
+    --bg1:#fff7e9; --bg2:#ffe9cf; --card:#fffdf8; --ink:#4a3b2a;
+    --sub:#a08b6f; --line:#efe1c9; --gold:#f4b93b; --gold2:#e79a1e;
+    --k737:#2f9e7d; --k737bg:#e5f5ee; --k777:#c8657f; --k777bg:#fbeaf0;
+    --shadow:0 6px 18px rgba(120,90,40,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--bg1),var(--bg2));
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+    padding:0 0 60px;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 14px}
+  header{padding:22px 0 8px;text-align:center}
+  header h1{margin:0;font-size:24px;letter-spacing:-.5px}
+  header .crown{font-size:26px}
+  header p{margin:6px 0 0;color:var(--sub);font-size:13px}
+
+  .tabs{display:flex;gap:8px;margin:16px 0 10px}
+  .tab{
+    flex:1;border:none;cursor:pointer;padding:12px 8px;border-radius:14px;
+    font-size:15px;font-weight:700;color:var(--sub);background:#fff5e4;
+    box-shadow:inset 0 0 0 1px var(--line);transition:.15s;
+  }
+  .tab.active{color:#fff;background:linear-gradient(180deg,var(--gold),var(--gold2));box-shadow:var(--shadow)}
+
+  .kingdoms{display:flex;gap:10px;margin:6px 0 14px}
+  .kd{flex:1;background:var(--card);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .kd .tagrow{display:flex;align-items:center;gap:7px;font-weight:800;font-size:14px}
+  .kd .dot{width:10px;height:10px;border-radius:50%}
+  .kd .num{font-size:19px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+  .kd .meta{font-size:12px;color:var(--sub);margin-top:2px}
+  .kd.lead::after{content:"LEAD";position:absolute;top:9px;right:10px;font-size:10px;font-weight:800;color:#fff;background:var(--gold2);padding:2px 6px;border-radius:6px;letter-spacing:.5px}
+
+  .controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .search{flex:1;min-width:150px;position:relative}
+  .search input{
+    width:100%;border:none;background:var(--card);border-radius:12px;padding:11px 12px 11px 34px;
+    font-size:14px;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);
+  }
+  .search input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+  .search svg{position:absolute;left:11px;top:11px;opacity:.4}
+  .filter{display:flex;gap:6px}
+  .chip{border:none;cursor:pointer;padding:11px 14px;border-radius:12px;font-size:13px;font-weight:700;
+    color:var(--sub);background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .chip.on{color:#fff}
+  .chip.on[data-k="all"]{background:var(--gold2)}
+  .chip.on[data-k="737"]{background:var(--k737)}
+  .chip.on[data-k="777"]{background:var(--k777)}
+
+  ul.board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+  li.row{
+    display:flex;align-items:center;gap:12px;background:var(--card);border-radius:16px;
+    padding:12px 14px;box-shadow:var(--shadow);position:relative;
+  }
+  li.row.me{box-shadow:0 0 0 2px var(--gold),var(--shadow)}
+  .rank{width:38px;text-align:center;font-weight:800;font-size:17px;flex:none;font-variant-numeric:tabular-nums}
+  .medal{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-size:16px;font-weight:800;color:#fff;flex:none}
+  .m1{background:linear-gradient(180deg,#ffdd6b,#eea00f)}
+  .m2{background:linear-gradient(180deg,#cfe0ef,#9db6cd)}
+  .m3{background:linear-gradient(180deg,#f0c39a,#cd8a56)}
+  .info{flex:1;min-width:0}
+  .name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .name .tg{color:var(--gold2)}
+  .badges{display:flex;align-items:center;gap:6px;margin-top:3px}
+  .kbadge{font-size:11px;font-weight:800;padding:2px 7px;border-radius:7px}
+  .kbadge.k737{color:var(--k737);background:var(--k737bg)}
+  .kbadge.k777{color:var(--k777);background:var(--k777bg)}
+  .me-tag{font-size:11px;font-weight:800;color:var(--gold2);background:#fff2d4;padding:2px 7px;border-radius:7px}
+  .pts{text-align:right;flex:none;max-width:42%}
+  .pts .v{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+  .pts .u{font-size:11px;color:var(--sub)}
+  .pts .bar{height:5px;border-radius:4px;margin-top:5px;background:linear-gradient(90deg,var(--gold),var(--gold2));min-width:4px;margin-left:auto}
+  .pts.unknown .v{color:var(--sub);font-size:13px}
+
+  .empty{text-align:center;color:var(--sub);padding:40px 10px}
+  .soon{text-align:center;color:var(--sub);padding:50px 16px;background:var(--card);border-radius:18px;box-shadow:var(--shadow)}
+  .soon .big{font-size:34px}
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:22px;line-height:1.7}
+  .stage-note{font-size:12px;color:var(--sub);text-align:center;margin:2px 0 12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="crown">👑</div>
+    <h1>킹샷 KvK 랭킹</h1>
+    <p>Kingdom #737 vs #777 · 데이터 기준 <span id="asof"></span></p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-view="alliance">🛡️ 연맹 랭킹</button>
+    <button class="tab" data-view="player">⚔️ 개인 랭킹</button>
+  </div>
+
+  <div id="view-alliance">
+    <div class="stage-note">준비 단계 · 연맹 포인트</div>
+    <div class="kingdoms" id="kingdoms"></div>
+    <div class="controls">
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input id="q" type="search" placeholder="연맹 이름 검색…" autocomplete="off">
+      </div>
+      <div class="filter">
+        <button class="chip on" data-k="all">전체</button>
+        <button class="chip" data-k="737">#737</button>
+        <button class="chip" data-k="777">#777</button>
+      </div>
+    </div>
+    <ul class="board" id="board"></ul>
+  </div>
+
+  <div id="view-player" style="display:none">
+    <div class="soon">
+      <div class="big">⚔️</div>
+      <p style="font-weight:700;color:var(--ink);margin:10px 0 4px">개인 랭킹 준비 중</p>
+      <p style="margin:0">개인별 KvK 총점 데이터가 들어오면<br>여기에 순위가 표시됩니다.</p>
+    </div>
+  </div>
+
+  <footer>
+    데이터는 게임 내 화면 기준으로 수동 반영됩니다.<br>
+    갱신 요청은 관리자에게 전달해주세요 · Made for KvK
+  </footer>
+</div>
+
+<script>
+/* ===== 데이터 (여기만 수정하면 순위표가 갱신됩니다) ===== */
+const AS_OF = "2026-07-19";
+const MY_ALLIANCE = "KeepersOfRoyal";
+
+const ALLIANCES = [
+  { tag:"KOR", name:"KeepersOfRoyal",   kingdom:737, points:3028484143 },
+  { tag:"LOV", name:"LotsOfViolence",   kingdom:777, points:2539930107 },
+  { tag:"BFS", name:"AllianceNotFound", kingdom:777, points:2421853349 },
+  { tag:"GGw", name:"칼찌클럽",          kingdom:737, points:2118221422 },
+  { tag:"GLO", name:"GloRassicPark",    kingdom:777, points:1949084621 },
+  { tag:"DOM", name:"Kumdom",           kingdom:737, points:1101477519 },
+  { tag:"KOR", name:"WAVE",             kingdom:777, points:965434486  },
+  { tag:"ICE", name:"IcyCrownEmpire",   kingdom:737, points:280696158  },
+  { tag:"404", name:"BreakfastSpread",  kingdom:777, points:null       },
+  { tag:"MOO", name:"MorningOfOwl",     kingdom:777, points:186142543  },
+  { tag:"ALL", name:"LOVE",             kingdom:777, points:185313654  },
+  { tag:"HAN", name:"JANHAE",           kingdom:737, points:130954842  },
+  { tag:"kor", name:"KOR농장",          kingdom:777, points:100877751  },
+];
+/* ====================================================== */
+
+document.getElementById("asof").textContent = AS_OF;
+
+const fmt = n => n==null ? "확인 필요" : n.toLocaleString("en-US");
+const short = n => {
+  if(n==null) return "0";
+  if(n>=1e9) return (n/1e9).toFixed(2)+"B";
+  if(n>=1e6) return (n/1e6).toFixed(1)+"M";
+  return n.toLocaleString();
+};
+
+let curFilter="all", curQ="";
+
+const ranked = ALLIANCES
+  .map(a=>({...a}))
+  .sort((a,b)=>(b.points??-1)-(a.points??-1))
+  .map((a,i)=>({...a, rank:i+1}));
+
+const maxPts = Math.max(...ranked.map(a=>a.points||0));
+
+function renderKingdoms(){
+  const el=document.getElementById("kingdoms");
+  const stat=k=>{
+    const list=ranked.filter(a=>a.kingdom===k);
+    const total=list.reduce((s,a)=>s+(a.points||0),0);
+    return {k,total,count:list.length,unknown:list.some(a=>a.points==null)};
+  };
+  const a=stat(737), b=stat(777);
+  const lead=a.total>=b.total?737:777;
+  const card=s=>`
+    <div class="kd ${s.k===lead?'lead':''}">
+      <div class="tagrow"><span class="dot" style="background:var(--k${s.k})"></span>Kingdom #${s.k}</div>
+      <div class="num">${short(s.total)}</div>
+      <div class="meta">${s.total.toLocaleString()} · 연맹 ${s.count}개${s.unknown?' · 일부 미확인':''}</div>
+    </div>`;
+  el.innerHTML=card(a)+card(b);
+}
+
+function renderBoard(){
+  const el=document.getElementById("board");
+  const rows=ranked.filter(a=>{
+    if(curFilter!=="all" && a.kingdom!==+curFilter) return false;
+    if(curQ){
+      const s=(a.name+" "+a.tag).toLowerCase();
+      if(!s.includes(curQ.toLowerCase())) return false;
+    }
+    return true;
+  });
+  if(!rows.length){ el.innerHTML='<div class="empty">검색 결과가 없어요.</div>'; return; }
+  el.innerHTML=rows.map(a=>{
+    const medal = a.rank<=3
+      ? `<div class="medal m${a.rank}">${a.rank}</div>`
+      : `<div class="rank">${a.rank}</div>`;
+    const kcls = a.kingdom===737?"k737":"k777";
+    const me = a.name===MY_ALLIANCE;
+    const barW = a.points ? Math.max(4, Math.round(a.points/maxPts*100)) : 0;
+    return `<li class="row ${me?'me':''}">
+      ${medal}
+      <div class="info">
+        <div class="name"><span class="tg">[${a.tag}]</span> ${a.name}</div>
+        <div class="badges">
+          <span class="kbadge ${kcls}">#${a.kingdom}</span>
+          ${me?'<span class="me-tag">MY</span>':''}
+        </div>
+      </div>
+      <div class="pts ${a.points==null?'unknown':''}">
+        <div class="v">${fmt(a.points)}</div>
+        <div class="u">연맹 포인트</div>
+        ${a.points!=null?`<div class="bar" style="width:${barW}%"></div>`:''}
+      </div>
+    </li>`;
+  }).join("");
+}
+
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  const v=t.dataset.view;
+  document.getElementById("view-alliance").style.display = v==="alliance"?"":"none";
+  document.getElementById("view-player").style.display   = v==="player"?"":"none";
+});
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+  c.classList.add("on"); curFilter=c.dataset.k; renderBoard();
+});
+document.getElementById("q").oninput=e=>{ curQ=e.target.value; renderBoard(); };
+
+renderKingdoms();
+renderBoard();
+</script>
+</body>
+</html>
