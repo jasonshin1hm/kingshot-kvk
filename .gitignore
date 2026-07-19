@@ -3,3 +3,6 @@ package.json
 package-lock.json
 shot.mjs
 preview.png
+preview_main.png
+preview_compare.png
+docx_media/
