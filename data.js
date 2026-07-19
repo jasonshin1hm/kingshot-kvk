@@ -15,18 +15,18 @@ window.KVK_DATA = {
       // 연맹 랭킹
       alliances: [
         { tag:"KOR", name:"KeepersOfRoyal",   kingdom:737, power:32899149399, members:95, kvk:3028484143, in200:null },
-        { tag:"LOV", name:"LotsOfViolence",   kingdom:777, power:null, members:null, kvk:2539930107, in200:null },
-        { tag:"BFS", name:"AllianceNotFound", kingdom:777, power:null, members:null, kvk:2421853349, in200:null },
+        { tag:"LOV", name:"LotsOfViolence",   kingdom:777, power:22913762968, members:100, kvk:2539930107, in200:null },
+        { tag:"BFS", name:"AllianceNotFound", kingdom:777, power:24882181778, members:96, kvk:2421853349, in200:null },
         { tag:"GGw", name:"칼찌클럽",          kingdom:737, power:19673366540, members:94, kvk:2118221422, in200:null },
-        { tag:"GLO", name:"GloRassicPark",    kingdom:777, power:null, members:null, kvk:1949084621, in200:null },
+        { tag:"GLO", name:"GloRassicPark",    kingdom:777, power:20016921968, members:95, kvk:1949084621, in200:null },
         { tag:"DOM", name:"Kumdom",           kingdom:737, power:14206399493, members:98, kvk:1101477519, in200:null },
-        { tag:"KOR", name:"WAVE",             kingdom:777, power:null, members:null, kvk:965434486,  in200:null },
+        { tag:"KOR", name:"WAVE",             kingdom:777, power:18405526361, members:95, kvk:965434486,  in200:null },
         { tag:"ICE", name:"IcyCrownEmpire",   kingdom:737, power:6547297564,  members:84, kvk:280696158,  in200:null },
-        { tag:"404", name:"BreakfastSpread",  kingdom:777, power:null, members:null, kvk:null,        in200:null },
-        { tag:"MOO", name:"MorningOfOwl",     kingdom:777, power:null, members:null, kvk:186142543,  in200:null },
-        { tag:"ALL", name:"LOVE",             kingdom:777, power:null, members:null, kvk:185313654,  in200:null },
+        { tag:"404", name:"BreakfastSpread",  kingdom:777, power:6162782425, members:70, kvk:null,        in200:null },
+        { tag:"MOO", name:"MorningOfOwl",     kingdom:777, power:6995455240, members:91, kvk:186142543,  in200:null },
+        { tag:"ALL", name:"LOVE",             kingdom:777, power:4953785072, members:63, kvk:185313654,  in200:null },
         { tag:"HAN", name:"JANHAE",           kingdom:737, power:1281172306,  members:52, kvk:130954842,  in200:null },
-        { tag:"kor", name:"KOR농장",          kingdom:777, power:null, members:null, kvk:100877751,  in200:null }
+        { tag:"kor", name:"KOR농장",          kingdom:777, power:3163521113, members:56, kvk:100877751,  in200:null }
       ],
       // 개인 랭킹 (스크린샷 들어오면 채움)
       // { rank, name, tag, kingdom, power, kvk }
