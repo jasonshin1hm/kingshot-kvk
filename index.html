@@ -121,6 +121,20 @@
   .cmpsum .win{color:var(--gold2);font-weight:800}
   .cmpchip.on{background:linear-gradient(180deg,var(--gold),var(--gold2))!important;color:#fff}
   .cmpcap{font-size:12px;color:var(--sub);margin:0 2px 10px;font-weight:700}
+  /* 연맹 클릭 → 월별 추이 차트 */
+  td.namec.clk{cursor:pointer}
+  td.namec.clk .nm b{text-decoration:underline dotted rgba(231,154,30,.55);text-underline-offset:3px}
+  td.namec.clk:hover .nm b{color:var(--gold2)}
+  .trendcard{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px}
+  .trendcard .th{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .trendcard .th h3{margin:0;font-size:15px}
+  .trendcard .th .kb{font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px}
+  .trendcard .th .close{margin-left:auto;border:none;background:#f2e6cf;width:30px;height:30px;border-radius:9px;cursor:pointer;color:var(--sub);font-size:14px}
+  .trendmetrics{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
+  .mbtn{border:none;cursor:pointer;padding:6px 11px;border-radius:9px;font-size:12px;font-weight:700;color:var(--sub);background:#fff5e4;box-shadow:inset 0 0 0 1px var(--line)}
+  .mbtn.on{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#fff}
+  .trendsvg{width:100%;height:auto;display:block;margin-top:4px}
+  .trendnote{font-size:11.5px;color:var(--sub);margin-top:4px}
 </style>
 </head>
 <body>
@@ -154,6 +168,7 @@
       </div>
     </div>
     <div id="aList">
+      <div id="trendPanel" class="trendcard" style="display:none"></div>
       <div class="tablecard"><div class="scroller">
         <table id="atable">
           <thead><tr id="ahead"></tr></thead>
@@ -248,6 +263,7 @@ monthSel.onchange = ()=>{
   document.querySelectorAll('#view-player .chip').forEach(x=>x.classList.toggle('on', x.dataset.pk==='all'));
   document.getElementById("aCompare").style.display="none"; document.getElementById("aList").style.display="";
   document.getElementById("pCompare").style.display="none"; document.getElementById("pList").style.display="";
+  if(typeof hideTrend==="function") hideTrend();
   renderAll();
 };
 
@@ -337,9 +353,9 @@ function renderTable(){
     const kcls=a.kingdom===737?"k737":"k777";
     const me=a.name===MY_ALLIANCE;
     const rankCell = a._rank<=3 ? `<span class="medal m${a._rank}">${a._rank}</span>` : a._rank;
-    return `<tr class="${me?'me':''}">
+    return `<tr class="${me?'me':''}" data-tag="${a.tag}" data-kingdom="${a.kingdom}" data-name="${(a.name||'').replace(/"/g,'&quot;')}">
       <td class="rankc">${rankCell}</td>
-      <td class="namec"><div class="nm" title="[${a.tag}] ${a.name}"><b>${a.tag}</b><span class="kb ${kcls}">#${a.kingdom}</span></div></td>
+      <td class="namec clk"><div class="nm" title="[${a.tag}] ${a.name} · 클릭하면 월별 추이"><b>${a.tag}</b><span class="kb ${kcls}">#${a.kingdom}</span></div></td>
       <td>${cell(a.power)}</td>
       <td>${cell(a.members)}</td>
       <td>${cell(a.kvk)}</td>
@@ -374,6 +390,91 @@ function renderTable(){
     ? `열 클릭 시 정렬됩니다. · 아직 미입력 항목: <b>${miss.join(", ")}</b> (스크린샷 반영 후 자동 계산: Score/Power, Score/Player)`
     : `열 클릭 시 정렬됩니다.`;
 }
+
+/* ---------- 연맹 월별 추이 차트 ---------- */
+const MONTHS_ASC = [...D.months].sort((a,b)=> a.id<b.id?-1:(a.id>b.id?1:0));
+const METRICS = [
+  {key:"kvk",   label:"KvK Score"},
+  {key:"power", label:"전투력"},
+  {key:"sp",    label:"Score/Power"},
+  {key:"in200", label:"In 200th"},
+];
+function allianceSeries(tag, kingdom, metric){
+  return MONTHS_ASC.map(m=>{
+    const a=(m.alliances||[]).find(x=>x.tag===tag && x.kingdom===kingdom);
+    let v=null;
+    if(a){
+      if(metric==="kvk") v=a.kvk;
+      else if(metric==="power") v=a.power;
+      else if(metric==="sp") v=(a.kvk!=null && a.power)? a.kvk/a.power : null;
+      else if(metric==="in200"){
+        if(a.in200!=null) v=a.in200;
+        else { const ps=m.players||[]; v = ps.length>=150 ? ps.filter(p=>p.kingdom===kingdom && p.tag===tag).length : null; }
+      }
+    }
+    return { label:(m.label||m.id).replace("2026년","").trim(), value:v };
+  });
+}
+const tfmt=(v,metric)=> v==null?"—" : metric==="sp"?v.toFixed(4) : metric==="in200"?String(v) : short(v);
+const tax =(v,metric)=> metric==="sp"?v.toFixed(3) : metric==="in200"?String(Math.round(v)) : short(v);
+function lineChartSVG(series, metric){
+  const vals=series.filter(s=>s.value!=null).map(s=>s.value);
+  if(!vals.length) return '<div class="muted" style="padding:24px;text-align:center">이 지표의 추이 데이터가 없어요.</div>';
+  const W=600,H=250,padL=58,padR=18,padT=22,padB=28, plotW=W-padL-padR, plotH=H-padT-padB, n=series.length;
+  const xs=i=> n<=1? padL+plotW/2 : padL + i*plotW/(n-1);
+  let vmax=Math.max(...vals), vmin=Math.min(...vals);
+  let yMin = metric==="sp" ? Math.max(0, vmin*0.85) : 0;
+  let yMax = vmax*1.14 || 1; if(yMax===yMin) yMax=yMin+1;
+  const y=v=> padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
+  let grid="", ylab="";
+  for(let g=0; g<=4; g++){ const gv=yMin+(yMax-yMin)*g/4, gy=y(gv);
+    grid+=`<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W-padR}" y2="${gy.toFixed(1)}" stroke="#efe1c9"/>`;
+    ylab+=`<text x="${padL-8}" y="${(gy+3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#a08b6f">${tax(gv,metric)}</text>`;
+  }
+  let xlab=""; series.forEach((s,i)=>{ xlab+=`<text x="${xs(i).toFixed(1)}" y="${H-9}" text-anchor="middle" font-size="11" fill="#a08b6f">${s.label}</text>`; });
+  const pts=series.map((s,i)=> s.value!=null?{x:xs(i),y:y(s.value)}:null).filter(Boolean);
+  let path=""; pts.forEach((p,i)=> path+=(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)+" ");
+  let dots="", vlabs="";
+  series.forEach((s,i)=>{ if(s.value==null) return; const px=xs(i),py=y(s.value);
+    dots+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="#e79a1e" stroke="#fff" stroke-width="1.5"/>`;
+    vlabs+=`<text x="${px.toFixed(1)}" y="${(py-9).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4a3b2a">${tfmt(s.value,metric)}</text>`;
+  });
+  return `<svg class="trendsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="월별 추이 차트">
+    ${grid}${ylab}
+    <path d="${path.trim()}" fill="none" stroke="#f4b93b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}${vlabs}${xlab}</svg>`;
+}
+let trendSel=null, trendMetric="kvk";
+function showTrend(tag, kingdom, name){ trendSel={tag,kingdom,name}; trendMetric="kvk"; renderTrend();
+  document.getElementById("trendPanel").scrollIntoView({behavior:"smooth",block:"nearest"}); }
+function hideTrend(){ trendSel=null; document.getElementById("trendPanel").style.display="none"; }
+function renderTrend(){
+  if(!trendSel) return;
+  const {tag,kingdom,name}=trendSel;
+  const kcls=kingdom===737?"k737":"k777";
+  const series=allianceSeries(tag,kingdom,trendMetric);
+  const nPts=series.filter(s=>s.value!=null).length;
+  const el=document.getElementById("trendPanel");
+  el.style.display="";
+  el.innerHTML=`
+    <div class="th">
+      <h3>[${tag}] ${name||""}</h3><span class="kb ${kcls}">#${kingdom}</span>
+      <button class="close" id="trendClose">✕</button>
+    </div>
+    <div class="trendmetrics">
+      ${METRICS.map(m=>`<button class="mbtn ${m.key===trendMetric?'on':''}" data-m="${m.key}">${m.label}</button>`).join("")}
+    </div>
+    ${lineChartSVG(series, trendMetric)}
+    <div class="trendnote">가로축=월, 세로축=${METRICS.find(m=>m.key===trendMetric).label} · 데이터 있는 달만 표시 (${nPts}개월)</div>`;
+  el.querySelector("#trendClose").onclick=hideTrend;
+  el.querySelectorAll(".mbtn").forEach(b=>b.onclick=()=>{ trendMetric=b.dataset.m; renderTrend(); });
+}
+// 표의 연맹 이름 클릭 → 추이 (이벤트 위임)
+document.getElementById("abody").addEventListener("click", e=>{
+  const cell=e.target.closest("td.namec.clk"); if(!cell) return;
+  const tr=cell.closest("tr"); if(!tr||!tr.dataset.tag) return;
+  showTrend(tr.dataset.tag, +tr.dataset.kingdom, tr.dataset.name);
+});
 
 /* ---------- compare (inline view) ---------- */
 // 연맹 비교: 양 서버 상위 6개 연맹 (전투력·KvK점수·점수/전투력 + 합계)
