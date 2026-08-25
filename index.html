@@ -3,646 +3,406 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>킹샷 KvK 준비단계 통계</title>
-<meta name="description" content="Kingshot KvK 연맹 · 개인 통계">
+<title>킹샷 이벤트 과금효율 계산기</title>
+<meta name="description" content="Kingshot 이벤트 상점 · 패키지 효율 계산기">
 <style>
   :root{
     --bg1:#fff7e9; --bg2:#ffe9cf; --card:#fffdf8; --ink:#4a3b2a;
     --sub:#a08b6f; --line:#efe1c9; --gold:#f4b93b; --gold2:#e79a1e;
-    --k737:#2f9e7d; --k737bg:#e5f5ee; --k777:#c8657f; --k777bg:#fbeaf0;
+    --hot:#ff7a3d; --hotbg:#ffe9df; --rec:#3fb06a; --recbg:#e3f6ea;
+    --coin:#e79a1e; --shell:#5f9bd8; --lack:#c8657f; --ok:#2f9e7d;
     --shadow:0 6px 18px rgba(120,90,40,.10);
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{
-    font-family:"Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    color:var(--ink); background:linear-gradient(180deg,var(--bg1),var(--bg2));
-    background-attachment:fixed; -webkit-font-smoothing:antialiased; padding:0 0 70px;
-  }
+  body{font-family:"Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);background:linear-gradient(180deg,var(--bg1),var(--bg2));background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;padding:0 0 80px}
   .wrap{max-width:820px;margin:0 auto;padding:0 14px}
-  header{padding:20px 0 6px;text-align:center}
-  header .logo{width:64px;height:64px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;
-    font-size:30px;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+  /* 상단 페이지 네비 */
+  .topnav{display:flex;gap:6px;padding:12px 0 0}
+  .topnav a{flex:1;text-align:center;text-decoration:none;padding:10px 8px;border-radius:12px;font-size:14px;font-weight:800;
+    color:var(--sub);background:#fff5e4;box-shadow:inset 0 0 0 1px var(--line)}
+  .topnav a.cur{color:#fff;background:linear-gradient(180deg,var(--gold),var(--gold2));box-shadow:var(--shadow)}
+  header{padding:16px 0 6px;text-align:center}
+  header .logo{width:56px;height:56px;margin:0 auto 6px;border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
   header .logo img{width:100%;height:100%;object-fit:cover;display:block}
-  header h1{margin:0;font-size:22px;letter-spacing:-.5px}
+  header h1{margin:0;font-size:21px;letter-spacing:-.5px}
+  .evchip{display:inline-block;margin-top:8px;font-size:12px;font-weight:800;color:var(--gold2);background:#fff2d4;padding:6px 12px;border-radius:10px}
 
-  .toolbar{display:flex;gap:8px;align-items:center;margin:16px 0 10px;flex-wrap:wrap}
-  select#month{appearance:none;-webkit-appearance:none;border:none;cursor:pointer;
-    background:var(--card) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a08b6f' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right 12px center;
-    border-radius:12px;padding:11px 34px 11px 14px;font-size:14px;font-weight:700;color:var(--ink);
-    box-shadow:inset 0 0 0 1px var(--line)}
-  .stagechip{font-size:12px;font-weight:800;color:var(--gold2);background:#fff2d4;padding:6px 10px;border-radius:10px}
-  .spacer{flex:1}
-  .btn{border:none;cursor:pointer;padding:11px 16px;border-radius:12px;font-size:14px;font-weight:800;color:#fff;
-    background:linear-gradient(180deg,var(--gold),var(--gold2));box-shadow:var(--shadow)}
-
-  .tabs{display:flex;gap:8px;margin:2px 0 12px}
-  .tab{flex:1;border:none;cursor:pointer;padding:11px 8px;border-radius:13px;font-size:15px;font-weight:700;
+  .tabs{display:flex;gap:8px;margin:14px 0 12px}
+  .tab{flex:1;border:none;cursor:pointer;padding:12px 8px;border-radius:13px;font-size:15px;font-weight:700;
     color:var(--sub);background:#fff5e4;box-shadow:inset 0 0 0 1px var(--line)}
   .tab.active{color:#fff;background:linear-gradient(180deg,var(--gold),var(--gold2));box-shadow:var(--shadow)}
 
-  .controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-  .search{flex:1;min-width:150px;position:relative}
-  .search input{width:100%;border:none;background:var(--card);border-radius:12px;padding:10px 12px 10px 34px;
-    font-size:14px;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
-  .search input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
-  .search svg{position:absolute;left:11px;top:10px;opacity:.4}
-  .filter{display:flex;gap:6px}
-  .chip{border:none;cursor:pointer;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:700;
-    color:var(--sub);background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
-  .chip.on{color:#fff}
-  .chip.allchip.on{background:var(--gold2)}
-  .chip.uschip.on{background:var(--k737)}
-  .chip.themchip.on{background:var(--k777)}
+  .card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;margin-bottom:12px}
+  .card h2{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .card h2 .r{margin-left:auto;font-size:12px;color:var(--sub);font-weight:700}
+  .hint{font-size:12px;color:var(--sub);line-height:1.6;margin-top:8px}
 
-  .tablecard{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-  .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
-  thead th{position:sticky;top:0;background:#fbf1dd;color:var(--sub);font-weight:800;font-size:12px;
-    padding:11px 10px;text-align:right;white-space:nowrap;cursor:pointer;user-select:none;border-bottom:1px solid var(--line)}
-  thead th.l{text-align:left}
-  thead th .ar{opacity:.35;font-size:10px}
-  thead th.sorted{color:var(--gold2)}
-  thead th.sorted .ar{opacity:1}
-  tbody td{padding:10px;text-align:right;white-space:nowrap;border-bottom:1px solid #f6ecd8;font-variant-numeric:tabular-nums}
-  tbody tr:last-child td{border-bottom:none}
-  tbody tr.me{background:#fffaf0;box-shadow:inset 3px 0 0 var(--gold)}
-  td.rankc{text-align:center;font-weight:800;width:34px}
-  .medal{display:inline-flex;width:24px;height:24px;border-radius:50%;color:#fff;font-weight:800;
-    align-items:center;justify-content:center;font-size:12px}
-  .m1{background:linear-gradient(180deg,#ffdd6b,#eea00f)}
-  .m2{background:linear-gradient(180deg,#cfe0ef,#9db6cd)}
-  .m3{background:linear-gradient(180deg,#f0c39a,#cd8a56)}
-  td.namec{text-align:left}
-  .nm{display:flex;flex-direction:column;line-height:1.25}
-  .nm b{font-size:14px}
-  .nm .kb{align-self:flex-start;margin-top:2px;font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px}
-  .kb.k737{color:var(--k737);background:var(--k737bg)}
-  .kb.k777{color:var(--k777);background:var(--k777bg)}
-  .muted{color:#c9b79a}
-  tfoot td{padding:11px 10px;text-align:right;font-weight:800;background:#fbf1dd;border-top:2px solid var(--line);
-    font-variant-numeric:tabular-nums;white-space:nowrap}
-  tfoot td.l{text-align:left;color:var(--sub)}
+  /* 상품 그리드 */
+  .seclbl{font-size:12px;font-weight:800;color:var(--sub);margin:10px 2px 6px;letter-spacing:.3px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  .it{position:relative;border:none;cursor:pointer;background:#fff5e4;border-radius:14px;padding:8px 6px 8px;
+    box-shadow:inset 0 0 0 1px var(--line);text-align:center;color:var(--ink);transition:transform .08s}
+  .it:active{transform:scale(.96)}
+  .it.sel{box-shadow:inset 0 0 0 2.5px var(--gold2);background:#fff}
+  .it img{width:64px;height:64px;border-radius:12px;display:block;margin:0 auto}
+  .it .q{position:absolute;right:10px;top:54px;font-size:11px;font-weight:800;color:#fff;background:rgba(60,45,25,.8);
+    padding:1px 6px;border-radius:7px}
+  .it .nm{font-size:11.5px;font-weight:700;margin-top:6px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .it .pr{font-size:12px;font-weight:800;color:var(--coin);margin-top:2px}
+  .it .pr::before{content:"◉";font-size:10px;margin-right:2px}
+  .it .bd{position:absolute;left:6px;top:6px;font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:7px;color:#fff}
+  .bd.hot{background:var(--hot)} .bd.rec{background:var(--rec)}
+  .it .cnt{position:absolute;right:6px;top:6px;min-width:20px;height:20px;border-radius:10px;background:var(--gold2);color:#fff;
+    font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px}
 
-  .note{font-size:12px;color:var(--sub);margin:10px 2px 0;line-height:1.6}
-  .soon{text-align:center;color:var(--sub);padding:50px 16px;background:var(--card);border-radius:18px;box-shadow:var(--shadow)}
-  .soon .big{font-size:34px}
+  /* 장바구니 */
+  .cart{display:flex;flex-direction:column;gap:8px}
+  .ci{display:flex;align-items:center;gap:10px;background:#fff5e4;border-radius:12px;padding:8px 10px;box-shadow:inset 0 0 0 1px var(--line)}
+  .ci img{width:40px;height:40px;border-radius:9px}
+  .ci .t{flex:1;min-width:0}
+  .ci .t b{font-size:13.5px;display:block}
+  .ci .t small{font-size:11.5px;color:var(--sub);font-weight:700}
+  .step{display:flex;align-items:center;gap:4px}
+  .step button{width:30px;height:30px;border:none;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);
+    font-size:16px;font-weight:800;color:var(--gold2);cursor:pointer}
+  .step input{width:44px;text-align:center;border:none;background:#fff;border-radius:9px;height:30px;font-weight:800;font-size:14px;
+    box-shadow:inset 0 0 0 1px var(--line);color:var(--ink)}
+  .step .u{font-size:11px;color:var(--sub);font-weight:800;width:22px}
+  .step .mx{width:auto;padding:0 8px;font-size:11px;color:#fff;background:var(--gold2);box-shadow:none}
+  .ci .sum{font-size:13px;font-weight:800;color:var(--coin);white-space:nowrap;min-width:64px;text-align:right}
+  .empty{text-align:center;color:var(--sub);font-size:13px;padding:14px 8px;font-weight:700}
+
+  /* 코인 장부 */
+  .ledger{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13px}
+  .ledger .k{color:var(--sub);font-weight:700}
+  .ledger .v{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+  .ledger .tot{border-top:2px solid var(--line);padding-top:6px;margin-top:2px;font-size:14px}
+  .ledger .tot.k{color:var(--ink)}
+  .ledger .neg{color:var(--lack)}
+  .ledger .pos{color:var(--ok)}
+  .bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:#f2e6cf;margin:10px 0 4px}
+  .bar span{display:block;height:100%}
+  .b-free{background:#8fd0b5}.b-quest{background:#5fbf95}.b-jour{background:#3fa77c}.b-shell{background:var(--shell)}.b-pack{background:var(--gold)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:11px;color:var(--sub);font-weight:700}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+  .toggle{display:flex;align-items:center;gap:10px;background:#fff5e4;border-radius:12px;padding:10px 12px;margin-top:10px;
+    box-shadow:inset 0 0 0 1px var(--line);font-size:13px;font-weight:700;cursor:pointer}
+  .toggle input{width:20px;height:20px;accent-color:var(--gold2)}
+  .toggle small{color:var(--sub);font-weight:700;margin-left:auto;white-space:nowrap}
+
+  /* 결과 */
+  .plans{display:grid;grid-template-columns:1fr;gap:10px}
+  @media(min-width:640px){.plans{grid-template-columns:repeat(3,1fr)}}
+  .plan{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px;position:relative;overflow:hidden}
+  .plan .tag{display:inline-block;font-size:11px;font-weight:900;padding:3px 9px;border-radius:8px;color:#fff;margin-bottom:8px}
+  .tag.fit{background:var(--gold2)} .tag.more{background:var(--ok)} .tag.less{background:var(--lack)}
+  .plan .price{font-size:24px;font-weight:900;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .plan .price small{font-size:12px;color:var(--sub);font-weight:700;margin-left:4px}
+  .plan ul{list-style:none;margin:10px 0 0;padding:0;font-size:13px}
+  .plan li{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px dashed var(--line);font-variant-numeric:tabular-nums}
+  .plan li b{font-weight:800}
+  .plan li .d{color:var(--sub);font-size:11.5px;font-weight:700}
+  .plan .foot{margin-top:10px;padding-top:8px;border-top:2px solid var(--line);font-size:12.5px;font-weight:800;display:flex;justify-content:space-between}
+  .plan .foot .neg{color:var(--lack)}.plan .foot .pos{color:var(--ok)}
+  .plan.best{box-shadow:0 0 0 2px var(--gold2),var(--shadow)}
+
+  /* 예산 모드 */
+  .budgetrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .budgetrow input{flex:1;min-width:140px;border:none;background:#fff5e4;border-radius:12px;padding:12px 14px;font-size:18px;font-weight:900;
+    color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);font-variant-numeric:tabular-nums}
+  .budgetrow input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--gold)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{border:none;cursor:pointer;padding:9px 12px;border-radius:11px;font-size:12.5px;font-weight:800;color:var(--sub);
+    background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .chip.on{color:#fff;background:linear-gradient(180deg,var(--gold),var(--gold2))}
+  .scope{display:flex;gap:6px;margin:10px 0 8px}
+  .scope .chip{flex:1;text-align:center}
+  table.buy{width:100%;border-collapse:collapse;font-size:13px}
+  table.buy th{font-size:11.5px;color:var(--sub);text-align:right;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+  table.buy th.l,table.buy td.l{text-align:left}
+  table.buy td{padding:7px 6px;text-align:right;border-bottom:1px solid #f6ecd8;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.buy td.l{display:flex;align-items:center;gap:8px;font-weight:700}
+  table.buy td.l img{width:30px;height:30px;border-radius:8px}
+  table.buy td.l .bd{font-size:9px;font-weight:900;padding:1px 5px;border-radius:6px;color:#fff}
+  table.buy tfoot td{font-weight:900;background:#fbf1dd;border-top:2px solid var(--line)}
+  .part{color:var(--lack);font-weight:800}
   footer{text-align:center;color:var(--sub);font-size:12px;margin-top:22px;line-height:1.7}
-
-  /* compare modal */
-  .modal{position:fixed;inset:0;background:rgba(60,45,25,.45);display:none;align-items:flex-start;
-    justify-content:center;padding:24px 12px;overflow:auto;z-index:50}
-  .modal.open{display:flex}
-  .sheet{background:linear-gradient(180deg,#fffdf8,#fff7ea);border-radius:20px;box-shadow:0 20px 50px rgba(80,55,20,.3);
-    width:100%;max-width:900px;padding:18px}
-  .sheet h2{margin:2px 4px 4px;font-size:18px}
-  .sheet .sub{margin:0 4px 14px;color:var(--sub);font-size:13px}
-  .xbtn{float:right;border:none;background:#f2e6cf;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px;color:var(--sub)}
-  .cmpgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  @media(max-width:620px){.cmpgrid{grid-template-columns:1fr}}
-  .cmpcol{min-width:0}
-  .cmpcol h3{margin:0 0 8px;font-size:14px;display:flex;align-items:center;gap:7px}
-  .cmpcol h3 .dot{width:10px;height:10px;border-radius:50%}
-  .cmpscroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;box-shadow:var(--shadow)}
-  .cmptable{width:100%;border-collapse:collapse;font-size:12px;background:var(--card);overflow:hidden;min-width:340px}
-  .cmptable th{background:#fbf1dd;color:var(--sub);font-weight:800;padding:8px 8px;text-align:right;white-space:nowrap}
-  .cmptable th.l{text-align:left}
-  .cmptable td{padding:8px;text-align:right;border-top:1px solid #f6ecd8;font-variant-numeric:tabular-nums;white-space:nowrap}
-  .cmptable td.l{text-align:left;font-weight:700}
-  .cmptable tfoot td{background:#fbf1dd;font-weight:800;border-top:2px solid var(--line)}
-  .cmpbtn{border:none;cursor:pointer;padding:10px 14px;border-radius:12px;font-size:13px;font-weight:800;color:#fff;
-    background:linear-gradient(180deg,var(--gold),var(--gold2));box-shadow:var(--shadow);white-space:nowrap}
-  .rangebar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 4px 14px;font-size:13px;color:var(--sub);font-weight:700}
-  .rangebar select{appearance:none;-webkit-appearance:none;border:none;cursor:pointer;background:var(--card);
-    border-radius:10px;padding:8px 26px 8px 12px;font-size:13px;font-weight:800;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a08b6f' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
-    background-repeat:no-repeat;background-position:right 9px center}
-  .cmpsum{margin:14px 4px 2px;padding:12px 14px;background:#fff6e2;border-radius:12px;font-size:13.5px;font-weight:700;text-align:center;box-shadow:inset 0 0 0 1px var(--line)}
-  .cmpsum .win{color:var(--gold2);font-weight:800}
-  .cmpchip.on{background:linear-gradient(180deg,var(--gold),var(--gold2))!important;color:#fff}
-  .cmpcap{font-size:12px;color:var(--sub);margin:0 2px 10px;font-weight:700}
-  /* 연맹 클릭 → 월별 추이 차트 */
-  td.namec.clk{cursor:pointer}
-  td.namec.clk .nm b{text-decoration:underline dotted rgba(231,154,30,.55);text-underline-offset:3px}
-  td.namec.clk:hover .nm b{color:var(--gold2)}
-  .trendcard{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:12px}
-  .trendcard .th{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .trendcard .th h3{margin:0;font-size:15px}
-  .trendcard .th .kb{font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px}
-  .trendcard .th .close{margin-left:auto;border:none;background:#f2e6cf;width:30px;height:30px;border-radius:9px;cursor:pointer;color:var(--sub);font-size:14px}
-  .trendmetrics{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 6px}
-  .mbtn{border:none;cursor:pointer;padding:6px 11px;border-radius:9px;font-size:12px;font-weight:700;color:var(--sub);background:#fff5e4;box-shadow:inset 0 0 0 1px var(--line)}
-  .mbtn.on{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#fff}
-  .trendsvg{width:100%;height:auto;display:block;margin-top:4px}
-  .trendnote{font-size:11.5px;color:var(--sub);margin-top:4px}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="topnav">
+    <a class="cur" href="index.html">💰 이벤트 효율계산기</a>
+    <a href="kvk.html">🛡️ KvK 통계</a>
+  </nav>
   <header>
-    <div class="logo" id="logo"><img src="logo.png" alt="KOR 737" width="52" height="52"></div>
-    <h1>킹샷 KvK 준비단계 통계</h1>
+    <div class="logo"><img src="logo.png" alt="KOR 737"></div>
+    <h1>이벤트 과금효율 계산기</h1>
+    <span class="evchip" id="evchip"></span>
   </header>
 
-  <div class="toolbar">
-    <select id="month"></select>
-    <span class="stagechip" id="stage">준비 단계</span>
-  </div>
-
   <div class="tabs">
-    <button class="tab active" data-view="alliance">🛡️ 연맹 랭킹</button>
-    <button class="tab" data-view="player">👤 개인 랭킹</button>
+    <button class="tab active" data-mode="goal">🎯 상품 → 패키지</button>
+    <button class="tab" data-mode="budget">💳 예산 → 구성</button>
   </div>
 
-  <div id="view-alliance">
-    <div class="controls">
-      <div class="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        <input id="q" type="search" placeholder="연맹 이름·태그 검색…" autocomplete="off">
-      </div>
-      <div class="filter">
-        <button class="chip allchip on" data-k="all">전체</button>
-        <button class="chip uschip" data-k="737">#737</button>
-        <button class="chip themchip" id="aThem" data-k="777">#777</button>
-        <button class="chip cmpchip" data-k="compare">⚔️ 비교</button>
-      </div>
-    </div>
-    <div id="aList">
-      <div id="trendPanel" class="trendcard" style="display:none"></div>
-      <div class="tablecard"><div class="scroller">
-        <table id="atable">
-          <thead><tr id="ahead"></tr></thead>
-          <tbody id="abody"></tbody>
-          <tfoot id="afoot"></tfoot>
-        </table>
-      </div></div>
-      <div class="note" id="anote"></div>
-    </div>
-    <div id="aCompare" style="display:none">
-      <div class="cmpcap" id="aCmpCap"></div>
-      <div class="cmpgrid" id="aCmpGrid"></div>
-    </div>
+  <!-- ===== 공통: 무료 코인 장부 ===== -->
+  <div class="card" id="ledgerCard">
+    <h2>무료로 모이는 코인 <span class="r" id="daysLbl"></span></h2>
+    <div class="ledger" id="ledger"></div>
+    <label class="toggle"><input type="checkbox" id="dbl"> 보상2배 패키지 구매 (특훈 코인 2배) <small id="dblNote"></small></label>
   </div>
 
-  <div id="view-player" style="display:none">
-    <div class="controls">
-      <div class="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
-        <input id="pq" type="search" placeholder="플레이어·연맹 검색…" autocomplete="off">
+  <!-- ===== 모드 1: 상품 → 패키지 ===== -->
+  <div id="view-goal">
+    <div class="card">
+      <h2>사고 싶은 상품을 눌러 담기 <span class="r">HOT는 일수, 나머지는 개수</span></h2>
+      <div class="seclbl">🔥 일일 특가 (매일 재공급)</div>
+      <div class="grid" id="g-hot"></div>
+      <div class="seclbl">👍 추천</div>
+      <div class="grid" id="g-rec"></div>
+      <div class="seclbl">일반</div>
+      <div class="grid" id="g-normal"></div>
+    </div>
+    <div class="card">
+      <h2>담은 상품 <span class="r" id="cartSum"></span></h2>
+      <div class="cart" id="cart"></div>
+    </div>
+    <div class="card" id="needCard">
+      <h2>필요한 코인</h2>
+      <div class="ledger" id="need"></div>
+    </div>
+    <div id="goalPlans" class="plans"></div>
+    <div class="hint" id="goalHint"></div>
+  </div>
+
+  <!-- ===== 모드 2: 예산 → 구성 ===== -->
+  <div id="view-budget" style="display:none">
+    <div class="card">
+      <h2>예산</h2>
+      <div class="budgetrow">
+        <input id="budget" type="number" inputmode="numeric" min="0" step="1000" value="200000"> <span style="font-weight:800">원</span>
       </div>
-      <div class="filter">
-        <button class="chip allchip on" data-pk="all">전체</button>
-        <button class="chip uschip" data-pk="737">#737</button>
-        <button class="chip themchip" id="pThem" data-pk="777">#777</button>
-        <button class="chip cmpchip" data-pk="compare">⚔️ 비교</button>
+      <div class="chips" style="margin-top:8px">
+        <button class="chip" data-b="50000">5만</button><button class="chip" data-b="100000">10만</button>
+        <button class="chip on" data-b="200000">20만</button><button class="chip" data-b="300000">30만</button>
+        <button class="chip" data-b="500000">50만</button><button class="chip" data-b="1000000">100만</button>
       </div>
     </div>
-    <div id="pList">
-      <div id="pcard" class="tablecard"><div class="scroller">
-        <table>
-          <thead><tr>
-            <th class="l">순위</th><th class="l">이름</th><th>KvK Score</th>
-          </tr></thead>
-          <tbody id="pbody"></tbody>
-        </table>
-      </div></div>
-      <div class="note" id="pnote"></div>
-      <div id="psoon" class="soon" style="display:none">
-        <div class="big">👤</div>
-        <p style="font-weight:700;color:var(--ink);margin:10px 0 4px">개인 랭킹 준비 중</p>
-        <p style="margin:0">이 달의 개인 순위 데이터가 아직 없습니다.</p>
+    <div id="budgetPack" class="plans" style="grid-template-columns:1fr"></div>
+    <div class="card">
+      <h2>이 코인으로 살 수 있는 상품 <span class="r" id="buyCoinLbl"></span></h2>
+      <div class="scope">
+        <button class="chip on" data-scope="hot">HOT만</button>
+        <button class="chip" data-scope="rec">HOT + 추천</button>
+        <button class="chip" data-scope="all">전체</button>
       </div>
-    </div>
-    <div id="pCompare" style="display:none">
-      <div id="pCmpRange"></div>
-      <div class="cmpgrid" id="pCmpGrid"></div>
-      <div id="pCmpSum"></div>
+      <table class="buy"><thead><tr><th class="l">상품</th><th>구매</th><th>수량</th><th>코인</th></tr></thead>
+        <tbody id="buyBody"></tbody><tfoot id="buyFoot"></tfoot></table>
+      <div class="hint" id="capNote"></div>
+      <div class="hint">구매 순서: HOT → 추천 → 일반(코인 싼 순). 각 상품은 한도(일일 재공급 × 일수, 또는 잔여)까지 담습니다. 마지막 상품은 남은 코인만큼 일부 구매.</div>
     </div>
   </div>
 
-  <footer>데이터는 관리자만 갱신할 수 있습니다 · Made for KvK</footer>
+  <footer>데이터는 관리자만 갱신할 수 있습니다 · Made for KOR 737</footer>
 </div>
 
-<script src="data.js"></script>
+<script src="items.js"></script>
+<script src="event-2026-08.js"></script>
 <script>
-const D = window.KVK_DATA;
-const MY_ALLIANCE = "KeepersOfRoyal";
-const isMe = nm => { const s=(nm||"").toUpperCase(); return s.includes("JASON") || (nm||"").includes("제이슨"); };
+(function(){
+  const EV=window.EVENT_DATA, ITEMS=window.ITEMS;
+  const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+  const fmt=n=>Math.round(n).toLocaleString('ko-KR');
+  const won=n=>'₩'+fmt(n);
+  const D=EV.days;
+  EV.shop.forEach((s,i)=>{s.idx=i; s.cap = s.type==='hot' ? (s.daily||1)*D : (s.stock||9999);});
 
-/* ---------- helpers ---------- */
-const nf = n => (n==null ? null : n.toLocaleString("en-US"));
-const cell = n => n==null ? '<span class="muted">—</span>' : nf(n);
-const short = n => { if(n==null) return "—"; if(n>=1e9) return (n/1e9).toFixed(2)+"B"; if(n>=1e6) return (n/1e6).toFixed(1)+"M"; return n.toLocaleString(); };
-const ratio = (a,b) => (a==null||b==null||b===0) ? null : a/b;
-const rfmt = r => r==null ? '<span class="muted">—</span>' : r.toFixed(4);
-const perPlayer = (a,b) => (a==null||b==null||b===0) ? null : Math.round(a/b);
-
-const COLS = [
-  {key:"rank",  label:"순위", cls:"l", type:"rank"},
-  {key:"name",  label:"이름", cls:"l", type:"name"},
-  {key:"power", label:"전투력", type:"num"},
-  {key:"members",label:"멤버수", type:"num"},
-  {key:"kvk",   label:"KvK Score", type:"num"},
-  {key:"sp",    label:"Score/Power", type:"ratio"},
-  {key:"spp",   label:"Score/Player", type:"num"},
-  {key:"in200", label:"In 200th", type:"num"},
-];
-
-let curMonth, curFilter="all", curQ="", sortKey="kvk", sortDir=-1, aMode="list";
-
-/* ---------- month select ---------- */
-const monthSel = document.getElementById("month");
-D.months.forEach((m,i)=>{ const o=document.createElement("option"); o.value=m.id; o.textContent=m.label; monthSel.appendChild(o); });
-curMonth = D.months[0].id;
-monthSel.value = curMonth;
-monthSel.onchange = ()=>{
-  curMonth=monthSel.value;
-  // 월 변경 시 필터·모드 초기화 (상대 서버가 바뀌므로)
-  curFilter="all"; pFilter="all"; aMode="list"; pMode="list";
-  document.querySelectorAll('#view-alliance .chip').forEach(x=>x.classList.toggle('on', x.dataset.k==='all'));
-  document.querySelectorAll('#view-player .chip').forEach(x=>x.classList.toggle('on', x.dataset.pk==='all'));
-  document.getElementById("aCompare").style.display="none"; document.getElementById("aList").style.display="";
-  document.getElementById("pCompare").style.display="none"; document.getElementById("pList").style.display="";
-  if(typeof hideTrend==="function") hideTrend();
-  renderAll();
-};
-
-function month(){ return D.months.find(m=>m.id===curMonth); }
-
-// 이 달의 두 왕국(우리=737 먼저, 상대는 데이터에서 자동 인식) — KvK 상대는 매달 다름
-function monthKingdoms(){
-  const m=month(), set=new Set();
-  (m.alliances||[]).forEach(a=>set.add(a.kingdom));
-  (m.players||[]).forEach(p=>set.add(p.kingdom));
-  let arr=[...set];
-  if(!arr.includes(737)) arr.unshift(737);
-  arr.sort((a,b)=> a===737?-1 : b===737?1 : a-b);
-  // 737 + 상대(가장 많이 등장하는 비-737 왕국) 2개로 정리
-  const them=arr.filter(k=>k!==737);
-  let opp = them[0];
-  if(them.length>1){
-    const cnt={}; (m.players||[]).forEach(p=>{ if(p.kingdom!==737) cnt[p.kingdom]=(cnt[p.kingdom]||0)+1; });
-    opp = them.sort((a,b)=>(cnt[b]||0)-(cnt[a]||0))[0];
+  /* ---------- 무료 코인 ---------- */
+  let dbl=false;
+  function freeCoins(){
+    const free=EV.freeDaily.coin*D, quest=EV.dailyQuest.coin*D*(dbl?2:1), jour=EV.journey.coin;
+    const shell=EV.freeDaily.shell*D+EV.dailyQuest.shell*D+EV.journey.shell;
+    return {free,quest,jour,shell,coin:free+quest+jour};
   }
-  return opp!=null ? [737, opp] : [737];
-}
-function opponent(){ const k=monthKingdoms(); return k[1]!=null?k[1]:777; }
+  function shellBonus(total){ return EV.shellTiers.reduce((a,t)=>a+(total>=t.shell?t.coin:0),0); }
+  function nextTier(total){ return EV.shellTiers.find(t=>total<t.shell); }
 
-// 필터칩의 '상대' 값·라벨을 이 달 상대로 갱신
-function updateThemChips(){
-  const opp=opponent();
-  ["aThem","pThem"].forEach(id=>{
-    const el=document.getElementById(id); if(!el) return;
-    el.textContent="#"+opp;
-    if(el.dataset.k!=null) el.dataset.k=String(opp);
-    if(el.dataset.pk!=null) el.dataset.pk=String(opp);
-  });
-}
+  function renderLedger(){
+    const f=freeCoins(); const bonus=shellBonus(f.shell); const nt=nextTier(f.shell);
+    $('#daysLbl').textContent=`${D}일 기준`;
+    $('#ledger').innerHTML=`
+      <div class="k">무료 모험 코인 패키지 (${EV.freeDaily.coin}×${D}일)</div><div class="v">${fmt(f.free)}</div>
+      <div class="k">일일 특수훈련 (${EV.dailyQuest.coin}×${D}일${dbl?' ×2':''})</div><div class="v">${fmt(f.quest)}</div>
+      <div class="k">여정 속 나그네 (최대 달성)</div><div class="v">${fmt(f.jour)}</div>
+      <div class="k">상점포인트 보상 (조개 ${fmt(f.shell)}개${nt?` · 다음 구간 ${fmt(nt.shell)}`:''})</div><div class="v">${fmt(bonus)}</div>
+      <div class="k tot">무료 코인 합계</div><div class="v tot">${fmt(f.coin+bonus)}</div>`;
+    const extra=EV.dailyQuest.coin*D;
+    $('#dblNote').textContent=`+${extra}코인 / ${won(EV.doublePack.price)} (${fmt(EV.doublePack.price/extra)}원/코인)`;
+  }
+  $('#dbl').addEventListener('change',e=>{dbl=e.target.checked;renderLedger();renderGoal();renderBudget();});
 
-/* ---------- enrich alliances with derived fields ---------- */
-function enriched(){
-  const ps = month().players || [];
-  const canCompute = ps.length>=150; // 상위 200 근접 데이터일 때만 In200th 자동계산(부분 데이터로 오계산 방지)
-  return month().alliances.map(a=>{
-    const computedIn200 = canCompute ? ps.filter(p=>p.kingdom===a.kingdom && p.tag===a.tag).length : null;
-    return {
-      ...a,
-      in200: (a.in200!=null ? a.in200 : computedIn200),
-      sp: ratio(a.kvk,a.power),
-      spp: perPlayer(a.kvk,a.members),
-    };
-  });
-}
-
-/* ---------- alliance table ---------- */
-function buildHead(){
-  const tr=document.getElementById("ahead");
-  tr.innerHTML=COLS.map(c=>{
-    const sorted = c.key===sortKey;
-    const ar = c.type==="rank"||c.type==="name" ? "" : `<span class="ar">${sorted?(sortDir<0?"▼":"▲"):"↕"}</span>`;
-    return `<th class="${c.cls||''} ${sorted?'sorted':''}" data-key="${c.key}">${c.label} ${ar}</th>`;
-  }).join("");
-  tr.querySelectorAll("th").forEach(th=>th.onclick=()=>{
-    const k=th.dataset.key;
-    if(k==="name"||k==="rank") return;
-    if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=-1; }
-    renderTable();
-  });
-}
-
-function renderTable(){
-  buildHead();
-  let rows=enriched();
-  // sort
-  rows.sort((a,b)=>{
-    const av=a[sortKey], bv=b[sortKey];
-    if(av==null && bv==null) return 0;
-    if(av==null) return 1; if(bv==null) return -1;
-    return (av-bv)*sortDir;
-  });
-  rows.forEach((r,i)=>r._rank=i+1);
-  // filter
-  const view=rows.filter(a=>{
-    if(curFilter!=="all" && a.kingdom!==+curFilter) return false;
-    if(curQ){ const s=(a.name+" "+a.tag).toLowerCase(); if(!s.includes(curQ.toLowerCase())) return false; }
-    return true;
-  });
-  const body=document.getElementById("abody");
-  if(!view.length){ body.innerHTML=`<tr><td colspan="${COLS.length}" style="text-align:center;padding:30px" class="muted">결과가 없어요.</td></tr>`; }
-  else body.innerHTML=view.map(a=>{
-    const kcls=a.kingdom===737?"k737":"k777";
-    const me=a.name===MY_ALLIANCE;
-    const rankCell = a._rank<=3 ? `<span class="medal m${a._rank}">${a._rank}</span>` : a._rank;
-    return `<tr class="${me?'me':''}" data-tag="${a.tag}" data-kingdom="${a.kingdom}" data-name="${(a.name||'').replace(/"/g,'&quot;')}">
-      <td class="rankc">${rankCell}</td>
-      <td class="namec clk"><div class="nm" title="[${a.tag}] ${a.name} · 클릭하면 월별 추이"><b>${a.tag}</b><span class="kb ${kcls}">#${a.kingdom}</span></div></td>
-      <td>${cell(a.power)}</td>
-      <td>${cell(a.members)}</td>
-      <td>${cell(a.kvk)}</td>
-      <td>${rfmt(a.sp)}</td>
-      <td>${cell(a.spp)}</td>
-      <td>${cell(a.in200)}</td>
-    </tr>`;
-  }).join("");
-  // footer totals (over filtered view)
-  const sum=k=>view.reduce((s,a)=>s+(a[k]||0),0);
-  const hasPow=view.some(a=>a.power!=null);
-  // 합계 비율 = (해당되는 행들의 KvK합) ÷ (전투력합 / 멤버합)
-  const wP=view.filter(a=>a.power!=null&&a.kvk!=null);
-  const wM=view.filter(a=>a.members!=null&&a.kvk!=null);
-  const spAgg = wP.length ? wP.reduce((s,a)=>s+a.kvk,0)/wP.reduce((s,a)=>s+a.power,0) : null;
-  const sppAgg = wM.length ? Math.round(wM.reduce((s,a)=>s+a.kvk,0)/wM.reduce((s,a)=>s+a.members,0)) : null;
-  document.getElementById("afoot").innerHTML=`<tr>
-    <td class="l"></td><td class="l">합계 (${view.length})</td>
-    <td>${hasPow?nf(sum("power")):'<span class="muted">—</span>'}</td>
-    <td>${view.some(a=>a.members!=null)?nf(sum("members")):'<span class="muted">—</span>'}</td>
-    <td>${nf(sum("kvk"))}</td>
-    <td>${rfmt(spAgg)}</td>
-    <td>${sppAgg!=null?nf(sppAgg):'<span class="muted">—</span>'}</td>
-    <td>${view.some(a=>a.in200!=null)?nf(sum("in200")):'<span class="muted">—</span>'}</td>
-  </tr>`;
-  // pending-data note
-  const miss=[];
-  if(!enriched().some(a=>a.power!=null)) miss.push("전투력");
-  if(!enriched().some(a=>a.members!=null)) miss.push("멤버수");
-  if(!enriched().some(a=>a.in200!=null)) miss.push("In 200th");
-  document.getElementById("anote").innerHTML = miss.length
-    ? `열 클릭 시 정렬됩니다. · 아직 미입력 항목: <b>${miss.join(", ")}</b> (스크린샷 반영 후 자동 계산: Score/Power, Score/Player)`
-    : `열 클릭 시 정렬됩니다.`;
-}
-
-/* ---------- 연맹 월별 추이 차트 ---------- */
-const MONTHS_ASC = [...D.months].sort((a,b)=> a.id<b.id?-1:(a.id>b.id?1:0));
-const METRICS = [
-  {key:"kvk",   label:"KvK Score"},
-  {key:"power", label:"Power"},
-  {key:"sp",    label:"Score/Power"},
-  {key:"spp",   label:"Score/Player"},
-  {key:"in200", label:"In 200th"},
-];
-function allianceSeries(tag, kingdom, metric){
-  return MONTHS_ASC.map(m=>{
-    const a=(m.alliances||[]).find(x=>x.tag===tag && x.kingdom===kingdom);
-    let v=null;
-    if(a){
-      if(metric==="kvk") v=a.kvk;
-      else if(metric==="power") v=a.power;
-      else if(metric==="sp") v=(a.kvk!=null && a.power)? a.kvk/a.power : null;
-      else if(metric==="spp") v=(a.kvk!=null && a.members)? Math.round(a.kvk/a.members) : null;
-      else if(metric==="in200"){
-        if(a.in200!=null) v=a.in200;
-        else { const ps=m.players||[]; v = ps.length>=150 ? ps.filter(p=>p.kingdom===kingdom && p.tag===tag).length : null; }
+  /* ---------- 패키지 조합 탐색 ---------- */
+  // 모든 조합을 열거 (일일한도×일수 범위). 반환: {counts, cost, packCoin, packShell}
+  function* combos(maxCoinCap,maxCost=Infinity){
+    const P=EV.packages, n=P.length, counts=new Array(n).fill(0);
+    function* rec(i,cost,coin,shell){
+      if(i===n){ yield {counts:counts.slice(),cost,coin,shell}; return; }
+      const lim=(P[i].daily||1)*D;
+      for(let c=0;c<=lim;c++){
+        const nc=coin+P[i].coin*c;
+        if(c>0 && nc-P[i].coin>=maxCoinCap) break;   // 이미 목표 훨씬 초과 → 더 담을 필요 없음
+        if(cost+P[i].price*c>maxCost) break;
+        counts[i]=c;
+        yield* rec(i+1,cost+P[i].price*c,nc,shell+P[i].shell*c);
       }
+      counts[i]=0;
     }
-    return { label:(m.label||m.id).replace("2026년","").trim(), value:v };
-  });
-}
-const tfmt=(v,metric)=> v==null?"—" : metric==="sp"?v.toFixed(4) : metric==="in200"?String(v) : short(v);
-const tax =(v,metric)=> metric==="sp"?v.toFixed(3) : metric==="in200"?String(Math.round(v)) : short(v);
-function lineChartSVG(series, metric){
-  const vals=series.filter(s=>s.value!=null).map(s=>s.value);
-  if(!vals.length) return '<div class="muted" style="padding:24px;text-align:center">이 지표의 추이 데이터가 없어요.</div>';
-  const W=600,H=250,padL=58,padR=18,padT=22,padB=28, plotW=W-padL-padR, plotH=H-padT-padB, n=series.length;
-  const xs=i=> n<=1? padL+plotW/2 : padL + i*plotW/(n-1);
-  let vmax=Math.max(...vals), vmin=Math.min(...vals);
-  let yMin = metric==="sp" ? Math.max(0, vmin*0.85) : 0;
-  let yMax = vmax*1.14 || 1; if(yMax===yMin) yMax=yMin+1;
-  const y=v=> padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
-  let grid="", ylab="";
-  for(let g=0; g<=4; g++){ const gv=yMin+(yMax-yMin)*g/4, gy=y(gv);
-    grid+=`<line x1="${padL}" y1="${gy.toFixed(1)}" x2="${W-padR}" y2="${gy.toFixed(1)}" stroke="#efe1c9"/>`;
-    ylab+=`<text x="${padL-8}" y="${(gy+3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#a08b6f">${tax(gv,metric)}</text>`;
+    yield* rec(0,0,0,0);
   }
-  let xlab=""; series.forEach((s,i)=>{ xlab+=`<text x="${xs(i).toFixed(1)}" y="${H-9}" text-anchor="middle" font-size="11" fill="#a08b6f">${s.label}</text>`; });
-  const pts=series.map((s,i)=> s.value!=null?{x:xs(i),y:y(s.value)}:null).filter(Boolean);
-  let path=""; pts.forEach((p,i)=> path+=(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)+" ");
-  let dots="", vlabs="";
-  series.forEach((s,i)=>{ if(s.value==null) return; const px=xs(i),py=y(s.value);
-    dots+=`<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4" fill="#e79a1e" stroke="#fff" stroke-width="1.5"/>`;
-    vlabs+=`<text x="${px.toFixed(1)}" y="${(py-9).toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4a3b2a">${tfmt(s.value,metric)}</text>`;
-  });
-  return `<svg class="trendsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="월별 추이 차트">
-    ${grid}${ylab}
-    <path d="${path.trim()}" fill="none" stroke="#f4b93b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${dots}${vlabs}${xlab}</svg>`;
-}
-let trendSel=null, trendMetric="kvk";
-function showTrend(tag, kingdom, name){ trendSel={tag,kingdom,name}; trendMetric="kvk"; renderTrend();
-  document.getElementById("trendPanel").scrollIntoView({behavior:"smooth",block:"nearest"}); }
-function hideTrend(){ trendSel=null; document.getElementById("trendPanel").style.display="none"; }
-function renderTrend(){
-  if(!trendSel) return;
-  const {tag,kingdom,name}=trendSel;
-  const kcls=kingdom===737?"k737":"k777";
-  const series=allianceSeries(tag,kingdom,trendMetric);
-  const nPts=series.filter(s=>s.value!=null).length;
-  const el=document.getElementById("trendPanel");
-  el.style.display="";
-  el.innerHTML=`
-    <div class="th">
-      <h3>[${tag}] ${name||""}</h3><span class="kb ${kcls}">#${kingdom}</span>
-      <button class="close" id="trendClose">✕</button>
-    </div>
-    <div class="trendmetrics">
-      ${METRICS.map(m=>`<button class="mbtn ${m.key===trendMetric?'on':''}" data-m="${m.key}">${m.label}</button>`).join("")}
-    </div>
-    ${lineChartSVG(series, trendMetric)}
-    <div class="trendnote">가로축=월, 세로축=${METRICS.find(m=>m.key===trendMetric).label} · 데이터 있는 달만 표시 (${nPts}개월)</div>`;
-  el.querySelector("#trendClose").onclick=hideTrend;
-  el.querySelectorAll(".mbtn").forEach(b=>b.onclick=()=>{ trendMetric=b.dataset.m; renderTrend(); });
-}
-// 표의 연맹 이름 클릭 → 추이 (이벤트 위임)
-document.getElementById("abody").addEventListener("click", e=>{
-  const cell=e.target.closest("td.namec.clk"); if(!cell) return;
-  const tr=cell.closest("tr"); if(!tr||!tr.dataset.tag) return;
-  showTrend(tr.dataset.tag, +tr.dataset.kingdom, tr.dataset.name);
-});
-
-/* ---------- compare (inline view) ---------- */
-// 연맹 비교: 양 서버 상위 6개 연맹 (전투력·KvK점수·점수/전투력 + 합계)
-function renderCompareAlliance(){
-  document.getElementById("aCmpCap").textContent = `${month().label} · ${month().stage} · 상위 6개 연맹 · 전투력·KvK점수·점수/전투력`;
-  const grid=document.getElementById("aCmpGrid");
-  grid.innerHTML=monthKingdoms().map(k=>{
-    const color = k===737?"var(--k737)":"var(--k777)";
-    const list=enriched().filter(a=>a.kingdom===k).sort((a,b)=>(b.kvk??-1)-(a.kvk??-1)).slice(0,6);
-    const rows=list.map(a=>`<tr>
-      <td class="l">${a.tag}<br><span class="muted" style="font-size:10px">#${a.kingdom}</span></td>
-      <td>${cell(a.power)}</td>
-      <td>${cell(a.kvk)}</td>
-      <td>${rfmt(a.sp)}</td>
-    </tr>`).join("") || `<tr><td colspan="4" class="muted" style="text-align:center;padding:16px">데이터 없음</td></tr>`;
-    const tp=list.reduce((s,a)=>s+(a.power||0),0), tk=list.reduce((s,a)=>s+(a.kvk||0),0);
-    const hasPow=list.some(a=>a.power!=null);
-    const spTot = (tp>0) ? tk/tp : null;
-    return `<div class="cmpcol">
-      <h3><span class="dot" style="background:${color}"></span>Kingdom #${k}</h3>
-      <div class="cmpscroll"><table class="cmptable">
-        <thead><tr><th class="l">이름</th><th>전투력</th><th>KvK점수</th><th>점수/전투력</th></tr></thead>
-        <tbody>${rows}</tbody>
-        <tfoot><tr><td class="l">합계</td><td>${hasPow?nf(tp):'—'}</td><td>${nf(tk)}</td><td>${rfmt(spTot)}</td></tr></tfoot>
-      </table></div>
-    </div>`;
-  }).join("");
-}
-
-// 개인 비교: 순위범위(N1~N2) 필터 → 좌 #737 / 우 #777, 각 합계 + 승패
-let iN1=1, iN2=200;
-function renderCompareIndividual(){
-  const ps=(month().players||[]).slice().sort((a,b)=>a.rank-b.rank);
-  const range=document.getElementById("pCmpRange");
-  const grid=document.getElementById("pCmpGrid");
-  const cs=document.getElementById("pCmpSum");
-  if(!ps.length){
-    range.innerHTML="";
-    grid.innerHTML='<div class="soon" style="grid-column:1/-1"><div class="big">👤</div><p style="margin:8px 0 0">이 달의 개인 순위 데이터가 없습니다.</p></div>';
-    cs.innerHTML=""; cs.className=""; return;
+  function totalCoin(cb){ const f=freeCoins(); return f.coin+cb.coin+shellBonus(f.shell+cb.shell); }
+  function packList(cb){
+    return EV.packages.map((p,i)=>cb.counts[i]?{p,c:cb.counts[i]}:null).filter(Boolean);
   }
-  const n1opts=[1,10,20,50,100], n2opts=[10,20,50,100,200];
-  range.innerHTML=`<div class="rangebar">
-    <span>순위</span>
-    <select id="iN1">${n1opts.map(v=>`<option ${v===iN1?'selected':''}>${v}</option>`).join("")}</select>
-    <span>위 ~</span>
-    <select id="iN2">${n2opts.map(v=>`<option ${v===iN2?'selected':''}>${v}</option>`).join("")}</select>
-    <span>위 구간 비교</span>
-  </div>`;
-  document.getElementById("iN1").onchange=e=>{ iN1=+e.target.value; renderCompareIndividual(); };
-  document.getElementById("iN2").onchange=e=>{ iN2=+e.target.value; renderCompareIndividual(); };
-
-  const inRange=ps.filter(p=>p.rank>=iN1 && p.rank<=iN2);
-  const totals={};
-  grid.innerHTML=monthKingdoms().map(k=>{
-    const color=k===737?"var(--k737)":"var(--k777)";
-    const list=inRange.filter(p=>p.kingdom===k);
-    totals[k]=list.reduce((s,p)=>s+(p.score||0),0);
-    const rows=list.map(p=>`<tr>
-      <td class="l" style="font-weight:800">${p.rank}</td>
-      <td class="l">${p.name}<br><span class="muted" style="font-size:10px">[${p.tag}] #${p.kingdom}</span></td>
-      <td>${cell(p.score)}</td>
-    </tr>`).join("") || `<tr><td colspan="3" class="muted" style="text-align:center;padding:16px">해당 범위 없음</td></tr>`;
-    return `<div class="cmpcol">
-      <h3><span class="dot" style="background:${color}"></span>Kingdom #${k} <span class="muted" style="font-weight:600;font-size:12px">· ${list.length}명</span></h3>
-      <div class="cmpscroll"><table class="cmptable">
-        <thead><tr><th class="l">순위</th><th class="l">이름</th><th>KvK점수</th></tr></thead>
-        <tbody>${rows}</tbody>
-        <tfoot><tr><td class="l">합계 (${list.length})</td><td></td><td>${nf(totals[k]||0)}</td></tr></tfoot>
-      </table></div>
-    </div>`;
-  }).join("");
-
-  const opp=opponent();
-  const tUs=totals[737]||0, tThem=totals[opp]||0, diff=Math.abs(tUs-tThem);
-  const lead = tUs===tThem ? "동점" : (tUs>tThem ? "#737 우세" : "#"+opp+" 우세");
-  cs.className="cmpsum";
-  cs.innerHTML=`${iN1}~${iN2}위 KvK 합계 · #737 <b>${nf(tUs)}</b> vs #${opp} <b>${nf(tThem)}</b><br><span class="win">${lead}</span> (차이 ${nf(diff)})`;
-}
-
-/* ---------- individual (player) ranking ---------- */
-let pFilter="all", pQ="", pMode="list";
-function renderPlayers(){
-  const ps=(month().players||[]).slice().sort((a,b)=>a.rank-b.rank);
-  const hasData=ps.length>0;
-  document.getElementById("pcard").style.display=hasData?"":"none";
-  document.getElementById("pnote").style.display=hasData?"":"none";
-  document.getElementById("psoon").style.display=hasData?"none":"";
-  document.querySelector('#view-player .controls').style.display=hasData?"":"none";
-  if(!hasData){ document.getElementById("pbody").innerHTML=""; return; }
-  const view=ps.filter(p=>{
-    if(pFilter!=="all" && p.kingdom!==+pFilter) return false;
-    if(pQ){ const s=(p.name+" "+p.tag).toLowerCase(); if(!s.includes(pQ.toLowerCase())) return false; }
-    return true;
-  });
-  const body=document.getElementById("pbody");
-  if(!view.length){ body.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:30px" class="muted">결과가 없어요.</td></tr>`; }
-  else body.innerHTML=view.map(p=>{
-    const kcls=p.kingdom===737?"k737":"k777";
-    const me=isMe(p.name);
-    const rankCell=p.rank<=3?`<span class="medal m${p.rank}">${p.rank}</span>`:p.rank;
-    return `<tr class="${me?'me':''}">
-      <td class="rankc">${rankCell}</td>
-      <td class="namec"><div class="nm" title="[${p.tag}] ${p.name}"><b>${p.name}</b><span class="kb ${kcls}">[${p.tag}] #${p.kingdom}</span></div></td>
-      <td>${cell(p.score)}</td>
-    </tr>`;
-  }).join("");
-  const n737=ps.filter(p=>p.kingdom===737).length, n777=ps.filter(p=>p.kingdom===777).length;
-  document.getElementById("pnote").innerHTML=`상위 <b>${ps.length}명</b> · #737 ${n737}명 · #777 ${n777}명`;
-}
-function setPlayerMode(v){
-  if(v==="compare"){
-    pMode="compare";
-    document.getElementById("pList").style.display="none";
-    document.getElementById("pCompare").style.display="";
-    renderCompareIndividual();
-  }else{
-    pMode="list"; pFilter=v;
-    document.getElementById("pCompare").style.display="none";
-    document.getElementById("pList").style.display="";
-    renderPlayers();
+  function planHTML(tag,cls,title,cb,target,extra){
+    const tot=totalCoin(cb), diff=tot-target, f=freeCoins();
+    const rows=packList(cb).map(x=>`<li><span>${x.p.name} <span class="d">×${x.c}</span></span><b>${won(x.p.price*x.c)}</b></li>`).join('')
+      || '<li><span class="d">패키지 구매 없음</span></li>';
+    const cost=cb.cost+(dbl?EV.doublePack.price:0);
+    return `<div class="plan ${cls==='fit'?'best':''}">
+      <span class="tag ${cls}">${tag}</span>
+      <div class="price">${won(cost)}<small>${title}</small></div>
+      <ul>${rows}${dbl?`<li><span>보상2배 패키지</span><b>${won(EV.doublePack.price)}</b></li>`:''}</ul>
+      <div class="foot"><span>코인 ${fmt(tot)} <span class="d">(패키지 ${fmt(cb.coin)} + 무료 ${fmt(tot-cb.coin)} · 조개 ${fmt(f.shell+cb.shell)})</span></span>
+        <span class="${diff<0?'neg':'pos'}">${diff<0?'부족 '+fmt(-diff):'남음 '+fmt(diff)}</span></div>
+      ${extra||''}</div>`;
   }
-}
-document.querySelectorAll('#view-player .chip').forEach(c=>c.onclick=()=>{
-  document.querySelectorAll('#view-player .chip').forEach(x=>x.classList.remove("on"));
-  c.classList.add("on"); setPlayerMode(c.dataset.pk);
-});
-document.getElementById("pq").oninput=e=>{ pQ=e.target.value; if(pMode==="list") renderPlayers(); };
 
-/* ---------- tabs / filters / search ---------- */
-document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-  t.classList.add("active");
-  const v=t.dataset.view;
-  document.getElementById("view-alliance").style.display=v==="alliance"?"":"none";
-  document.getElementById("view-player").style.display=v==="player"?"":"none";
-  if(v==="player"){ pMode==="compare"?renderCompareIndividual():renderPlayers(); }
-  else { aMode==="compare"?renderCompareAlliance():renderTable(); }
-});
-function setAllianceMode(v){
-  if(v==="compare"){
-    aMode="compare";
-    document.getElementById("aList").style.display="none";
-    document.getElementById("aCompare").style.display="";
-    renderCompareAlliance();
-  }else{
-    aMode="list"; curFilter=v;
-    document.getElementById("aCompare").style.display="none";
-    document.getElementById("aList").style.display="";
-    renderTable();
+  /* ---------- 모드 1 ---------- */
+  const cart=new Map(); // idx -> n (hot: 일수, else 개수)
+  function unitOf(s){return s.type==='hot'?'일':'개';}
+  function buysOf(s,n){return s.type==='hot'?n*(s.daily||1):n;}
+  function coinOf(s,n){return buysOf(s,n)*s.coin;}
+
+  function renderGrid(){
+    ['hot','rec','normal'].forEach(t=>{
+      $('#g-'+t).innerHTML=EV.shop.filter(s=>s.type===t).map(s=>{
+        const it=ITEMS[s.item]||{name:s.item,icon:''}; const n=cart.get(s.idx)||0;
+        return `<button class="it ${n?'sel':''}" data-i="${s.idx}">
+          ${t!=='normal'?`<span class="bd ${t}">${t==='hot'?'HOT':'추천'}</span>`:''}
+          ${n?`<span class="cnt">${n}${unitOf(s)}</span>`:''}
+          <img src="${it.icon}" alt=""><span class="q">${fmt(s.qty)}</span>
+          <div class="nm">${it.name}</div><div class="pr">${s.coin}</div></button>`;
+      }).join('');
+    });
+    $$('.it').forEach(b=>b.addEventListener('click',()=>{
+      const i=+b.dataset.i, s=EV.shop[i];
+      if(cart.has(i)) cart.delete(i); else cart.set(i, s.type==='hot'?D:1);
+      renderGrid(); renderGoal();
+    }));
   }
-}
-document.querySelectorAll('#view-alliance .chip').forEach(c=>c.onclick=()=>{
-  document.querySelectorAll('#view-alliance .chip').forEach(x=>x.classList.remove("on"));
-  c.classList.add("on"); setAllianceMode(c.dataset.k);
-});
-document.getElementById("q").oninput=e=>{ curQ=e.target.value; if(aMode==="list") renderTable(); };
+  function setN(i,n){ const s=EV.shop[i]; const max=s.type==='hot'?D:s.cap; n=Math.max(0,Math.min(max,n|0)); if(n===0)cart.delete(i); else cart.set(i,n); renderGrid(); renderGoal(); }
 
-/* ---------- render ---------- */
-function renderAll(){
-  document.getElementById("stage").textContent = month().stage;
-  updateThemChips();
-  aMode==="compare"?renderCompareAlliance():renderTable();
-  pMode==="compare"?renderCompareIndividual():renderPlayers();
-}
-renderAll();
+  function renderGoal(){
+    // 장바구니
+    const rows=[...cart.entries()].map(([i,n])=>{
+      const s=EV.shop[i], it=ITEMS[s.item]; const max=s.type==='hot'?D:s.cap;
+      const sub=s.type==='hot'?`매일 ${s.daily}개 × ${n}일 = ${buysOf(s,n)}개 · 총 ${fmt(s.qty*buysOf(s,n))}${it.name}`:`${s.coin}코인 × ${n} · 총 ${fmt(s.qty*n)}${it.name} (한도 ${max})`;
+      return `<div class="ci"><img src="${it.icon}" alt=""><div class="t"><b>${it.name} <span class="bd ${s.type}" style="font-size:9px;padding:1px 5px;border-radius:6px;color:#fff;${s.type==='normal'?'display:none':''}">${s.type==='hot'?'HOT':'추천'}</span></b><small>${sub}</small></div>
+        <div class="step"><button data-d="-1" data-i="${i}">−</button><input data-i="${i}" type="number" value="${n}" min="0" max="${max}"><button data-d="1" data-i="${i}">+</button><span class="u">${unitOf(s)}</span><button class="mx" data-max="${max}" data-i="${i}" title="최대">MAX</button></div>
+        <div class="sum">${fmt(coinOf(s,n))}</div></div>`;
+    });
+    $('#cart').innerHTML=rows.join('')||'<div class="empty">위에서 상품을 눌러 담아 주세요</div>';
+    $$('#cart .step button:not(.mx)').forEach(b=>b.addEventListener('click',()=>setN(+b.dataset.i,(cart.get(+b.dataset.i)||0)+(+b.dataset.d))));
+    $$('#cart .step .mx').forEach(b=>b.addEventListener('click',()=>setN(+b.dataset.i,+b.dataset.max)));
+    $$('#cart .step input').forEach(el=>el.addEventListener('change',()=>setN(+el.dataset.i,+el.value)));
+
+    const target=[...cart.entries()].reduce((a,[i,n])=>a+coinOf(EV.shop[i],n),0);
+    $('#cartSum').textContent=target?`총 ${fmt(target)}코인`:'';
+    const f=freeCoins(), freeTot=f.coin+shellBonus(f.shell), need=target-freeTot;
+    $('#need').innerHTML=`<div class="k">담은 상품 코인</div><div class="v">${fmt(target)}</div>
+      <div class="k">− 무료 코인 (조개 보상 포함)</div><div class="v">${fmt(freeTot)}</div>
+      <div class="k tot">패키지로 채울 코인</div><div class="v tot ${need>0?'neg':'pos'}">${need>0?fmt(need):'0 (무료로 충분)'}</div>
+      `;
+
+    if(!target){ $('#goalPlans').innerHTML=''; $('#goalHint').textContent=''; return; }
+    if(need<=0){ $('#goalPlans').innerHTML=planHTML('무료로 충분','more','패키지 불필요',{counts:EV.packages.map(()=>0),cost:0,coin:0,shell:0},target); $('#goalHint').textContent=''; return; }
+
+    // 탐색
+    let suff=[], lack=[];
+    for(const cb of combos(need+2500)){
+      const tot=totalCoin(cb);
+      if(tot>=target) suff.push({cb,tot}); else lack.push({cb,tot});
+    }
+    suff.sort((a,b)=>a.cb.cost-b.cb.cost||a.tot-b.tot);
+    const A=suff[0];
+    // B: A보다 조개 구간을 하나 더 넘기는 최저가 (누적 보상 코인 추가 획득)
+    const fs=freeCoins().shell, aShell=fs+A.cb.shell, nt=nextTier(aShell);
+    const B=nt? suff.find(x=>fs+x.cb.shell>=nt.shell) : null;
+    lack=lack.filter(x=>x.cb.cost<A.cb.cost).sort((a,b)=>b.tot-a.tot||a.cb.cost-b.cb.cost);
+    const C=lack[0];
+    let html='';
+    html+=planHTML('A · 최저가로 충족','fit','가장 싸게 채움',A.cb,target);
+    if(B) html+=planHTML(`B · 조개 ${fmt(nt.shell)} 구간 달성`,'more',`+${fmt(nt.coin)}코인 보상 확보`,B.cb,target);
+    if(C) html+=planHTML('C · 부족안','less','한 단계 아래로',C.cb,target);
+    $('#goalPlans').innerHTML=html;
+    $('#goalHint').textContent=`패키지 구매 한도: 각 매일 1회(레전드 3회) × ${D}일. 코인당 가격: 1,500원 팩 75원 → 3,000원 75원 → 7,500원 94원 → 15,000원 125원 → 30,000원 150원 → 79,000원 158원 → 149,000원 149원. 싼 팩부터 한도까지 채우는 게 기본이고, 조개 누적 보상 구간(2,000·3,000·5,000)을 넘기는지에 따라 총액이 갈립니다.`;
+  }
+
+  /* ---------- 모드 2 ---------- */
+  let budget=200000, scope='hot', bestCB=null;
+  function renderBudget(){
+    const b=Math.max(0,budget-(dbl?EV.doublePack.price:0));
+    let best=null;
+    for(const cb of combos(1e12,b)){
+      const tot=totalCoin(cb);
+      if(!best||tot>best.tot||(tot===best.tot&&cb.cost<best.cb.cost)) best={cb,tot};
+    }
+    bestCB=best;
+    const remain=budget-best.cb.cost-(dbl?EV.doublePack.price:0);
+    $('#budgetPack').innerHTML=planHTML('예산 내 최대 코인','fit',`예산 ${won(budget)}`,best.cb,0,
+      `<div class="hint">남는 예산 ${won(remain)} · 패키지 코인당 ${best.cb.coin?(Math.round(best.cb.cost/best.cb.coin*10)/10).toLocaleString('ko-KR'):'-'}원</div>`)
+      .replace(/<span class="(neg|pos)">.*?<\/span>/,'');
+    renderBuy(best.tot);
+  }
+  function renderBuy(coins){
+    $('#buyCoinLbl').textContent=`${fmt(coins)}코인`;
+    const list=EV.shop.filter(s=>scope==='all'||s.type==='hot'||(scope==='rec'&&s.type==='rec'))
+      .sort((a,b)=>{const o={hot:0,rec:1,normal:2}; return o[a.type]-o[b.type]||(a.type==='normal'?a.coin-b.coin:0)||a.idx-b.idx;});
+    let left=coins, rows=[], used=0;
+    for(const s of list){
+      const it=ITEMS[s.item]; const can=Math.min(s.cap,Math.floor(left/s.coin)); if(can<=0) continue;
+      const partial=can<s.cap; left-=can*s.coin; used+=can*s.coin;
+      rows.push(`<tr><td class="l"><img src="${it.icon}" alt="">${it.name}${s.type!=='normal'?`<span class="bd ${s.type}">${s.type==='hot'?'HOT':'추천'}</span>`:''}</td>
+        <td>${can}${partial?`<span class="part"> /${s.cap}</span>`:` /${s.cap}`}</td><td>${fmt(can*s.qty)}</td><td>${fmt(can*s.coin)}</td></tr>`);
+    }
+    $('#buyBody').innerHTML=rows.join('')||'<tr><td colspan="4" class="empty">코인이 부족합니다</td></tr>';
+    $('#buyFoot').innerHTML=`<tr><td class="l">합계</td><td></td><td></td><td>${fmt(used)}</td></tr><tr><td class="l">남는 코인</td><td></td><td></td><td>${fmt(left)}</td></tr>`;
+    // 이 범위를 전부 사는 데 필요한 최소 패키지
+    const capCoin=list.reduce((a,s)=>a+s.cap*s.coin,0);
+    const f=freeCoins(), need=capCoin-(f.coin+shellBonus(f.shell));
+    let msg=`이 범위를 <b>전부</b> 사려면 ${fmt(capCoin)}코인`;
+    if(need<=0) msg+=' — 무료 코인만으로 충분';
+    else{ let best=null; for(const cb of combos(need+2500)){ const t=totalCoin(cb); if(t>=capCoin&&(!best||cb.cost<best.cb.cost||(cb.cost===best.cb.cost&&t<best.tot))) best={cb,tot:t}; }
+      if(best) msg+=` — 최소 <b>${won(best.cb.cost)}</b> (${packList(best.cb).map(x=>x.p.name.replace(' 모험 코인 패키지','')+'×'+x.c).join(', ')})`; }
+    $('#capNote').innerHTML=msg+(left>0?`<br>지금 예산은 이 범위 한도를 넘습니다. 남는 ${fmt(left)}코인은 다른 범위나 다음 이벤트용.`:'');
+  }
+  $('#budget').addEventListener('input',e=>{budget=+e.target.value||0;$$('.chips .chip').forEach(c=>c.classList.toggle('on',+c.dataset.b===budget));renderBudget();});
+  $$('.chips .chip').forEach(c=>c.addEventListener('click',()=>{budget=+c.dataset.b;$('#budget').value=budget;$$('.chips .chip').forEach(x=>x.classList.toggle('on',x===c));renderBudget();}));
+  $$('.scope .chip').forEach(c=>c.addEventListener('click',()=>{scope=c.dataset.scope;$$('.scope .chip').forEach(x=>x.classList.toggle('on',x===c));if(bestCB)renderBuy(bestCB.tot);}));
+
+  /* ---------- 탭 ---------- */
+  $$('.tabs .tab').forEach(t=>t.addEventListener('click',()=>{
+    $$('.tabs .tab').forEach(x=>x.classList.toggle('active',x===t));
+    const m=t.dataset.mode; $('#view-goal').style.display=m==='goal'?'':'none'; $('#view-budget').style.display=m==='budget'?'':'none';
+  }));
+
+  $('#evchip').textContent=`${EV.name} · ${EV.id} · ${D}일`;
+  renderLedger(); renderGrid(); renderGoal(); renderBudget();
+})();
 </script>
 </body>
 </html>
