@@ -397,6 +397,7 @@ const METRICS = [
   {key:"kvk",   label:"KvK Score"},
   {key:"power", label:"Power"},
   {key:"sp",    label:"Score/Power"},
+  {key:"spp",   label:"Score/Player"},
   {key:"in200", label:"In 200th"},
 ];
 function allianceSeries(tag, kingdom, metric){
@@ -407,6 +408,7 @@ function allianceSeries(tag, kingdom, metric){
       if(metric==="kvk") v=a.kvk;
       else if(metric==="power") v=a.power;
       else if(metric==="sp") v=(a.kvk!=null && a.power)? a.kvk/a.power : null;
+      else if(metric==="spp") v=(a.kvk!=null && a.members)? Math.round(a.kvk/a.members) : null;
       else if(metric==="in200"){
         if(a.in200!=null) v=a.in200;
         else { const ps=m.players||[]; v = ps.length>=150 ? ps.filter(p=>p.kingdom===kingdom && p.tag===tag).length : null; }

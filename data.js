@@ -13,14 +13,15 @@ window.KVK_DATA = {
       label: "2026년 8월",
       stage: "준비 단계",
       alliances: [
-        { tag:"KOR", name:"KeepersOfRoyal", kingdom:737, power:null, members:null, kvk:4253202646, in200:null },
+        { tag:"KOR", name:"KeepersOfRoyal", kingdom:737, power:39346944860, members:92, kvk:4253202646, in200:null },
         { tag:"NUT", name:"GangstaNutz", kingdom:623, power:null, members:null, kvk:3540083558, in200:null },
         { tag:"MVL", name:"TheMultiverse", kingdom:623, power:null, members:null, kvk:3149113811, in200:null },
-        { tag:"GGw", name:"KORANI", kingdom:737, power:null, members:null, kvk:2384595724, in200:null },
-        { tag:"DOM", name:"Kumdom", kingdom:737, power:null, members:null, kvk:940089634, in200:null },
-        { tag:"IMK", name:"ImmortalKorea", kingdom:737, power:null, members:null, kvk:766838486, in200:null },
+        { tag:"GGw", name:"KORANI", kingdom:737, power:25429918892, members:87, kvk:2384595724, in200:null },
+        { tag:"DOM", name:"Kumdom", kingdom:737, power:16736244623, members:95, kvk:940089634, in200:null },
+        { tag:"IMK", name:"ImmortalKorea", kingdom:737, power:9164798597, members:58, kvk:766838486, in200:null },
         { tag:"GoD", name:"GroupOfDestroyer", kingdom:623, power:null, members:null, kvk:476127459, in200:null },
-        { tag:"717", name:"Privè", kingdom:623, power:null, members:null, kvk:425295206, in200:null }
+        { tag:"717", name:"Privè", kingdom:623, power:null, members:null, kvk:425295206, in200:null },
+        { tag:"ICE", name:"IcyCrownEmpire", kingdom:737, power:5704766990, members:67, kvk:null, in200:null }
       ],
       players: [
         { rank:1, kingdom:623, tag:"NUT", name:"Shabani", score:417964739 },
