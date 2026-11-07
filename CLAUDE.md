@@ -1,13 +1,14 @@
 # 킹샷 웹앱 (KvK 통계 + 이벤트 효율계산기) — 작업 가이드
 
-이 리포에는 GitHub Pages로 배포되는 **두 개의 정적 웹앱**이 있다. 백엔드 없음, 데이터는 JS 파일이 DB 역할.
+이 리포에는 GitHub Pages로 배포되는 웹앱이 있다. ①②는 백엔드 없음(데이터는 JS 파일이 DB 역할), ③ 랠리 편성기만 Apps Script 백엔드 사용.
 사용자: Jason (연맹 [KOR]KeepersOfRoyal, 우리 서버 #737, 게임 내 이름 ✟ＪＡＳＯＮ✟).
 
 ## 배포
 - GitHub Pages: main 브랜치 / root. push하면 곧 반영 (안 보이면 브라우저 강력 새로고침 Ctrl+Shift+R — Pages CDN 캐시).
 - KvK 통계: https://jasonshin1hm.github.io/kingshot-kvk/kvk.html
 - 이벤트 계산기: https://jasonshin1hm.github.io/kingshot-kvk/
-- 두 앱은 상단 topnav로 상호 링크. 페이지를 추가하면 양쪽 topnav도 갱신할 것.
+- 랠리 편성기: https://jasonshin1hm.github.io/kingshot-kvk/rally/
+- 앱들은 상단 topnav로 상호 링크. 페이지를 추가하면 양쪽 topnav도 갱신할 것.
 
 ## 앱 ① KvK 통계 — `kvk.html` + `data.js`
 매달 KvK(왕국 대전) 순위 통계. **월별 데이터 갱신은 data.js만 수정**하면 됨 (kvk.html은 로직 변경 시에만).
@@ -51,6 +52,13 @@ window.EVENT_DATA = { id, name, days,
 ```
 - `items.js` = 이벤트와 무관한 **누적 아이템 마스터** `window.ITEMS = { id:{name,icon} }`. 새 아이템 등장 시 한 줄 추가 + `icons/`에 png 추가.
 - 새 이벤트 워크플로우: Jason 스샷(상점 목록·패키지·잔여수량) → event-YYYY-MM.js 작성 → 새 아이템이면 items.js+아이콘 → index.html script src 교체 → 검증 → push.
+
+## 앱 ③ KvK 캐슬 랠리 편성기 — `rally/index.html` + `rally/img/`
+집결장(CKids 메인 / Taiji 카랠1 / Jason 카랠2)별 집결원(최대 8명) 편성. 끌어넣기·우클릭(모바일 길게 누르기) 메뉴·영웅 얼굴 선택·비율 인라인 수정·스크린샷(집결장 3열만 PNG).
+- 백엔드: 기획 시트(KvK 랠리 편성, ID 1gDFKSWtW-OghQrKXhXFR6FNXZCf2yHSriN0vawFRpKM)에 바인딩된 Apps Script "KvK 랠리 편성기 API". 웹 앱 URL은 `rally/index.html`의 `API_URL`.
+  - ⚠️ 코드 수정 시 "배포 관리 → 기존 배포 편집 → 새 버전 → 배포" (새 배포 금지 — URL 바뀜). 원본 코드/설계는 Jason 로컬 `킹샷랠리편성기/` 폴더(PLAN.md, app/AppsScript_Rally.gs).
+- 풀참자 명단은 시트 "풀참자명단" 블록을 매번 읽음, 편성 상태는 숨김 시트 `앱데이터`.
+- 수정은 관리자 로그인(이메일+비밀번호, Apps Script 속성에 해시로만 저장) 필요. 비로그인은 보기 전용.
 
 ## 남은 TODO
 - 2026-09 연맹 전투력·멤버수 (연맹정보 스샷 받으면 data.js에 추가)

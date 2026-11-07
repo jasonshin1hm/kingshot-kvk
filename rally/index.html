@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KvK 캐슬 랠리 편성 · KOR #737</title>
+<link rel="icon" href="../logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<style>
+:root{
+  --bg:#0F131A;--panel:#141922;--card:#171C25;--line:#2A313D;--line2:#262D39;--row:#1F2530;--rowline:#2E3644;
+  --text:#E8EAEE;--muted:#9AA3AF;--muted2:#8E97A5;--gold:#E0B252;--gold2:#F2C866;--goldbg:#2B2412;
+  --atk:#F0B8A0;--atkring:#C9826A;--def:#9CC7F5;--defring:#5B9BE0;--danger:#E57373;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',system-ui,sans-serif;-webkit-text-size-adjust:100%}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:disabled{cursor:not-allowed;opacity:.35}
+input,select{font-family:inherit}
+img{display:block}
+a{color:var(--gold)}a:hover{color:var(--gold2)}
+
+/* header */
+.hdr{background:var(--panel);border-bottom:1px solid var(--line2);padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:0}
+.brand img{width:40px;height:40px;border-radius:10px;object-fit:cover;border:1px solid var(--gold)}
+.brand h1{margin:0;font-size:19px;font-weight:900}
+.brand .sub{font-size:12px;color:var(--muted)}
+.brand .sub a{color:var(--muted);text-decoration:none;margin-left:8px}.brand .sub a:hover{color:var(--gold2)}
+.tabs{display:flex;gap:4px;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:4px}
+.tab{height:32px;padding:0 14px;border-radius:7px;border:none;font-size:13px;font-weight:700;background:transparent;color:#C3C9D2}
+.tab.on{background:var(--gold);color:#1A1406}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{height:36px;padding:0 12px;border-radius:8px;border:1px solid #333B48;background:transparent;color:#C3C9D2;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:#4A5363}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#1A1406}
+.btn.active{background:var(--goldbg);border-color:var(--gold);color:var(--gold2)}
+.btn.danger{color:#F2A3A3;border-color:#5A3434}
+.seg{display:flex;border:1px solid #333B48;border-radius:8px;overflow:hidden}
+.seg button{height:34px;width:40px;border:none;font-size:12px;font-weight:700;background:transparent;color:#C3C9D2}
+.seg button.on{background:var(--text);color:#12161E}
+.pill{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:#5C6573}
+.pill.ok .dot{background:#6FCF8A}.pill.busy .dot{background:var(--gold)}.pill.err .dot{background:var(--danger)}
+.admin-chip{font-size:12px;color:var(--gold2);background:var(--goldbg);border:1px solid #5A4A22;border-radius:999px;padding:3px 10px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+main{max-width:1400px;margin:0 auto;padding:20px 20px 64px;display:flex;flex-direction:column;gap:26px}
+.banner{background:var(--goldbg);border:1px solid var(--gold);color:var(--gold2);border-radius:10px;padding:10px 14px;font-size:14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.banner.warn{background:#2A1A1A;border-color:#7A3A3A;color:#F2A3A3}
+
+/* leaders */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;align-items:start}
+.cap{background:var(--bg);padding:2px}
+.col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.lead{display:flex;align-items:center;gap:12px}
+.lead img,.lead .ph{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex:none}
+.lead .ph{display:flex;align-items:center;justify-content:center;background:#232A36;border-style:dashed;border-color:#4A5363;font-size:20px;font-weight:900;color:#C3C9D2}
+.role{align-self:flex-start;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px}
+.role.main{background:#3A2E12;color:var(--gold2)}.role.sub{background:#1D2D40;color:var(--def)}
+.lname{font-size:21px;font-weight:900;line-height:1.1}
+.hbox{border-radius:10px;padding:7px 10px;display:flex;align-items:center;gap:10px}
+.hbox.atk{background:#1E1A14;border:1px solid #3B3224}.hbox.def{background:#141B22;border:1px solid #243444}
+.hbox .meta{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
+.hlabel{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700}
+.atk .hlabel{color:var(--atk)}.def .hlabel{color:var(--def)}
+.faces{display:flex;gap:6px;flex:none}
+.fbtn{background:none;border:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:2px;width:46px}
+.fbtn span{font-size:10px;color:#C3C9D2;white-space:nowrap;max-width:46px;overflow:hidden;text-overflow:ellipsis}
+.fbtn[disabled]{opacity:1;cursor:default}
+.face{border-radius:50%;flex:none;object-fit:cover;object-position:center;background:#2A303B;border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff}
+.face.atk{border-color:var(--atkring)}.face.def{border-color:var(--defring)}
+.face.empty{background:transparent;border-style:dashed;color:#7F8896}
+
+.ratio{background:none;border:none;padding:1px 4px;margin-left:-4px;border-radius:5px;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;flex:none;cursor:default}
+.ratio .k{color:var(--muted)}
+.ratio .pen{opacity:0;transition:opacity .12s}
+.admin .ratio{cursor:pointer}
+.admin .ratio:hover{background:rgba(224,178,82,.12)}
+.admin .ratio:hover .pen,.admin .ratio:focus-visible .pen{opacity:1}
+@media (hover:none){.admin .ratio .pen{opacity:.6}}
+.rin{height:26px;background:#11151C;color:var(--text);border:1px solid var(--gold);border-radius:6px;padding:0 6px;font-size:12px}
+
+.jhead{display:flex;align-items:baseline;gap:8px}
+.jhead b{font-size:14px;font-weight:900}.jhead span{font-size:12px;color:var(--muted)}
+.cnt{margin-left:auto;font-size:16px;font-weight:900}
+.cnt.full{color:#F2A3A3}.cnt.good{color:#8FD19E}
+.guide{background:#12161D;border:1px solid var(--line2);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.guide .gt{font-size:11px;font-weight:700;color:var(--muted)}
+.grow{display:flex;align-items:center;gap:8px;min-height:28px}
+.badge{border-radius:4px;padding:2px 7px;font-weight:700;font-size:11px;flex:none}
+.badge.atk{background:#3B2A22;color:var(--atk)}.badge.def{background:#1D2D40;color:var(--def)}
+.gfaces{display:flex;gap:4px;margin-left:auto}
+.gtext{flex:1 1 100px;min-width:0}
+
+.slots{display:flex;flex-direction:column;gap:5px}
+.shead{display:flex;align-items:center;gap:6px;padding:0 20px 0 6px;font-size:11px;font-weight:700;color:var(--muted)}
+.shead .n{width:14px;flex:none}.shead .nm{flex:1 1 auto}.shead .c{width:28px;flex:none;text-align:center}
+.shead .c.atk{color:var(--atk)}.shead .c.def{color:var(--def)}
+.slot{position:relative;display:flex;align-items:center;gap:6px;height:40px;background:var(--row);border:1px solid var(--rowline);border-radius:9px;padding:0 20px 0 6px;min-width:0;-webkit-user-select:none;user-select:none}
+.admin .slot{cursor:grab}
+.slot .n{width:14px;text-align:center;color:var(--muted2);font-size:11px;font-weight:700;flex:none}
+.slot .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+.slot .fb{background:none;border:none;padding:0;flex:none;display:flex}
+.slot .fb[disabled]{opacity:1;cursor:default}
+.slot .x{position:absolute;top:2px;right:2px;width:16px;height:16px;padding:0;border:none;background:transparent;color:var(--danger);display:flex;align-items:center;justify-content:center}
+.slot.over{outline:2px solid var(--gold);outline-offset:-1px}
+.empty-slot{height:34px;border:1px dashed #353D4B;border-radius:9px;display:flex;align-items:center;gap:6px;padding:0 6px;color:#7F8896;font-size:12px}
+.empty-slot .n{width:14px;text-align:center;font-weight:700;font-size:11px}
+.dropzone.over{outline:2px dashed var(--gold);outline-offset:3px;border-radius:14px}
+.tier{flex:none;font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;white-space:nowrap;border:1px solid}
+.tier.t11{background:#3A2E12;border-color:#D9A441;color:var(--gold2)}
+.tier.t10{background:#12263F;border-color:#5B9BE0;color:var(--def)}
+.tier.t7{background:#2A2D33;border-color:#8A9099;color:#C9CED6}
+.addbtn{height:44px;border-radius:10px;border:1px solid var(--gold);background:var(--goldbg);color:var(--gold2);font-weight:700;font-size:14px}
+
+/* pool */
+.pool{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px}
+.pool h2{margin:0;font-size:18px;font-weight:900}
+.phead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.phead .s{font-size:13px;color:var(--muted)}.phead .h{font-size:12px;color:var(--muted);flex-basis:100%}
+.tgroup{display:flex;flex-direction:column;gap:8px}
+.tghead{display:flex;align-items:center;gap:8px}
+.tghead .tier{font-size:13px;font-weight:900;padding:3px 10px;border-radius:6px}
+.tghead span{font-size:12px;color:var(--muted)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.pc{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:10px;min-width:0;background:var(--row);border:1px solid var(--rowline);border-left-width:4px;-webkit-user-select:none;user-select:none}
+.pc.t11{border-left-color:#D9A441}.pc.t10{border-left-color:#5B9BE0}.pc.t7{border-left-color:#8A9099}
+.admin .pc.free{cursor:grab}
+.pc.sel{outline:2px solid var(--gold)}
+.pc.used{background:#181C23;border-color:#262C36;color:#6B7380;opacity:.7}
+.pc .pn{background:none;border:none;padding:0;text-align:left;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:24px}
+.pc .pn[disabled]{opacity:1;cursor:default}
+.pc select{height:28px;background:#11151C;color:#C3C9D2;border:1px solid #3A4250;border-radius:6px;font-size:12px}
+.pc .at{font-size:12px;color:var(--muted2)}
+
+/* menus / modals */
+.veil{position:fixed;inset:0;z-index:40}
+.menu{position:fixed;z-index:50;background:#1B212B;border:1px solid #3A4250;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:2px;box-shadow:0 12px 32px rgba(0,0,0,.55)}
+.menu .mt{font-size:12px;color:var(--muted);padding:2px 4px 6px;font-weight:700}
+.mi{display:flex;align-items:center;gap:10px;height:44px;padding:0 8px;border:none;border-radius:8px;background:transparent;font-size:14px;font-weight:700;text-align:left}
+.mi:hover:not([disabled]){background:#252D39}
+.mi img{width:30px;height:30px;border-radius:50%;object-fit:cover;flex:none}
+.mi .note{margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+.mi.ret{height:40px;margin-top:4px;border-top:1px solid var(--rowline);border-radius:0;color:#F2A3A3;font-size:13px}
+.hgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.hi{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:8px;border:1px solid transparent;background:transparent}
+.hi:hover{background:#252D39}.hi.cur{border-color:var(--gold);background:var(--goldbg)}
+.hi span{font-size:11px;white-space:nowrap;max-width:64px;overflow:hidden;text-overflow:ellipsis}
+.modal-bg{position:fixed;inset:0;z-index:60;background:rgba(5,8,12,.7);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{width:100%;max-width:360px;background:#1B212B;border:1px solid #3A4250;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.modal h3{margin:0;font-size:17px}
+.modal label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);font-weight:700}
+.modal input{height:42px;background:#11151C;color:var(--text);border:1px solid #3A4250;border-radius:8px;padding:0 12px;font-size:15px}
+.modal input:focus{outline:none;border-color:var(--gold)}
+.modal .err{color:#F2A3A3;font-size:13px;min-height:18px}
+.modal .row{display:flex;gap:8px;justify-content:flex-end}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:#12161E;padding:12px 18px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.45);max-width:90vw;z-index:70}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+.capturing .x,.capturing .pen{display:none!important}
+@media (max-width:760px){.hdr{position:static}}
+@media (max-width:560px){.hdr{padding:10px 12px}main{padding:14px 10px 56px}.brand h1{font-size:17px}}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">불러오는 중…</div></div>
+
+<script>
+/* ═════════════ 설정 ═════════════ */
+// Apps Script 웹 앱 URL (배포 후 여기에 붙여넣기). 비워두면 미리보기 모드(저장 안 됨).
+const API_URL = 'https://script.google.com/macros/s/AKfycby3fRSxTMvDpPZ-1s1e7cR8kWvaTGeKwx1s28JRh5Ul50J_kCs4ePqqbso3hdYJoDSB7w/exec';
+
+/* ═════════════ 고정 데이터 ═════════════ */
+const HEROES = ['찰스','페라','웨이론','소피아','스루드','첸코','살로','힐데','트리톤'];
+const HERO_FILE = {'찰스':'charles','페라':'petra','웨이론':'weewoo','소피아':'sophia','스루드':'thrud','첸코':'chenko','살로':'saul','힐데':'hilde','트리톤':'triton'};
+const HERO_EN = {'찰스':'Charles','페라':'Petra','웨이론':'Wee&Woo','소피아':'Sophia','스루드':'Thrud','첸코':'Chenko','살로':'Saul','힐데':'Hilde','트리톤':'Triton'};
+const LEADER_IMG = {ckids:'img/leaders/ckids.png',taiji:'img/leaders/taiji.png',jason:'img/leaders/jason.png'};
+const MAX = 8;
+const DEFAULT_STATE = () => ({
+  v:1,
+  leaders:[
+    {id:'ckids',name:'CKids',role:'main',atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio:'640',gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'},
+    {id:'taiji',name:'Taiji',role:'c1',atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio:'640',gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'},
+    {id:'jason',name:'Jason',role:'c2',atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio:'505 + 기병1만',gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'}
+  ],
+  assign:{ckids:[],taiji:[],jason:[]},
+  tiers:{}
+});
+// 미리보기 모드용 명단 (API_URL 비어 있을 때만 사용)
+const PREVIEW_ROSTER = (() => { const r=[]; const add=(t,a)=>a.forEach(n=>r.push({name:n,tier:t}));
+  add('t11',['Lurker','Jaber','싹쓸Derpy','Goy','연','밍복이','말레','Jenie','G아리아','클라우드','Raven','꿍딩','셀리아','비수','율짱']);
+  add('t10',['가시나무','도토리','어쭈구리','몽이','고니','도토리묵','견복이','연(부캐)','셀리아(부캐)','유니','유후','Berserker101','TYS','독도수호신','시나브로','데뷰','도블린','현','도깨비']);
+  add('t7',['악성핑','지연q','BH69','ACE(부캐)','HAKSEE','UNICORN','보물주심감사용','A급헌터','블루레오','TOM','JERRY']); return r; })();
+
+const T = {
+ ko:{title:'KvK 캐슬 랠리 편성',sub:'KOR #737 · 캐슬 집결',all:'전체 편성',atk:'공격시',def:'수비시',edit:'관리자 편집',editDone:'편집 완료',shot:'스크린샷 저장',reset:'초기화',login:'관리자 로그인',logout:'로그아웃',pw:'비밀번호 변경',
+  joiners:'집결원',attackLeader:'공격 영웅',defenseLeader:'수비 영웅',ratio:'비율',guide:'집결원 병사비율 및 조인영웅',onAttack:'공격시',onDefense:'방어시',
+  colName:'이름',colAtk:'공격',colDef:'수비',pool:'풀참자 명단',
+  poolHintAdmin:'카드를 집결원 칸으로 끌어넣거나, 우클릭(모바일은 길게 누르기)으로 집결장을 고르세요. 이름을 눌러 선택한 뒤 추가 버튼을 눌러도 됩니다. 배정된 카드는 다른 랠리로 끌어 옮기거나 여기로 끌어내리면 풀로 돌아갑니다.',
+  poolHintView:'보기 전용입니다. 편성 수정은 관리자 로그인 후 가능합니다.',
+  dropHint:'여기로 끌어넣기',addTo:'에 추가',selectedHint:'선택됨 — 넣을 집결장의 추가 버튼을 누르세요',cancel:'취소',full:'집결원은 최대 8명입니다',assignedTo:'배정:',tier:'병사등급',
+  remove:'풀로 되돌리기',unset:'미지정',roleMain:'메인 랠리',roleC1:'카랠 1',roleC2:'카랠 2',fold:'영웅 접기',unfold:'영웅 펼치기',moveTo:'보낼 집결장',backToPool:'풀로 되돌리기',current:'현재',fullNote:'가득 참',
+  pickAtk:'공격 영웅 선택',pickDef:'수비 영웅 선택',editRatio:'비율 수정',total:'전체',assigned:'배정',people:'명',
+  t11:'TG8·T11',t10:'TG8·T10',t7:'TG7 이하',
+  saved:'저장됨',saving:'저장 중…',saveErr:'저장 실패 — 재시도',preview:'미리보기 모드(저장 안 됨)',viewOnly:'보기 전용',
+  email:'이메일',password:'비밀번호',doLogin:'로그인',loginErr:'이메일 또는 비밀번호가 맞지 않습니다',locked:'로그인 시도가 너무 많습니다. 10분 후 다시 시도하세요',
+  oldPw:'현재 비밀번호',newPw:'새 비밀번호 (8자 이상)',newPw2:'새 비밀번호 확인',change:'변경',pwMismatch:'새 비밀번호가 서로 다릅니다',pwWeak:'8자 이상 입력하세요',pwOldWrong:'현재 비밀번호가 맞지 않습니다',pwDone:'비밀번호를 변경했습니다',
+  resetConfirm:'모든 배정을 비울까요?',resetDone:'배정을 모두 비웠습니다',conflict:'다른 곳에서 먼저 저장되어 최신 내용으로 불러왔습니다',authExpired:'로그인이 만료되었습니다. 다시 로그인하세요',
+  loadErr:'서버에서 불러오지 못했습니다. 마지막으로 저장된 화면을 보여줍니다.',shotDone:'이미지를 저장했습니다',shotErr:'이미지 저장에 실패했습니다',loggedOut:'로그아웃했습니다',loggedIn:'관리자로 로그인했습니다',
+  draftRestored:'저장되지 않았던 변경을 다시 저장했습니다',navCalc:'이벤트 계산기',navKvk:'KvK 통계'},
+ en:{title:'KvK Castle Rally Setup',sub:'KOR #737 · Castle rally',all:'Full setup',atk:'Attack',def:'Defense',edit:'Admin edit',editDone:'Done',shot:'Save screenshot',reset:'Reset',login:'Admin login',logout:'Log out',pw:'Change password',
+  joiners:'Rally Joiners',attackLeader:'Attack heroes',defenseLeader:'Defense heroes',ratio:'Ratio',guide:'Rally Joiner troop ratio & heroes',onAttack:'Attack',onDefense:'Defense',
+  colName:'Name',colAtk:'ATK',colDef:'DEF',pool:'Joiner pool',
+  poolHintAdmin:'Drag a card into a Rally Joiner list, or right-click (long-press on mobile) to pick a rally leader. You can also tap a name and press Add. Drag assigned cards between rallies, or back here to return them.',
+  poolHintView:'View only. Log in as admin to edit.',
+  dropHint:'Drop here',addTo:' — add',selectedHint:'selected — press Add on a rally',cancel:'Cancel',full:'Max 8 Rally Joiners',assignedTo:'In:',tier:'Troop tier',
+  remove:'Return to pool',unset:'None',roleMain:'Main rally',roleC1:'Counter 1',roleC2:'Counter 2',fold:'Hide heroes',unfold:'Show heroes',moveTo:'Send to',backToPool:'Return to pool',current:'current',fullNote:'full',
+  pickAtk:'Attack hero',pickDef:'Defense hero',editRatio:'Edit ratio',total:'total',assigned:'assigned',people:'',
+  t11:'TG8·T11',t10:'TG8·T10',t7:'TG7 & below',
+  saved:'Saved',saving:'Saving…',saveErr:'Save failed — retry',preview:'Preview mode (not saved)',viewOnly:'View only',
+  email:'Email',password:'Password',doLogin:'Log in',loginErr:'Wrong email or password',locked:'Too many attempts. Try again in 10 minutes',
+  oldPw:'Current password',newPw:'New password (8+ chars)',newPw2:'Confirm new password',change:'Change',pwMismatch:'New passwords do not match',pwWeak:'Use 8 or more characters',pwOldWrong:'Current password is wrong',pwDone:'Password changed',
+  resetConfirm:'Clear all assignments?',resetDone:'All assignments cleared',conflict:'Someone saved first — loaded the latest version',authExpired:'Session expired. Please log in again',
+  loadErr:'Could not reach the server. Showing the last saved view.',shotDone:'Image saved',shotErr:'Could not save the image',loggedOut:'Logged out',loggedIn:'Logged in as admin',
+  draftRestored:'Re-saved changes that had not been saved',navCalc:'Event calculator',navKvk:'KvK stats'}
+};
+
+/* ═════════════ 상태 ═════════════ */
+const LS = {get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const ui = {tab:'all',lang:LS.get('rally_lang','ko'),heroesOpen:LS.get('rally_heroes_open',true),edit:false,selected:null,menu:null,editing:null,modal:null,toast:'',saveState:'idle',loaded:false,loadErr:false};
+let data = DEFAULT_STATE();   // 편성 상태 (서버 저장 대상)
+let roster = [];              // [{name,tier}] — 시트에서 읽음
+let rev = 0;
+let session = LS.get('rally_session', null); // {token,email,exp}
+let drag = null;
+const preview = !API_URL;
+const t = () => T[ui.lang];
+const isAdmin = () => preview || !!(session && session.token && session.exp > Date.now());
+
+/* ═════════════ 유틸 ═════════════ */
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hn = h => (ui.lang==='en' && h) ? (HERO_EN[h]||h) : h;
+const heroList = txt => String(txt||'').trim().split(/\s+/).filter(Boolean);
+const tierOf = name => data.tiers[name] || (roster.find(r=>r.name===name)||{}).tier || 't7';
+function face(h,size,kind){
+  const cls='face'+(kind?' '+kind:'');
+  if(!h) return `<span class="${cls} empty" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.5)}px">+</span>`;
+  const f=HERO_FILE[h];
+  if(f) return `<img class="${cls}" src="img/heroes/${f}.png" alt="${esc(hn(h))}" title="${esc(hn(h))}" style="width:${size}px;height:${size}px" crossorigin="anonymous">`;
+  return `<span class="${cls}" title="${esc(hn(h))}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px;background:#3A414D">${esc(hn(h)[0])}</span>`;
+}
+const ICON = {
+  sword:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="m16 16 4 4"/><path d="m19 21 2-2"/></svg>',
+  shield:'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  pen:'<svg class="pen" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#E0B252" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  x:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+  cam:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  lock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  editp:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'
+};
+let toastTimer;
+function toast(msg){ui.toast=msg;renderOverlay();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{ui.toast='';renderOverlay()},2600)}
+
+/* ═════════════ 서버 ═════════════ */
+async function apiGet(){const r=await fetch(API_URL+'?action=state&_='+Date.now());return r.json()}
+async function apiPost(body){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(body)});return r.json()}
+
+function normalize(s){
+  const d=DEFAULT_STATE(); if(!s||typeof s!=='object') return d;
+  s.leaders = Array.isArray(s.leaders)&&s.leaders.length ? s.leaders : d.leaders;
+  s.assign = s.assign||{}; s.leaders.forEach(L=>{ if(!Array.isArray(s.assign[L.id])) s.assign[L.id]=[]; });
+  s.tiers = s.tiers||{}; return s;
+}
+
+async function load(){
+  const cache=LS.get('rally_cache',null);
+  if(preview){
+    roster=PREVIEW_ROSTER; data=normalize(LS.get('rally_preview_state',null)); ui.loaded=true; render(); return;
+  }
+  if(cache){ roster=cache.roster||[]; data=normalize(cache.state); rev=cache.rev||0; ui.loaded=true; render(); }
+  try{
+    const res=await apiGet();
+    if(!res.ok) throw new Error(res.error);
+    roster=res.roster||[]; data=normalize(res.state); rev=res.rev||0; ui.loaded=true; ui.loadErr=false;
+    LS.set('rally_cache',{roster,state:data,rev});
+    // 저장 못 했던 변경(임시저장)이 있으면 다시 저장
+    const draft=LS.get('rally_draft',null);
+    if(draft && isAdmin()){
+      if(draft.rev===rev){ data=normalize(draft.state); render(); await doSave(true); }
+      else LS.del('rally_draft');
+    }
+  }catch(e){ ui.loadErr=true; ui.loaded=true; }
+  render();
+  if(session&&!preview){ apiPost({action:'whoami',token:session.token}).then(r=>{ if(!r.ok){ session=null; LS.del('rally_session'); render(); } }).catch(()=>{}); }
+}
+
+let saveTimer=null;
+function changed(){
+  if(preview){ LS.set('rally_preview_state',data); render(); return; }
+  LS.set('rally_draft',{state:data,rev}); // 서버 저장 전까지 브라우저에 임시저장
+  ui.saveState='busy'; render();
+  clearTimeout(saveTimer); saveTimer=setTimeout(()=>doSave(false),700);
+}
+async function doSave(fromDraft){
+  if(preview||!isAdmin()) return;
+  ui.saveState='busy'; renderStatus();
+  try{
+    const res=await apiPost({action:'save',token:session.token,state:data,rev});
+    if(res.ok){ rev=res.rev; ui.saveState='ok'; LS.del('rally_draft'); LS.set('rally_cache',{roster,state:data,rev}); if(fromDraft) toast(t().draftRestored); }
+    else if(res.error==='conflict'){ data=normalize(res.state); rev=res.rev; LS.del('rally_draft'); ui.saveState='ok'; toast(t().conflict); }
+    else if(res.error==='auth'){ session=null; LS.del('rally_session'); ui.saveState='err'; toast(t().authExpired); openLogin(); }
+    else throw new Error(res.error);
+  }catch(e){ ui.saveState='err'; }
+  render();
+}
+
+/* ═════════════ 편성 조작 ═════════════ */
+function place(name,from,fromIdx,lid,idx){
+  const a=data.assign;
+  if(from!==lid && a[lid].length>=MAX){ toast(t().full); return; }
+  let entry={name,atk:null,def:null};
+  if(from){ entry=a[from][fromIdx]; if(!entry||entry.name!==name) return; a[from].splice(fromIdx,1); if(from===lid&&idx!=null&&idx>fromIdx) idx--; }
+  else if(Object.values(a).some(arr=>arr.some(m=>m.name===name))) return;
+  if(idx==null||idx>a[lid].length) idx=a[lid].length;
+  a[lid].splice(idx,0,entry); ui.selected=null; ui.menu=null; changed();
+}
+function removeAt(lid,i){ data.assign[lid].splice(i,1); ui.menu=null; changed(); }
+function setSlotHero(lid,i,key,h){ data.assign[lid][i][key]=h; ui.menu=null; changed(); }
+function setLeaderHero(li,key,k,h){ data.leaders[li][key][k]=h; ui.menu=null; changed(); }
+function slotHero(L,i,m,key){ const g=heroList(key==='atk'?L.gAtkText:L.gDefText); return m[key]==null ? (i<4?(g[i]||''):'') : m[key]; }
+
+/* ═════════════ 렌더 ═════════════ */
+const $app=document.getElementById('app');
+function render(){
+  if(!ui.loaded){ return; }
+  const T_=t(), admin=isAdmin(), showAtk=ui.tab!=='def', showDef=ui.tab!=='atk';
+  document.documentElement.lang=ui.lang;
+  const where={}; data.leaders.forEach(L=>data.assign[L.id].forEach(m=>where[m.name]=L.name));
+  const assignedCount=Object.keys(where).length;
+
+  const status = preview ? `<span class="pill"><span class="dot"></span>${T_.preview}</span>`
+    : !admin ? `<span class="pill"><span class="dot"></span>${T_.viewOnly}</span>`
+    : `<span class="pill ${ui.saveState==='ok'?'ok':ui.saveState==='busy'?'busy':ui.saveState==='err'?'err':''}" id="status">${statusHtml()}</span>`;
+
+  const hdr=`<header class="hdr">
+    <div class="brand"><img src="../logo.png" alt="KOR737"><div><h1>${T_.title}</h1>
+      <div class="sub">${T_.sub}<a href="../">${T_.navCalc}</a><a href="../kvk.html">${T_.navKvk}</a></div></div></div>
+    <nav class="tabs" aria-label="view">${[['all',T_.all],['atk',T_.atk],['def',T_.def]].map(([k,l])=>`<button class="tab ${ui.tab===k?'on':''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</nav>
+    <div class="actions">
+      ${status}
+      <div class="seg"><button class="${ui.lang==='ko'?'on':''}" data-act="lang" data-v="ko">KO</button><button class="${ui.lang==='en'?'on':''}" data-act="lang" data-v="en">EN</button></div>
+      <button class="btn" data-act="heroes"><span style="display:inline-flex;transform:${ui.heroesOpen?'rotate(180deg)':'none'}">${ICON.chev}</span>${ui.heroesOpen?T_.fold:T_.unfold}</button>
+      ${admin?`<button class="btn ${ui.edit?'active':''}" data-act="edit">${ICON.editp}${ui.edit?T_.editDone:T_.edit}</button>`:''}
+      <button class="btn primary" data-act="shot">${ICON.cam}${T_.shot}</button>
+      ${admin?`<button class="btn" data-act="reset">${T_.reset}</button>`:''}
+      ${!preview&&admin?`<span class="admin-chip" title="${esc(session.email)}">${esc(session.email)}</span><button class="btn" data-act="pw">${T_.pw}</button><button class="btn" data-act="logout">${T_.logout}</button>`:''}
+      ${!preview&&!admin?`<button class="btn" data-act="login">${ICON.lock}${T_.login}</button>`:''}
+    </div></header>`;
+
+  let banners='';
+  if(ui.loadErr) banners+=`<div class="banner warn">${T_.loadErr}</div>`;
+  if(admin&&ui.selected) banners+=`<div class="banner"><strong>${esc(ui.selected)}</strong><span>${T_.selectedHint}</span><button class="btn active" style="margin-left:auto;height:30px" data-act="clearsel">${T_.cancel}</button></div>`;
+
+  const cols=data.leaders.map((L,li)=>{
+    const arr=data.assign[L.id], count=arr.length, full=count>=MAX;
+    const photo=LEADER_IMG[L.id]?`<img src="${LEADER_IMG[L.id]}" alt="${esc(L.name)}" crossorigin="anonymous">`:`<div class="ph">${esc(L.name[0])}</div>`;
+    const role=L.role==='main'?`<span class="role main">${T_.roleMain}</span>`:`<span class="role sub">${L.role==='c1'?T_.roleC1:T_.roleC2}</span>`;
+    const ratioBtn=(field,val,w)=> ui.editing===L.id+':'+field
+      ? `<input class="rin" data-ratio="${li}:${field}" value="${esc(val)}" style="width:${w}px" aria-label="${T_.editRatio}">`
+      : `<button class="ratio" ${admin?`data-act="ratio" data-v="${L.id}:${field}"`:'tabindex="-1"'} aria-label="${T_.editRatio}"><span class="k">${T_.ratio}</span> <strong>${esc(val)}</strong>${admin?ICON.pen:''}</button>`;
+    const hbox=(kind)=>{
+      const list=L[kind], heroes=list.map((h,k)=>`<button class="fbtn" ${admin&&ui.edit?`data-act="pickleader" data-v="${li}:${kind}:${k}"`:'disabled'} aria-label="${esc(hn(h))}">${face(h,32,kind)}<span>${esc(hn(h))}</span></button>`).join('');
+      return `<div class="hbox ${kind}"><div class="meta"><span class="hlabel">${kind==='atk'?ICON.sword+T_.attackLeader:ICON.shield+T_.defenseLeader}</span>${ratioBtn(kind+'Ratio',L[kind+'Ratio'],120)}</div><div class="faces">${heroes}</div></div>`;
+    };
+    const grow=(kind)=>{
+      const rf=kind==='atk'?'gAtkRatio':'gDefRatio', tf=kind==='atk'?'gAtkText':'gDefText';
+      const right = admin&&ui.edit
+        ? `<input class="rin gtext" data-gtext="${li}:${tf}" value="${esc(L[tf])}" aria-label="heroes">`
+        : `<div class="gfaces">${heroList(L[tf]).map(h=>face(h,26,kind)).join('')}</div>`;
+      return `<div class="grow"><span class="badge ${kind}">${kind==='atk'?T_.onAttack:T_.onDefense}</span>${ratioBtn(rf,L[rf],64)}${right}</div>`;
+    };
+    let slots='';
+    for(let i=0;i<MAX;i++){
+      const m=arr[i];
+      if(m){
+        const ah=slotHero(L,i,m,'atk'), dh=slotHero(L,i,m,'def'), tr=tierOf(m.name);
+        slots+=`<div class="slot" ${admin?`draggable="true"`:''} data-slot="${L.id}:${i}">
+          <span class="n">${i+1}</span><span class="nm" title="${esc(m.name)}">${esc(m.name)}</span><span class="tier ${tr}">${T_[tr]}</span>
+          ${showAtk?`<button class="fb" ${admin?`data-act="pickslot" data-v="${L.id}:${i}:atk"`:'disabled'} aria-label="${T_.pickAtk}">${face(ah,28,'atk')}</button>`:''}
+          ${showDef?`<button class="fb" ${admin?`data-act="pickslot" data-v="${L.id}:${i}:def"`:'disabled'} aria-label="${T_.pickDef}">${face(dh,28,'def')}</button>`:''}
+          ${admin?`<button class="x" data-act="remove" data-v="${L.id}:${i}" aria-label="${T_.remove}">${ICON.x}</button>`:''}
+        </div>`;
+      } else slots+=`<div class="empty-slot"><span class="n">${i+1}</span><span>${admin&&i===count?T_.dropHint:''}</span></div>`;
+    }
+    return `<div class="col">
+      <div class="card"><div class="lead">${photo}<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">${role}<span class="lname">${esc(L.name)}</span></div></div>
+        ${ui.heroesOpen?`<div style="display:flex;flex-direction:column;gap:6px">${showAtk?hbox('atk'):''}${showDef?hbox('def'):''}</div>`:''}</div>
+      <div class="card dropzone" data-zone="${L.id}" style="padding:12px 12px 14px;gap:8px">
+        <div class="jhead"><b>${T_.joiners}</b><span>${esc(L.name)}</span><span class="cnt ${full?'full':count>=7?'good':''}">${count} / ${MAX}</span></div>
+        <div class="guide"><span class="gt">${T_.guide}</span>${showAtk?grow('atk'):''}${showDef?grow('def'):''}</div>
+        <div class="slots"><div class="shead"><span class="n"></span><span class="nm">${T_.colName}</span>${showAtk?`<span class="c atk">${T_.colAtk}</span>`:''}${showDef?`<span class="c def">${T_.colDef}</span>`:''}</div>${slots}</div>
+        ${admin&&ui.selected&&!full?`<button class="addbtn" data-act="add" data-v="${L.id}">${esc(ui.selected)} → ${esc(L.name)}${T_.addTo}</button>`:''}
+      </div></div>`;
+  }).join('');
+
+  const names=roster.map(r=>r.name);
+  Object.values(data.assign).forEach(arr=>arr.forEach(m=>{ if(!names.includes(m.name)) names.push(m.name); }));
+  const groups=['t11','t10','t7'].map(k=>{
+    const list=names.filter(n=>tierOf(n)===k), free=list.filter(n=>!where[n]).length;
+    const cards=list.map(n=>{
+      const at=where[n], sel=ui.selected===n;
+      return `<div class="pc ${k} ${at?'used':'free'} ${sel?'sel':''}" ${admin&&!at?`draggable="true"`:''} data-pool="${esc(n)}">
+        <button class="pn" ${admin&&!at?`data-act="select"`:'disabled'} data-v="${esc(n)}">${esc(n)}</button>
+        ${at?`<span class="at">${T_.assignedTo} ${esc(at)}</span>`
+          : admin?`<select data-tier="${esc(n)}" aria-label="${T_.tier}">${['t11','t10','t7'].map(x=>`<option value="${x}" ${x===k?'selected':''}>${T_[x]}</option>`).join('')}</select>`
+          : `<span class="at">${T_[k]}</span>`}
+      </div>`;
+    }).join('');
+    return `<div class="tgroup"><div class="tghead"><span class="tier ${k}">${T_[k]}</span><span>${free} / ${list.length}</span></div><div class="pgrid">${cards}</div></div>`;
+  }).join('');
+
+  $app.innerHTML = hdr + `<main class="${admin?'admin':''}">${banners}
+    <section id="capture" class="cap"><div class="grid">${cols}</div></section>
+    <section class="pool dropzone" data-zone="pool"><div class="phead"><h2>${T_.pool}</h2><span class="s">${T_.total} ${names.length}${T_.people} · ${T_.assigned} ${assignedCount}${T_.people}</span><span class="h">${admin?T_.poolHintAdmin:T_.poolHintView}</span></div>${groups}</section>
+  </main><div id="overlay"></div>`;
+  renderOverlay();
+  const inp=$app.querySelector('.rin[data-ratio]'); if(inp){ inp.focus(); inp.select(); }
+}
+function statusHtml(){ const T_=t(); return `<span class="dot"></span>${ui.saveState==='busy'?T_.saving:ui.saveState==='err'?`<button class="btn danger" style="height:26px" data-act="retry">${T_.saveErr}</button>`:ui.saveState==='ok'?T_.saved:''}`; }
+function renderStatus(){ const el=document.getElementById('status'); if(el){ el.className='pill '+(ui.saveState==='ok'?'ok':ui.saveState==='busy'?'busy':ui.saveState==='err'?'err':''); el.innerHTML=statusHtml(); } }
+
+function renderOverlay(){
+  const ov=document.getElementById('overlay'); if(!ov) return; const T_=t(); let h='';
+  const mn=ui.menu;
+  if(mn){
+    h+=`<div class="veil" data-act="closemenu"></div><div class="menu" role="menu" style="left:${mn.x}px;top:${mn.y}px;width:${mn.kind==='hero'?250:230}px">`;
+    if(mn.kind==='move'){
+      h+=`<span class="mt">${esc(mn.name)} · ${T_.moveTo}</span>`;
+      data.leaders.forEach(L=>{ const c=data.assign[L.id].length, cur=mn.from===L.id, full=c>=MAX;
+        h+=`<button class="mi" role="menuitem" data-act="moveto" data-v="${L.id}" ${cur||full?'disabled':''}>${LEADER_IMG[L.id]?`<img src="${LEADER_IMG[L.id]}" alt="">`:''}<span>${esc(L.name)}</span><span class="note">${cur?T_.current:full?T_.fullNote:c+' / '+MAX}</span></button>`; });
+      if(mn.from) h+=`<button class="mi ret" role="menuitem" data-act="menureturn">${T_.backToPool}</button>`;
+    } else {
+      let cur='', title='';
+      if(mn.target==='slot'){ const L=data.leaders.find(x=>x.id===mn.a), m=data.assign[mn.a][mn.b]; title=(m?m.name+' · ':'')+(mn.key==='atk'?T_.pickAtk:T_.pickDef); cur=m?slotHero(L,mn.b,m,mn.key):''; }
+      else { title=data.leaders[mn.a].name+' · '+(mn.key==='atk'?T_.attackLeader:T_.defenseLeader); cur=data.leaders[mn.a][mn.key][mn.b]; }
+      h+=`<span class="mt">${esc(title)}</span><div class="hgrid">`;
+      (mn.target==='slot'?HEROES.concat(['']):HEROES).forEach(x=>{ h+=`<button class="hi ${x===cur?'cur':''}" role="menuitem" data-act="sethero" data-v="${esc(x)}">${face(x,36,mn.key)}<span>${x?esc(hn(x)):T_.unset}</span></button>`; });
+      h+='</div>';
+    }
+    h+='</div>';
+  }
+  if(ui.modal==='login') h+=`<div class="modal-bg"><form class="modal" id="loginForm"><h3>${T_.login}</h3>
+    <label>${T_.email}<input name="email" type="email" autocomplete="username" required value="${esc(LS.get('rally_last_email',''))}"></label>
+    <label>${T_.password}<input name="password" type="password" autocomplete="current-password" required></label>
+    <div class="err" id="formErr"></div><div class="row"><button type="button" class="btn" data-act="closemodal">${T_.cancel}</button><button type="submit" class="btn primary">${T_.doLogin}</button></div></form></div>`;
+  if(ui.modal==='pw') h+=`<div class="modal-bg"><form class="modal" id="pwForm"><h3>${T_.pw}</h3>
+    <label>${T_.oldPw}<input name="old" type="password" autocomplete="current-password" required></label>
+    <label>${T_.newPw}<input name="n1" type="password" autocomplete="new-password" minlength="8" required></label>
+    <label>${T_.newPw2}<input name="n2" type="password" autocomplete="new-password" minlength="8" required></label>
+    <div class="err" id="formErr"></div><div class="row"><button type="button" class="btn" data-act="closemodal">${T_.cancel}</button><button type="submit" class="btn primary">${T_.change}</button></div></form></div>`;
+  if(ui.toast) h+=`<div class="toast" role="status">${esc(ui.toast)}</div>`;
+  ov.innerHTML=h;
+  const f=ov.querySelector('form input:not([value=""])+*')||ov.querySelector('form input');
+  if(ui.modal&&!ov.dataset.focused){ const first=[...ov.querySelectorAll('form input')].find(i=>!i.value); if(first) first.focus(); ov.dataset.focused='1'; }
+  if(!ui.modal) delete ov.dataset.focused;
+}
+
+/* ═════════════ 메뉴 위치 ═════════════ */
+function menuPos(x,y,w,h){ return {x:Math.max(8,Math.min(x||innerWidth/2,innerWidth-w-8)), y:Math.max(8,Math.min(y||innerHeight/2,innerHeight-h-8))}; }
+function openMove(x,y,name,from,idx){ const p=menuPos(x,y,230,240); ui.menu={kind:'move',name,from,idx,x:p.x,y:p.y}; renderOverlay(); }
+function openLogin(){ ui.modal='login'; renderOverlay(); }
+
+/* ═════════════ 이벤트 ═════════════ */
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const act=el.dataset.act, v=el.dataset.v, admin=isAdmin();
+  switch(act){
+    case 'tab': ui.tab=v; render(); break;
+    case 'lang': ui.lang=v; LS.set('rally_lang',v); render(); break;
+    case 'heroes': ui.heroesOpen=!ui.heroesOpen; LS.set('rally_heroes_open',ui.heroesOpen); render(); break;
+    case 'edit': if(admin){ ui.edit=!ui.edit; render(); } break;
+    case 'shot': screenshot(); break;
+    case 'reset': if(admin&&confirm(t().resetConfirm)){ data.leaders.forEach(L=>data.assign[L.id]=[]); ui.selected=null; changed(); toast(t().resetDone); } break;
+    case 'login': openLogin(); break;
+    case 'logout': if(session) apiPost({action:'logout',token:session.token}).catch(()=>{}); session=null; LS.del('rally_session'); ui.edit=false; ui.selected=null; render(); toast(t().loggedOut); break;
+    case 'pw': ui.modal='pw'; renderOverlay(); break;
+    case 'closemodal': ui.modal=null; renderOverlay(); break;
+    case 'retry': doSave(false); break;
+    case 'clearsel': ui.selected=null; render(); break;
+    case 'select': if(admin){ ui.selected = ui.selected===v?null:v; render(); } break;
+    case 'add': if(admin&&ui.selected) place(ui.selected,null,-1,v,null); break;
+    case 'remove': if(admin){ const [lid,i]=v.split(':'); removeAt(lid,+i); } break;
+    case 'ratio': if(admin){ ui.editing=v; render(); } break;
+    case 'pickslot': if(admin){ const [lid,i,key]=v.split(':'); const p=menuPos(e.clientX,e.clientY,250,270); ui.menu={kind:'hero',target:'slot',a:lid,b:+i,key,x:p.x,y:p.y}; renderOverlay(); } break;
+    case 'pickleader': if(admin&&ui.edit){ const [li,key,k]=v.split(':'); const p=menuPos(e.clientX,e.clientY,250,250); ui.menu={kind:'hero',target:'leader',a:+li,b:+k,key,x:p.x,y:p.y}; renderOverlay(); } break;
+    case 'sethero': { const mn=ui.menu; if(!mn) break; if(mn.target==='slot') setSlotHero(mn.a,mn.b,mn.key,v||''); else setLeaderHero(mn.a,mn.key,mn.b,v); break; }
+    case 'moveto': { const mn=ui.menu; if(mn) place(mn.name,mn.from,mn.idx,v,null); break; }
+    case 'menureturn': { const mn=ui.menu; if(mn&&mn.from) removeAt(mn.from,mn.idx); break; }
+    case 'closemenu': ui.menu=null; renderOverlay(); break;
+  }
+});
+document.addEventListener('change',e=>{
+  const s=e.target.closest('select[data-tier]'); if(s&&isAdmin()){ data.tiers[s.dataset.tier]=s.value; changed(); }
+});
+document.addEventListener('input',e=>{
+  const g=e.target.closest('input[data-gtext]'); if(g&&isAdmin()){ const [li,f]=g.dataset.gtext.split(':'); data.leaders[+li][f]=g.value; LS.set('rally_draft',{state:data,rev}); clearTimeout(saveTimer); ui.saveState='busy'; renderStatus(); saveTimer=setTimeout(()=>doSave(false),900); }
+});
+function commitRatio(inp){ const [li,f]=inp.dataset.ratio.split(':'); const val=inp.value.trim(); ui.editing=null; if(data.leaders[+li][f]!==val){ data.leaders[+li][f]=val; changed(); } else render(); }
+document.addEventListener('keydown',e=>{
+  const r=e.target.closest&&e.target.closest('input[data-ratio]');
+  if(r&&(e.key==='Enter')){ e.preventDefault(); commitRatio(r); }
+  else if(r&&e.key==='Escape'){ ui.editing=null; render(); }
+  else if(e.key==='Escape'&&(ui.menu||ui.modal)){ ui.menu=null; ui.modal=null; renderOverlay(); }
+});
+document.addEventListener('focusout',e=>{ const r=e.target.closest&&e.target.closest('input[data-ratio]'); if(r&&ui.editing) commitRatio(r); });
+
+/* 우클릭 / 길게 누르기 */
+document.addEventListener('contextmenu',e=>{
+  if(ui.menu){ e.preventDefault(); ui.menu=null; renderOverlay(); return; }
+  if(!isAdmin()) return;
+  const sl=e.target.closest('[data-slot]'), pc=e.target.closest('.pc.free[data-pool]');
+  if(sl){ e.preventDefault(); const [lid,i]=sl.dataset.slot.split(':'); openMove(e.clientX,e.clientY,data.assign[lid][+i].name,lid,+i); }
+  else if(pc){ e.preventDefault(); openMove(e.clientX,e.clientY,pc.dataset.pool,null,-1); }
+});
+let lpTimer=null, lpStart=null;
+document.addEventListener('touchstart',e=>{
+  if(!isAdmin()) return; const tgt=e.target.closest('[data-slot],.pc.free[data-pool]'); if(!tgt||e.target.closest('button,select,input')&&!e.target.closest('.pn')) return;
+  const tch=e.touches[0]; lpStart={x:tch.clientX,y:tch.clientY};
+  lpTimer=setTimeout(()=>{ lpTimer=null;
+    if(tgt.dataset.slot){ const [lid,i]=tgt.dataset.slot.split(':'); openMove(lpStart.x,lpStart.y,data.assign[lid][+i].name,lid,+i); }
+    else openMove(lpStart.x,lpStart.y,tgt.dataset.pool,null,-1);
+    if(navigator.vibrate) navigator.vibrate(15);
+  },500);
+},{passive:true});
+['touchend','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>{ clearTimeout(lpTimer); lpTimer=null; },{passive:true}));
+document.addEventListener('touchmove',e=>{ if(!lpTimer||!lpStart) return; const tch=e.touches[0]; if(Math.abs(tch.clientX-lpStart.x)>10||Math.abs(tch.clientY-lpStart.y)>10){ clearTimeout(lpTimer); lpTimer=null; } },{passive:true});
+
+/* 드래그 앤 드롭 */
+document.addEventListener('dragstart',e=>{
+  if(!isAdmin()) return;
+  const sl=e.target.closest('[data-slot]'), pc=e.target.closest('.pc.free[data-pool]');
+  if(sl){ const [lid,i]=sl.dataset.slot.split(':'); drag={name:data.assign[lid][+i].name,from:lid,idx:+i}; }
+  else if(pc){ drag={name:pc.dataset.pool,from:null,idx:-1}; }
+  else return;
+  try{ e.dataTransfer.setData('text/plain',drag.name); e.dataTransfer.effectAllowed='move'; }catch(err){}
+});
+document.addEventListener('dragend',()=>{ drag=null; document.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); });
+document.addEventListener('dragover',e=>{
+  if(!drag) return; const z=e.target.closest('[data-zone],[data-slot]'); if(!z) return;
+  e.preventDefault(); document.querySelectorAll('.over').forEach(x=>{ if(x!==z) x.classList.remove('over'); }); z.classList.add('over');
+});
+document.addEventListener('drop',e=>{
+  if(!drag) return; const d=drag; drag=null; document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));
+  const sl=e.target.closest('[data-slot]'), z=e.target.closest('[data-zone]');
+  if(sl){ e.preventDefault(); const [lid,i]=sl.dataset.slot.split(':'); place(d.name,d.from,d.idx,lid,+i); }
+  else if(z){ e.preventDefault(); if(z.dataset.zone==='pool'){ if(d.from) removeAt(d.from,d.idx); } else place(d.name,d.from,d.idx,z.dataset.zone,null); }
+});
+
+/* 로그인 / 비밀번호 변경 */
+document.addEventListener('submit',async e=>{
+  e.preventDefault(); const f=e.target, err=document.getElementById('formErr'), T_=t(); const btn=f.querySelector('[type=submit]'); btn.disabled=true;
+  try{
+    if(f.id==='loginForm'){
+      const email=f.email.value.trim().toLowerCase(); LS.set('rally_last_email',email);
+      const r=await apiPost({action:'login',email,password:f.password.value});
+      if(r.ok){ session={token:r.token,email:r.email,exp:r.exp}; LS.set('rally_session',session); ui.modal=null; render(); toast(T_.loggedIn); const draft=LS.get('rally_draft',null); if(draft&&draft.rev===rev){ data=normalize(draft.state); doSave(true); } }
+      else err.textContent = r.error==='locked'?T_.locked:T_.loginErr;
+    } else if(f.id==='pwForm'){
+      if(f.n1.value!==f.n2.value){ err.textContent=T_.pwMismatch; return; }
+      if(f.n1.value.length<8){ err.textContent=T_.pwWeak; return; }
+      const r=await apiPost({action:'changePassword',token:session.token,oldPassword:f.old.value,newPassword:f.n1.value});
+      if(r.ok){ session={token:r.token,email:r.email,exp:r.exp}; LS.set('rally_session',session); ui.modal=null; render(); toast(T_.pwDone); }
+      else err.textContent = r.error==='invalid_old'?T_.pwOldWrong:r.error==='weak'?T_.pwWeak:r.error==='auth'?T_.authExpired:(r.message||r.error);
+    }
+  }catch(ex){ err.textContent=String(ex.message||ex); }
+  finally{ btn.disabled=false; }
+});
+
+/* 스크린샷: 집결장 3열 영역만 */
+async function screenshot(){
+  const el=document.getElementById('capture'); if(!el||!window.html2canvas){ toast(t().shotErr); return; }
+  document.body.classList.add('capturing');
+  try{
+    const canvas=await html2canvas(el,{backgroundColor:'#0F131A',scale:2,useCORS:true});
+    const d=new Date(), pad=n=>String(n).padStart(2,'0');
+    const fname=`rally-${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.png`;
+    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+    const file=new File([blob],fname,{type:'image/png'});
+    const mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(mobile&&navigator.canShare&&navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file],title:t().title}); return; }catch(err){ if(err&&err.name==='AbortError') return; } }
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+    toast(t().shotDone);
+  }catch(err){ toast(t().shotErr); }
+  finally{ document.body.classList.remove('capturing'); }
+}
+
+load();
+</script>
+</body>
+</html>
