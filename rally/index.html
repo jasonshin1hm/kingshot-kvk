@@ -233,7 +233,7 @@ const HERO_FILE = {'찰스':'charles','페라':'petra','웨이론':'weewoo','소
 const HERO_EN = {'찰스':'Charles','페라':'Petra','웨이론':'Wee&Woo','소피아':'Sophia','스루드':'Thrud','첸코':'Chenko','살로':'Saul','힐데':'Hilde','트리톤':'Triton'};
 const PERSON_IMG = {ckids:'img/leaders/ckids.png',taiji:'img/leaders/taiji.png',jason:'img/leaders/jason.png',eric:'img/leaders/eric.png'};
 const RIDS = ['r1','r2','r3'];
-const MAX = 8;
+const MAX = 11;
 const emptyRow = () => Array(MAX).fill(null);
 const emptyHeroes = () => Array.from({length:MAX},()=>({atk:null,def:null}));
 const mkLeader = (id,person,role,defRatio) => ({id,person,role,atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio,gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'});
@@ -251,7 +251,7 @@ const T = {
   colName:'이름',colAtk:'공격',colDef:'수비',pool:'풀참자 명단',leaderGroup:'집결장',leaderBadge:'집결장',
   poolHintEdit:'카드를 집결원 칸으로 끌어넣거나 우클릭(모바일은 길게 누르기)으로 랠리를 고르세요. 집결원끼리 끌어 놓으면 자리를 바꿉니다. 오른쪽 위 일부·불참 버튼으로 참여검증을 표시합니다.',
   poolHintView:'보기 전용입니다. 수정은 로그인 후 가능합니다.',
-  dropHint:'여기로 끌어넣기',addTo:'에 추가',selectedHint:'선택됨 — 넣을 랠리의 추가 버튼을 누르세요',cancel:'취소',full:'빈 칸이 없습니다 (최대 8명)',assignedTo:'배정:',tier:'병사등급',
+  dropHint:'여기로 끌어넣기',addTo:'에 추가',selectedHint:'선택됨 — 넣을 랠리의 추가 버튼을 누르세요',cancel:'취소',full:'빈 칸이 없습니다 (최대 11명)',assignedTo:'배정:',tier:'병사등급',
   remove:'풀로 되돌리기',unset:'미지정',roleMain:'메인 랠리',roleC1:'카랠 1',roleC2:'카랠 2',fold:'영웅 접기',unfold:'영웅 펼치기',moveTo:'보낼 랠리',backToPool:'풀로 되돌리기',current:'현재',fullNote:'가득 참',
   pickAtk:'공격 영웅 선택',pickDef:'수비 영웅 선택',editRatio:'비율 수정',total:'전체',assigned:'배정',people:'명',
   t11:'TG8·T11',t10:'TG8·T10',t7:'TG7 이하',
@@ -271,7 +271,7 @@ const T = {
   colName:'Name',colAtk:'ATK',colDef:'DEF',pool:'Joiner pool',leaderGroup:'Rally leaders',leaderBadge:'Leader',
   poolHintEdit:'Drag a card into a slot, or right-click (long-press on mobile) to pick a rally. Drop a joiner on another joiner to swap. Use the top-right Partial / Absent buttons for attendance.',
   poolHintView:'View only. Log in to edit.',
-  dropHint:'Drop here',addTo:' — add',selectedHint:'selected — press Add on a rally',cancel:'Cancel',full:'No empty slot (max 8)',assignedTo:'In:',tier:'Troop tier',
+  dropHint:'Drop here',addTo:' — add',selectedHint:'selected — press Add on a rally',cancel:'Cancel',full:'No empty slot (max 11)',assignedTo:'In:',tier:'Troop tier',
   remove:'Return to pool',unset:'None',roleMain:'Main rally',roleC1:'Counter 1',roleC2:'Counter 2',fold:'Hide heroes',unfold:'Show heroes',moveTo:'Send to',backToPool:'Return to pool',current:'current',fullNote:'full',
   pickAtk:'Attack hero',pickDef:'Defense hero',editRatio:'Edit ratio',total:'total',assigned:'assigned',people:'',
   t11:'TG8·T11',t10:'TG8·T10',t7:'TG7 & below',
@@ -581,7 +581,7 @@ function render(){
       <div class="card"><div class="lead"><button class="pbtn" ${editLeader?`data-act="pickperson" data-v="${li}"`:'disabled'} aria-label="${T_.pickLeader}">${photo}</button><div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">${role}<span class="lname">${esc(L.person)}</span></div>${mine===rid?`<span class="role main">${T_.myRally}</span>`:''}</div>
         ${ui.heroesOpen?`<div style="display:flex;flex-direction:column;gap:6px">${showAtk?hbox('atk'):''}${showDef?hbox('def'):''}</div>`:''}</div>
       <div class="card dropzone" data-zone="${rid}" style="padding:12px 12px 14px;gap:8px">
-        <div class="jhead"><b>${T_.joiners}</b><span>${esc(L.person)}</span><span class="spacer"></span>${can?`<button class="hreset" data-act="heroreset" data-v="${rid}">${T_.heroReset}</button>`:''}<span class="cnt ${full?'full':count>=7?'good':''}">${count} / ${MAX}</span></div>
+        <div class="jhead"><b>${T_.joiners}</b><span>${esc(L.person)}</span><span class="spacer"></span>${can?`<button class="hreset" data-act="heroreset" data-v="${rid}">${T_.heroReset}</button>`:''}<span class="cnt ${full?'full':count>=MAX-1?'good':''}">${count} / ${MAX}</span></div>
         <div class="guide"><span class="gt">${T_.guide}</span>${showAtk?grow('atk'):''}${showDef?grow('def'):''}</div>
         <div class="slots"><div class="shead"><span class="n"></span><span class="nm">${T_.colName}</span>${showAtk?`<span class="c atk">${T_.colAtk}</span>`:''}${showDef?`<span class="c def">${T_.colDef}</span>`:''}</div>${slots}</div>
         ${!viewing&&ui.selected&&can&&!full?`<button class="addbtn" data-act="add" data-v="${rid}">${esc(ui.selected)} → ${esc(L.person)}${T_.addTo}</button>`:''}
