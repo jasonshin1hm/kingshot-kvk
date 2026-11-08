@@ -102,7 +102,8 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 64px;display:flex;flex-dir
 .slot{position:relative;display:flex;align-items:center;gap:6px;height:40px;background:var(--row);border:1px solid var(--rowline);border-radius:9px;padding:0 20px 0 6px;min-width:0;-webkit-user-select:none;user-select:none}
 .admin .slot{cursor:grab}
 .slot .n{width:14px;text-align:center;color:var(--muted2);font-size:11px;font-weight:700;flex:none}
-.slot .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0}
+.slot .nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto;min-width:0}
+.slot .tier{margin-left:auto}
 .slot .fb{background:none;border:none;padding:0;flex:none;display:flex}
 .slot .fb[disabled]{opacity:1;cursor:default}
 .slot .x{position:absolute;top:2px;right:2px;width:16px;height:16px;padding:0;border:none;background:transparent;color:var(--danger);display:flex;align-items:center;justify-content:center}
@@ -170,9 +171,26 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 64px;display:flex;flex-dir
 .pc.leaderc{border-left-color:#B07CE8}
 .empty-slot.drop{cursor:default}
 .empty-slot.over{outline:2px solid var(--gold);outline-offset:-1px}
-.slot.cap{background:#3A2E12;border-color:#D9A441}
-.slot.cap .nm{color:var(--gold2)}
-.slot .flag{flex:none;color:var(--gold2);display:flex}
+.slot.cap{border-color:rgba(217,164,65,.55)}
+.capb{position:relative;overflow:hidden;flex:none;display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:900;padding:1px 6px 1px 4px;border-radius:4px;color:#2A1D05;background:linear-gradient(135deg,#F7D77A,#D9A441 55%,#B8862C);box-shadow:0 0 0 1px #F2C866 inset,0 1px 3px rgba(0,0,0,.4)}
+.capb::after{content:"";position:absolute;top:-2px;bottom:-2px;width:14px;left:-20px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);transform:skewX(-20deg);animation:capShine 3.2s ease-in-out infinite}
+.capb svg{transform-origin:2px 12px;animation:capWave 1.8s ease-in-out infinite}
+@keyframes capShine{0%,62%{left:-20px}82%,100%{left:110%}}
+@keyframes capWave{0%,100%{transform:rotate(0) skewY(0)}50%{transform:rotate(-5deg) skewY(-5deg)}}
+.lead img,.lead .ph{animation:leadGlow 8s ease-in-out infinite}
+@keyframes leadGlow{0%,100%{box-shadow:0 0 3px 0 rgba(224,178,82,.12)}50%{box-shadow:0 0 0 1px rgba(242,200,102,.28),0 0 9px 2px rgba(224,178,82,.28)}}
+@media (prefers-reduced-motion:reduce){.capb::after,.capb svg,.lead img,.lead .ph{animation:none}}
+.capturing .capb::after{display:none}
+.slot.partial{border-color:#C98432}
+.slot .ptag,.pc .ptag{flex:none;font-size:10px;font-weight:900;padding:1px 5px;border-radius:4px;background:#3A2812;border:1px solid #E09A3E;color:#F5C08A}
+.pc.partial{border-color:#C98432!important;border-left-color:#E09A3E!important}
+.pc.partial .pn{color:#F5C08A}
+.pc .attn{position:absolute;top:6px;right:6px;display:flex;gap:3px}
+.pc .attn button{height:20px;padding:0 5px;border-radius:5px;border:1px solid #3A4250;background:#141922;color:var(--muted);font-size:10px;font-weight:700}
+.pc .attn button.part:hover,.pc .attn button.part.on{border-color:#E09A3E;color:#F5C08A;background:#3A2812}
+.pc .attn button.abs2:hover,.pc .attn button.abs2.on{border-color:#C0504D;color:#F2A3A3;background:#3A1A1A}
+.undo{width:36px;padding:0;justify-content:center}
+.capturing .attn{display:none!important}
 .slot.absent{border-color:#C0504D}
 .slot.absent .nm{color:#F2A3A3;text-decoration:line-through;text-decoration-color:#E57373;text-decoration-thickness:2px}
 .slot.absent::after{content:"✕";position:absolute;left:34px;top:50%;transform:translateY(-50%);font-size:30px;font-weight:900;color:rgba(229,115,115,.45);pointer-events:none;line-height:1}
@@ -183,7 +201,7 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 64px;display:flex;flex-dir
 .pc.absent .pn{color:#F2A3A3;text-decoration:line-through;text-decoration-color:#E57373;text-decoration-thickness:2px}
 .pc.absent::after{content:"✕";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:46px;font-weight:900;color:rgba(229,115,115,.35);pointer-events:none;line-height:1}
 .pc.absent .abs{background:#3A1A1A;border-color:#C0504D;color:#F2A3A3}
-.pc .pn{padding-right:44px}
+.pc .pn{padding-right:78px}
 .pc .del{position:absolute;bottom:8px;right:8px;width:22px;height:22px;border-radius:5px;border:1px solid #5A3434;background:#2A1A1A;color:#F2A3A3;display:flex;align-items:center;justify-content:center;padding:0}
 .pc .mtag{font-size:10px;color:var(--muted)}
 .hreset{height:24px;padding:0 8px;border-radius:6px;border:1px solid #3A4250;background:transparent;color:#C3C9D2;font-size:11px;font-weight:700;margin-left:auto}
@@ -231,7 +249,7 @@ const T = {
  ko:{title:'KvK 캐슬 랠리 편성',sub:'KOR #737 · 캐슬 집결',all:'전체 편성',atk:'공격시',def:'수비시',edit:'관리자 편집',editDone:'편집 완료',shot:'스크린샷 저장',reset:'초기화',login:'로그인',logout:'로그아웃',accounts:'계정 관리',
   joiners:'집결원',attackLeader:'공격 영웅',defenseLeader:'수비 영웅',ratio:'비율',guide:'집결원 병사비율 및 조인영웅',onAttack:'공격시',onDefense:'방어시',
   colName:'이름',colAtk:'공격',colDef:'수비',pool:'풀참자 명단',leaderGroup:'집결장',leaderBadge:'집결장',
-  poolHintEdit:'카드를 집결원 칸으로 끌어넣거나 우클릭(모바일은 길게 누르기)으로 랠리를 고르세요. 집결원끼리 끌어 놓으면 자리를 바꿉니다. 오른쪽 위 버튼으로 불참을 표시합니다.',
+  poolHintEdit:'카드를 집결원 칸으로 끌어넣거나 우클릭(모바일은 길게 누르기)으로 랠리를 고르세요. 집결원끼리 끌어 놓으면 자리를 바꿉니다. 오른쪽 위 일부·불참 버튼으로 참여검증을 표시합니다.',
   poolHintView:'보기 전용입니다. 수정은 로그인 후 가능합니다.',
   dropHint:'여기로 끌어넣기',addTo:'에 추가',selectedHint:'선택됨 — 넣을 랠리의 추가 버튼을 누르세요',cancel:'취소',full:'빈 칸이 없습니다 (최대 8명)',assignedTo:'배정:',tier:'병사등급',
   remove:'풀로 되돌리기',unset:'미지정',roleMain:'메인 랠리',roleC1:'카랠 1',roleC2:'카랠 2',fold:'영웅 접기',unfold:'영웅 펼치기',moveTo:'보낼 랠리',backToPool:'풀로 되돌리기',current:'현재',fullNote:'가득 참',
@@ -243,7 +261,7 @@ const T = {
   loadErr:'서버에서 불러오지 못했습니다. 마지막으로 저장된 화면을 보여줍니다.',shotDone:'이미지를 저장했습니다',shotErr:'이미지 저장에 실패했습니다',loggedOut:'로그아웃했습니다',loggedIn:'로그인했습니다',
   draftRestored:'저장되지 않았던 변경을 다시 저장했습니다',navCalc:'이벤트 계산기',navKvk:'KvK 통계',
   heroReset:'영웅 초기화',heroResetDone:'영웅을 초기값으로 되돌렸습니다',captain:'조장 지정',captainOff:'조장 해제',captainTag:'조장',
-  absent:'불참',present:'참여',absentReset:'참여검증 초기화',absentResetConfirm:'모든 불참 표시를 지울까요?',absentResetDone:'불참 표시를 모두 지웠습니다',
+  absent:'불참',partial:'일부',present:'참여',absentReset:'참여검증 초기화',attSave:'참여검증 저장',attSaved:'참여검증을 시트에 저장했습니다',attSavePreview:'미리보기 모드라 시트에 저장하지 않았습니다',undo:'되돌리기 (Ctrl+Z)',redo:'다시 실행 (Ctrl+Y)',nothingUndo:'되돌릴 작업이 없습니다',undone:'되돌렸습니다',redone:'다시 실행했습니다',absentResetConfirm:'모든 불참·일부 표시를 지울까요?',absentResetDone:'불참 표시를 모두 지웠습니다',
   addPerson:'인원 추가',addName:'이름',add:'추가',dup:'이미 있는 이름입니다',manualTag:'수동 추가',delManual:'삭제',delConfirm:'명단에서 삭제할까요?',
   saveRecord:'기록 저장',newMonth:'새 달 시작',recordSaved:'기록을 저장했습니다',recordOverwrite:'이미 저장된 기록이 있습니다. 덮어쓸까요?',newMonthPrompt:'새 달 이름 (예: 2026년12월)',newMonthConfirm:'새 달을 시작하면 현재 배정·조장·불참·수동 추가가 비워집니다. 현재 달 기록을 먼저 저장하셨나요?',newMonthDone:'새 달 탭을 만들었습니다',monthExists:'이미 있는 달입니다',badMonth:'형식: 2026년12월',
   viewing:'기록 보기 (보기 전용)',back:'현재 편성으로 돌아가기',restore:'이 기록으로 복원',restoreConfirm:'현재 편성을 이 기록으로 바꿀까요?',restored:'기록을 복원했습니다',noRecord:'이 달은 저장된 편성 기록이 없습니다 (명단만 표시)',savedAt:'저장',
@@ -251,7 +269,7 @@ const T = {
  en:{title:'KvK Castle Rally Setup',sub:'KOR #737 · Castle rally',all:'Full setup',atk:'Attack',def:'Defense',edit:'Admin edit',editDone:'Done',shot:'Save screenshot',reset:'Reset',login:'Log in',logout:'Log out',accounts:'Accounts',
   joiners:'Rally Joiners',attackLeader:'Attack heroes',defenseLeader:'Defense heroes',ratio:'Ratio',guide:'Rally Joiner troop ratio & heroes',onAttack:'Attack',onDefense:'Defense',
   colName:'Name',colAtk:'ATK',colDef:'DEF',pool:'Joiner pool',leaderGroup:'Rally leaders',leaderBadge:'Leader',
-  poolHintEdit:'Drag a card into a slot, or right-click (long-press on mobile) to pick a rally. Drop a joiner on another joiner to swap. Use the top-right button to mark absence.',
+  poolHintEdit:'Drag a card into a slot, or right-click (long-press on mobile) to pick a rally. Drop a joiner on another joiner to swap. Use the top-right Partial / Absent buttons for attendance.',
   poolHintView:'View only. Log in to edit.',
   dropHint:'Drop here',addTo:' — add',selectedHint:'selected — press Add on a rally',cancel:'Cancel',full:'No empty slot (max 8)',assignedTo:'In:',tier:'Troop tier',
   remove:'Return to pool',unset:'None',roleMain:'Main rally',roleC1:'Counter 1',roleC2:'Counter 2',fold:'Hide heroes',unfold:'Show heroes',moveTo:'Send to',backToPool:'Return to pool',current:'current',fullNote:'full',
@@ -263,7 +281,7 @@ const T = {
   loadErr:'Could not reach the server. Showing the last saved view.',shotDone:'Image saved',shotErr:'Could not save the image',loggedOut:'Logged out',loggedIn:'Logged in',
   draftRestored:'Re-saved changes that had not been saved',navCalc:'Event calculator',navKvk:'KvK stats',
   heroReset:'Reset heroes',heroResetDone:'Heroes reset to defaults',captain:'Set as captain',captainOff:'Remove captain',captainTag:'Captain',
-  absent:'Absent',present:'Present',absentReset:'Reset attendance',absentResetConfirm:'Clear all absence marks?',absentResetDone:'Absence marks cleared',
+  absent:'Absent',partial:'Partial',present:'Present',absentReset:'Reset attendance',attSave:'Save attendance',attSaved:'Attendance saved to the sheet',attSavePreview:'Preview mode — not saved to the sheet',undo:'Undo (Ctrl+Z)',redo:'Redo (Ctrl+Y)',nothingUndo:'Nothing to undo',undone:'Undone',redone:'Redone',absentResetConfirm:'Clear all absent/partial marks?',absentResetDone:'Absence marks cleared',
   addPerson:'Add player',addName:'Name',add:'Add',dup:'Name already exists',manualTag:'added',delManual:'Delete',delConfirm:'Delete from the pool?',
   saveRecord:'Save record',newMonth:'New month',recordSaved:'Record saved',recordOverwrite:'A record already exists. Overwrite?',newMonthPrompt:'New month (e.g. 2026년12월)',newMonthConfirm:'Starting a new month clears assignments, captains, absences and added players. Did you save this month first?',newMonthDone:'New month tab created',monthExists:'That month already exists',badMonth:'Format: 2026년12월',
   viewing:'Record (view only)',back:'Back to current',restore:'Restore this record',restoreConfirm:'Replace the current setup with this record?',restored:'Record restored',noRecord:'No saved setup for this month (pool only)',savedAt:'saved',
@@ -327,6 +345,9 @@ const ICON = {
   save:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><path d="M8 21v-7h8v7"/></svg>',
   plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   trash:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  undo:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>',
+  redo:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg>',
+  capflag:'<svg width="11" height="11" viewBox="0 0 24 24" fill="#5A3A05" stroke="#5A3A05" stroke-width="1.6" aria-hidden="true"><path d="M5 21V4" fill="none" stroke-width="2.6" stroke-linecap="round"/><path d="M5 4h11l-2 4 2 4H5z"/></svg>',
   user:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>'
 };
 let toastTimer;
@@ -376,9 +397,47 @@ async function load(){
 
 /* 모든 변경은 act()로: 적용 → 대기열 → 자동 저장 (충돌 시 서버 최신본에 다시 적용) */
 let saveTimer=null, saving=false;
-function act(fn){
+/* 되돌리기/다시 실행: 내 변경만 경로 단위로 기록 → 되돌릴 때 현재 값이 내가 바꾼 값과 같을 때만 원래대로 */
+const clone=o=>JSON.parse(JSON.stringify(o));
+const jeq=(a,b)=>JSON.stringify(a===undefined?null:a)===JSON.stringify(b===undefined?null:b);
+function diffPaths(a,b,path,out){
+  out=out||[]; path=path||[];
+  const oa=a&&typeof a==='object', ob=b&&typeof b==='object';
+  if(oa&&ob&&Array.isArray(a)===Array.isArray(b)&&!(Array.isArray(a)&&a.length!==b.length&&path[0]==='manual')){
+    const keys=new Set(Object.keys(a).concat(Object.keys(b)));
+    keys.forEach(k=>diffPaths(a[k],b[k],path.concat(k),out));
+  } else if(!jeq(a,b)) out.push([path,a===undefined?null:clone(a===undefined?null:a),b===undefined?null:clone(b)]);
+  return out;
+}
+function getP(o,p){ return p.reduce((x,k)=>x==null?undefined:x[k],o); }
+function setP(o,p,v){ let x=o; for(let i=0;i<p.length-1;i++){ if(x[p[i]]==null) x[p[i]]=(typeof p[i+1]==='number'||/^\d+$/.test(p[i+1]))?[]:{}; x=x[p[i]]; } const k=p[p.length-1]; if(v===null&&!Array.isArray(x)&&(p[0]==='absent'||p[0]==='tiers'||p[0]==='captain')) delete x[k]; else x[k]=v; }
+const UKEY='rally_undo2';
+let hist=LS.get(UKEY,{u:[],r:[],m:''});
+function saveHist(){ hist.u=hist.u.slice(-50); hist.r=hist.r.slice(-50); LS.set(UKEY,hist); }
+function resetHist(){ hist={u:[],r:[],m:data.month||''}; saveHist(); }
+function revertOp(changes,dir){ return st=>{ changes.forEach(([p,before,after])=>{ const from=dir==='back'?after:before, to=dir==='back'?before:after; if(jeq(getP(st,p),from)) setP(st,p,clone(to)); }); }; }
+function record(before,mergeKey){
+  const ch=diffPaths(before,data); if(!ch.length) return;
+  const last=hist.u[hist.u.length-1], now=Date.now();
+  if(mergeKey&&last&&last.k===mergeKey&&now-last.t<2000){ // 연속 입력은 한 단계로 합침
+    ch.forEach(([p,,after])=>{ const e=last.c.find(x=>jeq(x[0],p)); if(e) e[2]=after; else last.c.push([p,getP(before,p)??null,after]); }); last.t=now;
+  } else hist.u.push({c:ch,k:mergeKey||'',t:now});
+  hist.r=[]; hist.m=data.month||''; saveHist();
+}
+function undoRedo(dir){
+  if(ui.view||!logged()) return;
+  if(hist.m&&hist.m!==data.month){ resetHist(); }
+  const from=dir==='back'?hist.u:hist.r, to=dir==='back'?hist.r:hist.u;
+  const e=from.pop(); if(!e){ toast(t().nothingUndo); return; }
+  to.push(e); saveHist(); commit(revertOp(e.c,dir)); toast(dir==='back'?t().undone:t().redone);
+}
+function act(fn,mergeKey){
   if(ui.view) return;
-  fn(data); pending.push(fn); ui.menu=null;
+  const before=clone(data); fn(data); record(before,mergeKey); queue(fn);
+}
+function commit(fn){ if(ui.view) return; fn(data); queue(fn); }
+function queue(fn){
+  pending.push(fn); ui.menu=null;
   if(preview){ pending=[]; LS.set('rally_preview_state2',data); render(); return; }
   LS.set('rally_draft2',{state:data,rev}); ui.saveState='busy'; render();
   clearTimeout(saveTimer); saveTimer=setTimeout(()=>doSave(false),600);
@@ -419,7 +478,7 @@ const op = {
   hero:(rid,i,key,h)=>st=>{ st.heroes[rid][i][key]=h; },
   heroReset:(rid)=>st=>{ st.heroes[rid]=emptyHeroes(); },
   captain:(rid,name)=>st=>{ if(st.captain[rid]===name) delete st.captain[rid]; else if(st.slots[rid].includes(name)) st.captain[rid]=name; },
-  absent:(name)=>st=>{ if(st.absent[name]) delete st.absent[name]; else st.absent[name]=true; },
+  attend:(name,kind)=>st=>{ const cur=st.absent[name]===true?'absent':st.absent[name]; if(cur===kind) delete st.absent[name]; else st.absent[name]=(kind==='absent'?true:'partial'); },
   absentReset:()=>st=>{ st.absent={}; },
   leaderField:(li,f,v)=>st=>{ st.leaders[li][f]=v; },
   leaderHero:(li,key,k,h)=>st=>{ st.leaders[li][key][k]=h; },
@@ -473,6 +532,7 @@ function render(){
       ${status}${monthSel}
       <div class="seg"><button class="${ui.lang==='ko'?'on':''}" data-act="lang" data-v="ko">KO</button><button class="${ui.lang==='en'?'on':''}" data-act="lang" data-v="en">EN</button></div>
       <button class="btn" data-act="heroes"><span style="display:inline-flex;transform:${ui.heroesOpen?'rotate(180deg)':'none'}">${ICON.chev}</span>${ui.heroesOpen?T_.fold:T_.unfold}</button>
+      ${logged()&&!viewing?`<button class="btn undo" data-act="undo" title="${T_.undo}" aria-label="${T_.undo}" ${hist.u.length?'':'disabled'}>${ICON.undo}</button><button class="btn undo" data-act="redo" title="${T_.redo}" aria-label="${T_.redo}" ${hist.r.length?'':'disabled'}>${ICON.redo}</button>`:''}
       ${admin&&!viewing?`<button class="btn ${ui.edit?'active':''}" data-act="edit">${ICON.editp}${ui.edit?T_.editDone:T_.edit}</button>`:''}
       <button class="btn primary" data-act="shot">${ICON.cam}${T_.shot}</button>
       ${admin&&!viewing?`<button class="btn" data-act="saverecord">${ICON.save}${T_.saveRecord}</button><button class="btn" data-act="newmonth">${T_.newMonth}</button><button class="btn" data-act="reset">${T_.reset}</button>`:''}
@@ -507,10 +567,10 @@ function render(){
     for(let i=0;i<MAX;i++){
       const n=row[i];
       if(n){
-        const ah=slotHero(st,rid,i,'atk'), dh=slotHero(st,rid,i,'def'), tr=tierOf(n), isCap=st.captain[rid]===n, abs=!!st.absent[n];
+        const ah=slotHero(st,rid,i,'atk'), dh=slotHero(st,rid,i,'def'), tr=tierOf(n), isCap=st.captain[rid]===n, att=st.absent[n], abs=att===true, part=att==='partial';
         const dragOk=!viewing&&(isAdmin()||mine===rid);
-        slots+=`<div class="slot ${isCap?'cap':''} ${abs?'absent':''}" ${dragOk?'draggable="true"':''} data-slot="${rid}:${i}" data-name="${esc(n)}">
-          <span class="n">${i+1}</span>${isCap?`<span class="flag" title="${T_.captainTag}">${ICON.flag}</span>`:''}<span class="nm" title="${esc(n)}">${esc(n)}</span>${isLeaderP(n)?`<span class="lbadge">${T_.leaderBadge}</span>`:''}<span class="tier ${tr}">${T_[tr]}</span>
+        slots+=`<div class="slot ${isCap?'cap':''} ${abs?'absent':''} ${part?'partial':''}" ${dragOk?'draggable="true"':''} data-slot="${rid}:${i}" data-name="${esc(n)}">
+          <span class="n">${i+1}</span><span class="nm" title="${esc(n)}">${esc(n)}</span>${isCap?`<span class="capb">${ICON.capflag}${T_.captainTag}</span>`:''}${part?`<span class="ptag">${T_.partial}</span>`:''}${isLeaderP(n)?`<span class="lbadge">${T_.leaderBadge}</span>`:''}<span class="tier ${tr}">${T_[tr]}</span>
           ${showAtk?`<button class="fb" ${can?`data-act="pickslot" data-v="${rid}:${i}:atk"`:'disabled'} aria-label="${T_.pickAtk}">${face(ah,28,'atk')}</button>`:''}
           ${showDef?`<button class="fb" ${can?`data-act="pickslot" data-v="${rid}:${i}:def"`:'disabled'} aria-label="${T_.pickDef}">${face(dh,28,'def')}</button>`:''}
           ${can?`<button class="x" data-act="remove" data-v="${esc(n)}" aria-label="${T_.remove}">${ICON.x}</button>`:''}
@@ -534,11 +594,11 @@ function render(){
     if(!list.length&&k==='leader') return '';
     const free=list.filter(p=>!where[p.name]).length;
     const cards=list.map(p=>{
-      const n=p.name, at=where[n], sel=ui.selected===n, tr=tierOf(n), abs=!!st.absent[n];
+      const n=p.name, at=where[n], sel=ui.selected===n, tr=tierOf(n), att=st.absent[n], abs=att===true, part=att==='partial';
       const canPlace=!viewing&&logged()&&!at;
-      return `<div class="pc ${tr} ${p.leader?'leaderc':''} ${at?'used':'free'} ${sel?'sel':''} ${abs?'absent':''}" ${canPlace?'draggable="true"':''} data-pool="${esc(n)}">
+      return `<div class="pc ${tr} ${p.leader?'leaderc':''} ${at?'used':'free'} ${sel?'sel':''} ${abs?'absent':''} ${part?'partial':''}" ${canPlace?'draggable="true"':''} data-pool="${esc(n)}">
         <button class="pn" ${canPlace?`data-act="select"`:'disabled'} data-v="${esc(n)}">${esc(n)}</button>
-        ${canAny()?`<button class="abs" data-act="absent" data-v="${esc(n)}" aria-label="${abs?T_.present:T_.absent}">${abs?'✕ '+T_.absent:T_.absent}</button>`:''}
+        ${canAny()?`<span class="attn"><button class="part ${part?'on':''}" data-act="attend" data-k="partial" data-v="${esc(n)}">${T_.partial}</button><button class="abs2 ${abs?'on':''}" data-act="attend" data-k="absent" data-v="${esc(n)}">${abs?'✕ ':''}${T_.absent}</button></span>`:(part?`<span class="ptag" style="position:absolute;top:8px;right:8px">${T_.partial}</span>`:'')}
         ${at?`<span class="at">${T_.assignedTo} ${esc(at)}</span>`
           : (admin&&!viewing?`<select data-tier="${esc(n)}" aria-label="${T_.tier}">${['t11','t10','t7'].map(x=>`<option value="${x}" ${x===tr?'selected':''}>${T_[x]}</option>`).join('')}</select>`:`<span class="at">${T_[tr]}${p.leader?' · '+T_.leaderBadge:''}</span>`)}
         ${p.manual?`<span class="mtag">${T_.manualTag}</span>${admin&&!viewing?`<button class="del" data-act="delmanual" data-v="${esc(n)}" aria-label="${T_.delManual}">${ICON.trash}</button>`:''}`:''}
@@ -547,7 +607,7 @@ function render(){
     return `<div class="tgroup"><div class="tghead"><span class="tier ${k==='leader'?'leader':k}">${label}</span><span>${free} / ${list.length}</span></div><div class="pgrid">${cards}</div></div>`;
   }).join('');
 
-  const poolTools = !viewing&&logged() ? `<div class="addrow">${admin?`<button class="btn" data-act="addperson">${ICON.plus}${T_.addPerson}</button>`:''}<button class="btn" data-act="absentreset">${T_.absentReset}</button></div>` : '';
+  const poolTools = !viewing&&logged() ? `<div class="addrow">${admin?`<button class="btn" data-act="addperson">${ICON.plus}${T_.addPerson}</button>`:''}<button class="btn" data-act="absentreset">${T_.absentReset}</button><button class="btn" data-act="attsave">${ICON.save}${T_.attSave}</button></div>` : '';
 
   $app.innerHTML = hdr + `<main class="${(admin&&!viewing)?'admin':''}">${banners}
     <section id="capture" class="cap"><div class="grid">${cols}</div></section>
@@ -642,18 +702,28 @@ document.addEventListener('click',async e=>{
     case 'menureturn': { const mn=ui.menu; const w=mn&&whereIs(mn.name); if(w&&canRally(w.rid)) act(op.remove(mn.name)); break; }
     case 'closemenu': ui.menu=null; renderOverlay(); break;
     case 'heroreset': if(canRally(v)){ act(op.heroReset(v)); toast(T_.heroResetDone); } break;
-    case 'absent': if(canAny()) act(op.absent(v)); break;
+    case 'attend': if(canAny()) act(op.attend(v,el.dataset.k)); break;
+    case 'undo': undoRedo('back'); break;
+    case 'redo': undoRedo('fwd'); break;
+    case 'attsave': if(canAny()) saveAttendance(); break;
     case 'absentreset': if(canAny()&&confirm(T_.absentResetConfirm)){ act(op.absentReset()); toast(T_.absentResetDone); } break;
     case 'addperson': if(isAdmin()){ ui.modal='addperson'; renderOverlay(); } break;
     case 'delmanual': if(isAdmin()&&confirm(v+' — '+T_.delConfirm)) act(op.delManual(v)); break;
     case 'back': ui.view=null; render(); break;
     case 'restore': if(isAdmin()&&ui.view&&ui.view.hasRecord&&confirm(T_.restoreConfirm)){
         if(preview){ data=normalize(JSON.parse(JSON.stringify(ui.view.state))); data.month=ui.view.month; ui.view=null; LS.set('rally_preview_state2',data); render(); break; }
-        const r=await apiPost({action:'restore',token:session.token,month:ui.view.month,rev}); if(r.ok){ roster=r.roster||roster; data=normalize(r.state); rev=r.rev; ui.view=null; pending=[]; render(); toast(T_.restored); } else toast(r.error); } break;
+        const r=await apiPost({action:'restore',token:session.token,month:ui.view.month,rev}); if(r.ok){ roster=r.roster||roster; data=normalize(r.state); rev=r.rev; ui.view=null; pending=[]; resetHist(); render(); toast(T_.restored); } else toast(r.error); } break;
     case 'saverecord': if(isAdmin()) saveRecord(); break;
     case 'newmonth': if(isAdmin()) newMonth(); break;
   }
 });
+async function saveAttendance(){
+  const T_=t();
+  if(preview) return toast(T_.attSavePreview);
+  if(pending.length||saving){ await doSave(false); }
+  const r=await apiPost({action:'saveAttendance',token:session.token,month:data.month});
+  if(r.ok) toast(T_.attSaved); else toast(r.error==='auth'?T_.authExpired:(r.message||r.error));
+}
 async function saveRecord(){
   const T_=t(), m=data.month; if(!m) return toast(T_.badMonth);
   if(records.includes(m)&&!confirm(T_.recordOverwrite)) return;
@@ -668,7 +738,7 @@ async function newMonth(){
   if(preview){ data.month=name; months=[name].concat(months); act(op.resetAll()); act(st=>{st.absent={};st.manual=[];st.tiers={};RIDS.forEach(r=>st.heroes[r]=emptyHeroes());}); return toast(T_.newMonthDone); }
   if(pending.length||saving){ await doSave(false); }
   const r=await apiPost({action:'newMonth',token:session.token,month:name});
-  if(r.ok){ roster=r.roster||[]; data=normalize(r.state); rev=r.rev; months=r.months||months; pending=[]; render(); toast(T_.newMonthDone); }
+  if(r.ok){ roster=r.roster||[]; data=normalize(r.state); rev=r.rev; months=r.months||months; pending=[]; resetHist(); render(); toast(T_.newMonthDone); }
   else toast(r.error==='exists'?T_.monthExists:r.error==='bad_month'?T_.badMonth:r.error);
 }
 async function viewMonth(m){
@@ -684,12 +754,16 @@ document.addEventListener('change',e=>{
   const m=e.target.closest('select[data-month]'); if(m){ viewMonth(m.value); }
 });
 document.addEventListener('input',e=>{
-  const g=e.target.closest('input[data-gtext]'); if(g&&isAdmin()&&!ui.view){ const [li,f]=g.dataset.gtext.split(':'); data.leaders[+li][f]=g.value; const val=g.value;
+  const g=e.target.closest('input[data-gtext]'); if(g&&isAdmin()&&!ui.view){ const [li,f]=g.dataset.gtext.split(':'); const before=clone(data); data.leaders[+li][f]=g.value; const val=g.value; record(before,'g:'+li+':'+f);
     pending.push(st=>{ st.leaders[+li][f]=val; }); if(preview){ pending=[]; LS.set('rally_preview_state2',data); return; }
     LS.set('rally_draft2',{state:data,rev}); clearTimeout(saveTimer); ui.saveState='busy'; renderStatus(); saveTimer=setTimeout(()=>doSave(false),900); }
 });
 function commitRatio(inp){ const [li,f]=inp.dataset.ratio.split(':'); const val=inp.value.trim(); ui.editing=null; if(data.leaders[+li][f]!==val) act(op.leaderField(+li,f,val)); else render(); }
 document.addEventListener('keydown',e=>{
+  const inField=e.target.closest&&e.target.closest('input,textarea,select');
+  if(!inField&&(e.ctrlKey||e.metaKey)&&!e.altKey){ const k=e.key.toLowerCase();
+    if(k==='z'&&!e.shiftKey){ e.preventDefault(); undoRedo('back'); return; }
+    if(k==='y'||(k==='z'&&e.shiftKey)){ e.preventDefault(); undoRedo('fwd'); return; } }
   const r=e.target.closest&&e.target.closest('input[data-ratio]');
   if(r&&e.key==='Enter'){ e.preventDefault(); commitRatio(r); }
   else if(r&&e.key==='Escape'){ ui.editing=null; render(); }
