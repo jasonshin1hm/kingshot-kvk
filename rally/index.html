@@ -162,6 +162,43 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 64px;display:flex;flex-dir
 .capturing .x,.capturing .pen{display:none!important}
 @media (max-width:760px){.hdr{position:static}}
 @media (max-width:560px){.hdr{padding:10px 12px}main{padding:14px 10px 56px}.brand h1{font-size:17px}}
+/* v2 additions */
+.pill.view .dot{background:var(--def)}
+.monthsel{height:36px;background:#11151C;color:var(--text);border:1px solid #333B48;border-radius:8px;font-size:13px;font-weight:700;padding:0 8px}
+.lbadge{flex:none;font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;white-space:nowrap;border:1px solid #B07CE8;background:#2A1D3A;color:#D8B8FF}
+.tier.leader{background:#2A1D3A;border-color:#B07CE8;color:#D8B8FF}
+.pc.leaderc{border-left-color:#B07CE8}
+.empty-slot.drop{cursor:default}
+.empty-slot.over{outline:2px solid var(--gold);outline-offset:-1px}
+.slot.cap{background:#3A2E12;border-color:#D9A441}
+.slot.cap .nm{color:var(--gold2)}
+.slot .flag{flex:none;color:var(--gold2);display:flex}
+.slot.absent{border-color:#C0504D}
+.slot.absent .nm{color:#F2A3A3;text-decoration:line-through;text-decoration-color:#E57373;text-decoration-thickness:2px}
+.slot.absent::after{content:"✕";position:absolute;left:34px;top:50%;transform:translateY(-50%);font-size:30px;font-weight:900;color:rgba(229,115,115,.45);pointer-events:none;line-height:1}
+.pc{position:relative}
+.pc .abs{position:absolute;top:6px;right:6px;height:20px;padding:0 6px;border-radius:5px;border:1px solid #3A4250;background:#141922;color:var(--muted);font-size:10px;font-weight:700;display:flex;align-items:center;gap:3px}
+.pc .abs:hover{border-color:#C0504D;color:#F2A3A3}
+.pc.absent{border-color:#C0504D!important;border-left-color:#C0504D!important}
+.pc.absent .pn{color:#F2A3A3;text-decoration:line-through;text-decoration-color:#E57373;text-decoration-thickness:2px}
+.pc.absent::after{content:"✕";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:46px;font-weight:900;color:rgba(229,115,115,.35);pointer-events:none;line-height:1}
+.pc.absent .abs{background:#3A1A1A;border-color:#C0504D;color:#F2A3A3}
+.pc .pn{padding-right:44px}
+.pc .del{position:absolute;bottom:8px;right:8px;width:22px;height:22px;border-radius:5px;border:1px solid #5A3434;background:#2A1A1A;color:#F2A3A3;display:flex;align-items:center;justify-content:center;padding:0}
+.pc .mtag{font-size:10px;color:var(--muted)}
+.hreset{height:24px;padding:0 8px;border-radius:6px;border:1px solid #3A4250;background:transparent;color:#C3C9D2;font-size:11px;font-weight:700;margin-left:auto}
+.hreset:hover{border-color:var(--gold);color:var(--gold2)}
+.jhead .cnt{margin-left:8px}
+.jhead .spacer{margin-left:auto}
+.lead .pbtn{background:none;border:none;padding:0;display:flex}
+.lead .pbtn[disabled]{opacity:1;cursor:default}
+.addrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.acct{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #2A313D}
+.acct .aid{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.acct .arole{font-size:11px;color:var(--muted)}
+.acct input{height:34px!important;font-size:13px!important;width:120px}
+.modal.wide{max-width:460px}
+.capturing .hreset,.capturing .abs{display:none!important}
 </style>
 </head>
 <body>
@@ -169,81 +206,107 @@ main{max-width:1400px;margin:0 auto;padding:20px 20px 64px;display:flex;flex-dir
 
 <script>
 /* ═════════════ 설정 ═════════════ */
-// Apps Script 웹 앱 URL (배포 후 여기에 붙여넣기). 비워두면 미리보기 모드(저장 안 됨).
+// Apps Script 웹 앱 URL. 비워두면 미리보기 모드(저장 안 됨, 모든 권한).
 const API_URL = 'https://script.google.com/macros/s/AKfycby3fRSxTMvDpPZ-1s1e7cR8kWvaTGeKwx1s28JRh5Ul50J_kCs4ePqqbso3hdYJoDSB7w/exec';
 
 /* ═════════════ 고정 데이터 ═════════════ */
 const HEROES = ['찰스','페라','웨이론','소피아','스루드','첸코','살로','힐데','트리톤'];
 const HERO_FILE = {'찰스':'charles','페라':'petra','웨이론':'weewoo','소피아':'sophia','스루드':'thrud','첸코':'chenko','살로':'saul','힐데':'hilde','트리톤':'triton'};
 const HERO_EN = {'찰스':'Charles','페라':'Petra','웨이론':'Wee&Woo','소피아':'Sophia','스루드':'Thrud','첸코':'Chenko','살로':'Saul','힐데':'Hilde','트리톤':'Triton'};
-const LEADER_IMG = {ckids:'img/leaders/ckids.png',taiji:'img/leaders/taiji.png',jason:'img/leaders/jason.png'};
+const PERSON_IMG = {ckids:'img/leaders/ckids.png',taiji:'img/leaders/taiji.png',jason:'img/leaders/jason.png',eric:'img/leaders/eric.png'};
+const RIDS = ['r1','r2','r3'];
 const MAX = 8;
-const DEFAULT_STATE = () => ({
-  v:1,
-  leaders:[
-    {id:'ckids',name:'CKids',role:'main',atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio:'640',gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'},
-    {id:'taiji',name:'Taiji',role:'c1',atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio:'640',gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'},
-    {id:'jason',name:'Jason',role:'c2',atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio:'505 + 기병1만',gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'}
-  ],
-  assign:{ckids:[],taiji:[],jason:[]},
-  tiers:{}
-});
-// 미리보기 모드용 명단 (API_URL 비어 있을 때만 사용)
-const PREVIEW_ROSTER = (() => { const r=[]; const add=(t,a)=>a.forEach(n=>r.push({name:n,tier:t}));
-  add('t11',['Lurker','Jaber','싹쓸Derpy','Goy','연','밍복이','말레','Jenie','G아리아','클라우드','Raven','꿍딩','셀리아','비수','율짱']);
+const emptyRow = () => Array(MAX).fill(null);
+const emptyHeroes = () => Array.from({length:MAX},()=>({atk:null,def:null}));
+const mkLeader = (id,person,role,defRatio) => ({id,person,role,atk:['찰스','페라','웨이론'],atkRatio:'505 + 기병1만',def:['찰스','소피아','웨이론'],defRatio,gAtkRatio:'505',gAtkText:'스루드 첸코 살로 힐데',gDefRatio:'640',gDefText:'트리톤 스루드 힐데 힐데'});
+const DEFAULT_STATE = () => ({v:2,month:'',leaders:[mkLeader('r1','CKids','main','640'),mkLeader('r2','TAIJI','c1','640'),mkLeader('r3','JASON','c2','505 + 기병1만')],
+  slots:{r1:emptyRow(),r2:emptyRow(),r3:emptyRow()},heroes:{r1:emptyHeroes(),r2:emptyHeroes(),r3:emptyHeroes()},captain:{},absent:{},manual:[],tiers:{}});
+const PREVIEW_ROSTER = (() => { const r=[]; const add=(t,a,l)=>a.forEach(n=>r.push({name:n,tier:t,leader:!!l}));
+  add('t11',['CKids','TAIJI','JASON','ERIC','HENRY','커피향기','YENA','REAPER','Lurker','싹쓸Derpy'],true);
+  add('t11',['Jaber','Goy','연','밍복이','말레','Jenie','G아리아','클라우드','Raven','꿍딩','셀리아','비수','율짱']);
   add('t10',['가시나무','도토리','어쭈구리','몽이','고니','도토리묵','견복이','연(부캐)','셀리아(부캐)','유니','유후','Berserker101','TYS','독도수호신','시나브로','데뷰','도블린','현','도깨비']);
   add('t7',['악성핑','지연q','BH69','ACE(부캐)','HAKSEE','UNICORN','보물주심감사용','A급헌터','블루레오','TOM','JERRY']); return r; })();
 
 const T = {
- ko:{title:'KvK 캐슬 랠리 편성',sub:'KOR #737 · 캐슬 집결',all:'전체 편성',atk:'공격시',def:'수비시',edit:'관리자 편집',editDone:'편집 완료',shot:'스크린샷 저장',reset:'초기화',login:'관리자 로그인',logout:'로그아웃',pw:'비밀번호 변경',
+ ko:{title:'KvK 캐슬 랠리 편성',sub:'KOR #737 · 캐슬 집결',all:'전체 편성',atk:'공격시',def:'수비시',edit:'관리자 편집',editDone:'편집 완료',shot:'스크린샷 저장',reset:'초기화',login:'로그인',logout:'로그아웃',accounts:'계정 관리',
   joiners:'집결원',attackLeader:'공격 영웅',defenseLeader:'수비 영웅',ratio:'비율',guide:'집결원 병사비율 및 조인영웅',onAttack:'공격시',onDefense:'방어시',
-  colName:'이름',colAtk:'공격',colDef:'수비',pool:'풀참자 명단',
-  poolHintAdmin:'카드를 집결원 칸으로 끌어넣거나, 우클릭(모바일은 길게 누르기)으로 집결장을 고르세요. 이름을 눌러 선택한 뒤 추가 버튼을 눌러도 됩니다. 배정된 카드는 다른 랠리로 끌어 옮기거나 여기로 끌어내리면 풀로 돌아갑니다.',
-  poolHintView:'보기 전용입니다. 편성 수정은 관리자 로그인 후 가능합니다.',
-  dropHint:'여기로 끌어넣기',addTo:'에 추가',selectedHint:'선택됨 — 넣을 집결장의 추가 버튼을 누르세요',cancel:'취소',full:'집결원은 최대 8명입니다',assignedTo:'배정:',tier:'병사등급',
-  remove:'풀로 되돌리기',unset:'미지정',roleMain:'메인 랠리',roleC1:'카랠 1',roleC2:'카랠 2',fold:'영웅 접기',unfold:'영웅 펼치기',moveTo:'보낼 집결장',backToPool:'풀로 되돌리기',current:'현재',fullNote:'가득 참',
+  colName:'이름',colAtk:'공격',colDef:'수비',pool:'풀참자 명단',leaderGroup:'집결장',leaderBadge:'집결장',
+  poolHintEdit:'카드를 집결원 칸으로 끌어넣거나 우클릭(모바일은 길게 누르기)으로 랠리를 고르세요. 집결원끼리 끌어 놓으면 자리를 바꿉니다. 오른쪽 위 버튼으로 불참을 표시합니다.',
+  poolHintView:'보기 전용입니다. 수정은 로그인 후 가능합니다.',
+  dropHint:'여기로 끌어넣기',addTo:'에 추가',selectedHint:'선택됨 — 넣을 랠리의 추가 버튼을 누르세요',cancel:'취소',full:'빈 칸이 없습니다 (최대 8명)',assignedTo:'배정:',tier:'병사등급',
+  remove:'풀로 되돌리기',unset:'미지정',roleMain:'메인 랠리',roleC1:'카랠 1',roleC2:'카랠 2',fold:'영웅 접기',unfold:'영웅 펼치기',moveTo:'보낼 랠리',backToPool:'풀로 되돌리기',current:'현재',fullNote:'가득 참',
   pickAtk:'공격 영웅 선택',pickDef:'수비 영웅 선택',editRatio:'비율 수정',total:'전체',assigned:'배정',people:'명',
   t11:'TG8·T11',t10:'TG8·T10',t7:'TG7 이하',
   saved:'저장됨',saving:'저장 중…',saveErr:'저장 실패 — 재시도',preview:'미리보기 모드(저장 안 됨)',viewOnly:'보기 전용',
-  email:'이메일',password:'비밀번호',doLogin:'로그인',loginErr:'이메일 또는 비밀번호가 맞지 않습니다',locked:'로그인 시도가 너무 많습니다. 10분 후 다시 시도하세요',
-  oldPw:'현재 비밀번호',newPw:'새 비밀번호 (8자 이상)',newPw2:'새 비밀번호 확인',change:'변경',pwMismatch:'새 비밀번호가 서로 다릅니다',pwWeak:'8자 이상 입력하세요',pwOldWrong:'현재 비밀번호가 맞지 않습니다',pwDone:'비밀번호를 변경했습니다',
-  resetConfirm:'모든 배정을 비울까요?',resetDone:'배정을 모두 비웠습니다',conflict:'다른 곳에서 먼저 저장되어 최신 내용으로 불러왔습니다',authExpired:'로그인이 만료되었습니다. 다시 로그인하세요',
-  loadErr:'서버에서 불러오지 못했습니다. 마지막으로 저장된 화면을 보여줍니다.',shotDone:'이미지를 저장했습니다',shotErr:'이미지 저장에 실패했습니다',loggedOut:'로그아웃했습니다',loggedIn:'관리자로 로그인했습니다',
-  draftRestored:'저장되지 않았던 변경을 다시 저장했습니다',navCalc:'이벤트 계산기',navKvk:'KvK 통계'},
- en:{title:'KvK Castle Rally Setup',sub:'KOR #737 · Castle rally',all:'Full setup',atk:'Attack',def:'Defense',edit:'Admin edit',editDone:'Done',shot:'Save screenshot',reset:'Reset',login:'Admin login',logout:'Log out',pw:'Change password',
+  idLabel:'아이디',password:'비밀번호',doLogin:'로그인',loginErr:'아이디 또는 비밀번호가 맞지 않습니다',locked:'로그인 시도가 너무 많습니다. 10분 후 다시 시도하세요',
+  resetConfirm:'모든 배정(조장 포함)을 비울까요?',resetDone:'배정을 모두 비웠습니다',conflict:'다른 사람의 변경을 반영했습니다',authExpired:'로그인이 만료되었습니다. 다시 로그인하세요',forbidden:'권한이 없는 변경이라 저장하지 않았습니다',
+  loadErr:'서버에서 불러오지 못했습니다. 마지막으로 저장된 화면을 보여줍니다.',shotDone:'이미지를 저장했습니다',shotErr:'이미지 저장에 실패했습니다',loggedOut:'로그아웃했습니다',loggedIn:'로그인했습니다',
+  draftRestored:'저장되지 않았던 변경을 다시 저장했습니다',navCalc:'이벤트 계산기',navKvk:'KvK 통계',
+  heroReset:'영웅 초기화',heroResetDone:'영웅을 초기값으로 되돌렸습니다',captain:'조장 지정',captainOff:'조장 해제',captainTag:'조장',
+  absent:'불참',present:'참여',absentReset:'참여검증 초기화',absentResetConfirm:'모든 불참 표시를 지울까요?',absentResetDone:'불참 표시를 모두 지웠습니다',
+  addPerson:'인원 추가',addName:'이름',add:'추가',dup:'이미 있는 이름입니다',manualTag:'수동 추가',delManual:'삭제',delConfirm:'명단에서 삭제할까요?',
+  saveRecord:'기록 저장',newMonth:'새 달 시작',recordSaved:'기록을 저장했습니다',recordOverwrite:'이미 저장된 기록이 있습니다. 덮어쓸까요?',newMonthPrompt:'새 달 이름 (예: 2026년12월)',newMonthConfirm:'새 달을 시작하면 현재 배정·조장·불참·수동 추가가 비워집니다. 현재 달 기록을 먼저 저장하셨나요?',newMonthDone:'새 달 탭을 만들었습니다',monthExists:'이미 있는 달입니다',badMonth:'형식: 2026년12월',
+  viewing:'기록 보기 (보기 전용)',back:'현재 편성으로 돌아가기',restore:'이 기록으로 복원',restoreConfirm:'현재 편성을 이 기록으로 바꿀까요?',restored:'기록을 복원했습니다',noRecord:'이 달은 저장된 편성 기록이 없습니다 (명단만 표시)',savedAt:'저장',
+  pickLeader:'랠리장 선택',myRally:'내 랠리',newPw:'새 비밀번호',change:'변경',pwDone:'비밀번호를 변경했습니다',pwWeak:'4자 이상 입력하세요',roleAdmin:'전체 관리자',roleRally:'랠리 담당',noPerm:'권한이 없습니다'},
+ en:{title:'KvK Castle Rally Setup',sub:'KOR #737 · Castle rally',all:'Full setup',atk:'Attack',def:'Defense',edit:'Admin edit',editDone:'Done',shot:'Save screenshot',reset:'Reset',login:'Log in',logout:'Log out',accounts:'Accounts',
   joiners:'Rally Joiners',attackLeader:'Attack heroes',defenseLeader:'Defense heroes',ratio:'Ratio',guide:'Rally Joiner troop ratio & heroes',onAttack:'Attack',onDefense:'Defense',
-  colName:'Name',colAtk:'ATK',colDef:'DEF',pool:'Joiner pool',
-  poolHintAdmin:'Drag a card into a Rally Joiner list, or right-click (long-press on mobile) to pick a rally leader. You can also tap a name and press Add. Drag assigned cards between rallies, or back here to return them.',
-  poolHintView:'View only. Log in as admin to edit.',
-  dropHint:'Drop here',addTo:' — add',selectedHint:'selected — press Add on a rally',cancel:'Cancel',full:'Max 8 Rally Joiners',assignedTo:'In:',tier:'Troop tier',
+  colName:'Name',colAtk:'ATK',colDef:'DEF',pool:'Joiner pool',leaderGroup:'Rally leaders',leaderBadge:'Leader',
+  poolHintEdit:'Drag a card into a slot, or right-click (long-press on mobile) to pick a rally. Drop a joiner on another joiner to swap. Use the top-right button to mark absence.',
+  poolHintView:'View only. Log in to edit.',
+  dropHint:'Drop here',addTo:' — add',selectedHint:'selected — press Add on a rally',cancel:'Cancel',full:'No empty slot (max 8)',assignedTo:'In:',tier:'Troop tier',
   remove:'Return to pool',unset:'None',roleMain:'Main rally',roleC1:'Counter 1',roleC2:'Counter 2',fold:'Hide heroes',unfold:'Show heroes',moveTo:'Send to',backToPool:'Return to pool',current:'current',fullNote:'full',
   pickAtk:'Attack hero',pickDef:'Defense hero',editRatio:'Edit ratio',total:'total',assigned:'assigned',people:'',
   t11:'TG8·T11',t10:'TG8·T10',t7:'TG7 & below',
   saved:'Saved',saving:'Saving…',saveErr:'Save failed — retry',preview:'Preview mode (not saved)',viewOnly:'View only',
-  email:'Email',password:'Password',doLogin:'Log in',loginErr:'Wrong email or password',locked:'Too many attempts. Try again in 10 minutes',
-  oldPw:'Current password',newPw:'New password (8+ chars)',newPw2:'Confirm new password',change:'Change',pwMismatch:'New passwords do not match',pwWeak:'Use 8 or more characters',pwOldWrong:'Current password is wrong',pwDone:'Password changed',
-  resetConfirm:'Clear all assignments?',resetDone:'All assignments cleared',conflict:'Someone saved first — loaded the latest version',authExpired:'Session expired. Please log in again',
-  loadErr:'Could not reach the server. Showing the last saved view.',shotDone:'Image saved',shotErr:'Could not save the image',loggedOut:'Logged out',loggedIn:'Logged in as admin',
-  draftRestored:'Re-saved changes that had not been saved',navCalc:'Event calculator',navKvk:'KvK stats'}
+  idLabel:'ID',password:'Password',doLogin:'Log in',loginErr:'Wrong ID or password',locked:'Too many attempts. Try again in 10 minutes',
+  resetConfirm:'Clear all assignments (and captains)?',resetDone:'All assignments cleared',conflict:'Merged changes from someone else',authExpired:'Session expired. Please log in again',forbidden:'Not allowed — change was not saved',
+  loadErr:'Could not reach the server. Showing the last saved view.',shotDone:'Image saved',shotErr:'Could not save the image',loggedOut:'Logged out',loggedIn:'Logged in',
+  draftRestored:'Re-saved changes that had not been saved',navCalc:'Event calculator',navKvk:'KvK stats',
+  heroReset:'Reset heroes',heroResetDone:'Heroes reset to defaults',captain:'Set as captain',captainOff:'Remove captain',captainTag:'Captain',
+  absent:'Absent',present:'Present',absentReset:'Reset attendance',absentResetConfirm:'Clear all absence marks?',absentResetDone:'Absence marks cleared',
+  addPerson:'Add player',addName:'Name',add:'Add',dup:'Name already exists',manualTag:'added',delManual:'Delete',delConfirm:'Delete from the pool?',
+  saveRecord:'Save record',newMonth:'New month',recordSaved:'Record saved',recordOverwrite:'A record already exists. Overwrite?',newMonthPrompt:'New month (e.g. 2026년12월)',newMonthConfirm:'Starting a new month clears assignments, captains, absences and added players. Did you save this month first?',newMonthDone:'New month tab created',monthExists:'That month already exists',badMonth:'Format: 2026년12월',
+  viewing:'Record (view only)',back:'Back to current',restore:'Restore this record',restoreConfirm:'Replace the current setup with this record?',restored:'Record restored',noRecord:'No saved setup for this month (pool only)',savedAt:'saved',
+  pickLeader:'Choose rally leader',myRally:'My rally',newPw:'New password',change:'Change',pwDone:'Password changed',pwWeak:'Use 4 or more characters',roleAdmin:'Admin',roleRally:'Rally',noPerm:'Not allowed'}
 };
 
 /* ═════════════ 상태 ═════════════ */
 const LS = {get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
-const ui = {tab:'all',lang:LS.get('rally_lang','ko'),heroesOpen:LS.get('rally_heroes_open',true),edit:false,selected:null,menu:null,editing:null,modal:null,toast:'',saveState:'idle',loaded:false,loadErr:false};
-let data = DEFAULT_STATE();   // 편성 상태 (서버 저장 대상)
-let roster = [];              // [{name,tier}] — 시트에서 읽음
+const ui = {tab:'all',lang:LS.get('rally_lang','ko'),heroesOpen:LS.get('rally_heroes_open',true),edit:false,selected:null,menu:null,editing:null,modal:null,toast:'',saveState:'idle',loaded:false,loadErr:false,view:null,accounts:null};
+let data = DEFAULT_STATE();
+let roster = [];       // [{name,tier,leader}]
+let months = [], records = [];
 let rev = 0;
-let session = LS.get('rally_session', null); // {token,email,exp}
-let drag = null;
+let session = LS.get('rally_session2', null); // {token,id,role,rally,exp}
+let drag = null, pending = [];
 const preview = !API_URL;
 const t = () => T[ui.lang];
-const isAdmin = () => preview || !!(session && session.token && session.exp > Date.now());
+
+/* 권한 */
+const logged = () => preview || !!(session && session.token && session.exp > Date.now());
+const isAdmin = () => preview || (logged() && session.role === 'admin');
+const myRally = () => (!preview && logged() && session.role === 'rally') ? RIDS[session.rally] : null;
+const canRally = rid => !ui.view && (isAdmin() || myRally() === rid);
+const canAny = () => !ui.view && logged();
 
 /* ═════════════ 유틸 ═════════════ */
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const hn = h => (ui.lang==='en' && h) ? (HERO_EN[h]||h) : h;
 const heroList = txt => String(txt||'').trim().split(/\s+/).filter(Boolean);
-const tierOf = name => data.tiers[name] || (roster.find(r=>r.name===name)||{}).tier || 't7';
+const cur = () => ui.view ? ui.view.state : data;
+const curRoster = () => ui.view ? ui.view.roster : roster;
+function allPeople(){ // roster + manual
+  const st=cur(), list=curRoster().map(r=>({...r})); const keys=new Set(list.map(r=>r.name.toLowerCase()));
+  (st.manual||[]).forEach(m=>{ if(!keys.has(m.name.toLowerCase())){ list.push({name:m.name,tier:m.tier,leader:false,manual:true}); keys.add(m.name.toLowerCase()); } });
+  return list;
+}
+const personOf = name => allPeople().find(p=>p.name===name);
+const tierOf = name => cur().tiers[name] || (personOf(name)||{}).tier || 't7';
+const isLeaderP = name => !!(personOf(name)||{}).leader;
+function whereIs(name, st){ st=st||data; for(const rid of RIDS){ const i=st.slots[rid].indexOf(name); if(i>=0) return {rid,i}; } return null; }
+const firstEmpty = (rid, st) => (st||data).slots[rid].indexOf(null);
+function slotHero(st, rid, i, key){ const L=st.leaders[RIDS.indexOf(rid)]; const h=(st.heroes[rid]||[])[i]||{}; if(h[key]!==null&&h[key]!==undefined) return h[key]; const g=heroList(key==='atk'?L.gAtkText:L.gDefText); return i<4?(g[i]||''):''; }
+const photoOf = person => PERSON_IMG[String(person||'').toLowerCase()]||'';
 function face(h,size,kind){
   const cls='face'+(kind?' '+kind:'');
   if(!h) return `<span class="${cls} empty" style="width:${size}px;height:${size}px;font-size:${Math.round(size*.5)}px">+</span>`;
@@ -259,172 +322,236 @@ const ICON = {
   chev:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
   cam:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
   lock:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-  editp:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>'
+  editp:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  flag:'<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4" fill="none" stroke-width="2.2" stroke-linecap="round"/><path d="M5 4h11l-2 4 2 4H5z"/></svg>',
+  save:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v5h7V3"/><path d="M8 21v-7h8v7"/></svg>',
+  plus:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  trash:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  user:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>'
 };
 let toastTimer;
 function toast(msg){ui.toast=msg;renderOverlay();clearTimeout(toastTimer);toastTimer=setTimeout(()=>{ui.toast='';renderOverlay()},2600)}
 
 /* ═════════════ 서버 ═════════════ */
-async function apiGet(){const r=await fetch(API_URL+'?action=state&_='+Date.now());return r.json()}
+async function apiGet(params){const q=new URLSearchParams(Object.assign({action:'state'},params||{}));q.set('_',Date.now());const r=await fetch(API_URL+'?'+q);return r.json()}
 async function apiPost(body){const r=await fetch(API_URL,{method:'POST',body:JSON.stringify(body)});return r.json()}
 
 function normalize(s){
   const d=DEFAULT_STATE(); if(!s||typeof s!=='object') return d;
-  s.leaders = Array.isArray(s.leaders)&&s.leaders.length ? s.leaders : d.leaders;
-  s.assign = s.assign||{}; s.leaders.forEach(L=>{ if(!Array.isArray(s.assign[L.id])) s.assign[L.id]=[]; });
-  s.tiers = s.tiers||{}; return s;
+  if(s.v!==2){ // v1 형태가 오면 변환
+    const old=['ckids','taiji','jason'], n=DEFAULT_STATE();
+    (s.leaders||[]).forEach((L,li)=>{ const x={...L}; x.id=RIDS[li]; x.person=L.name||n.leaders[li].person; delete x.name; n.leaders[li]=x; });
+    RIDS.forEach((rid,li)=>{ ((s.assign||{})[old[li]]||[]).forEach((e,k)=>{ if(k<MAX&&e){ n.slots[rid][k]=e.name; n.heroes[rid][k]={atk:e.atk??null,def:e.def??null}; } }); });
+    n.tiers=s.tiers||{}; s=n;
+  }
+  s.leaders = Array.isArray(s.leaders)&&s.leaders.length===3 ? s.leaders : d.leaders;
+  s.leaders.forEach((L,li)=>{ L.id=RIDS[li]; if(!L.person) L.person=d.leaders[li].person; });
+  s.slots=s.slots||{}; s.heroes=s.heroes||{};
+  RIDS.forEach(rid=>{ const a=(s.slots[rid]||[]).slice(0,MAX); while(a.length<MAX) a.push(null); s.slots[rid]=a.map(x=>x||null);
+    const h=(s.heroes[rid]||[]).slice(0,MAX); while(h.length<MAX) h.push({atk:null,def:null}); s.heroes[rid]=h.map(x=>({atk:x&&x.atk!==undefined?x.atk:null,def:x&&x.def!==undefined?x.def:null})); });
+  s.captain=s.captain||{}; s.absent=s.absent||{}; s.manual=Array.isArray(s.manual)?s.manual:[]; s.tiers=s.tiers||{}; s.v=2;
+  return s;
+}
+
+function applyPayload(res){
+  roster=res.roster||[]; data=normalize(res.state); rev=res.rev||0;
+  if(res.months) months=res.months; if(res.records) records=res.records;
+  if(!data.month) data.month=res.month||months[0]||'';
+  LS.set('rally_cache2',{roster,state:data,rev,months,records});
 }
 
 async function load(){
-  const cache=LS.get('rally_cache',null);
-  if(preview){
-    roster=PREVIEW_ROSTER; data=normalize(LS.get('rally_preview_state',null)); ui.loaded=true; render(); return;
-  }
-  if(cache){ roster=cache.roster||[]; data=normalize(cache.state); rev=cache.rev||0; ui.loaded=true; render(); }
+  if(preview){ roster=PREVIEW_ROSTER; data=normalize(LS.get('rally_preview_state2',null)); if(!data.month) data.month='2026년11월'; months=[data.month]; records=[]; ui.loaded=true; render(); return; }
+  const cache=LS.get('rally_cache2',null);
+  if(cache){ roster=cache.roster||[]; data=normalize(cache.state); rev=cache.rev||0; months=cache.months||[]; records=cache.records||[]; ui.loaded=true; render(); }
   try{
-    const res=await apiGet();
-    if(!res.ok) throw new Error(res.error);
-    roster=res.roster||[]; data=normalize(res.state); rev=res.rev||0; ui.loaded=true; ui.loadErr=false;
-    LS.set('rally_cache',{roster,state:data,rev});
-    // 저장 못 했던 변경(임시저장)이 있으면 다시 저장
-    const draft=LS.get('rally_draft',null);
-    if(draft && isAdmin()){
-      if(draft.rev===rev){ data=normalize(draft.state); render(); await doSave(true); }
-      else LS.del('rally_draft');
-    }
+    const res=await apiGet(); if(!res.ok) throw new Error(res.error);
+    applyPayload(res); ui.loaded=true; ui.loadErr=false;
+    const draft=LS.get('rally_draft2',null);
+    if(draft&&logged()){ if(draft.rev===rev){ data=normalize(draft.state); render(); await doSave(true); } else LS.del('rally_draft2'); }
   }catch(e){ ui.loadErr=true; ui.loaded=true; }
   render();
-  if(session&&!preview){ apiPost({action:'whoami',token:session.token}).then(r=>{ if(!r.ok){ session=null; LS.del('rally_session'); render(); } }).catch(()=>{}); }
+  if(session&&!preview){ apiPost({action:'whoami',token:session.token}).then(r=>{ if(!r.ok){ session=null; LS.del('rally_session2'); render(); } else { session.role=r.role; session.rally=r.rally; LS.set('rally_session2',session); render(); } }).catch(()=>{}); }
 }
 
-let saveTimer=null;
-function changed(){
-  if(preview){ LS.set('rally_preview_state',data); render(); return; }
-  LS.set('rally_draft',{state:data,rev}); // 서버 저장 전까지 브라우저에 임시저장
-  ui.saveState='busy'; render();
-  clearTimeout(saveTimer); saveTimer=setTimeout(()=>doSave(false),700);
+/* 모든 변경은 act()로: 적용 → 대기열 → 자동 저장 (충돌 시 서버 최신본에 다시 적용) */
+let saveTimer=null, saving=false;
+function act(fn){
+  if(ui.view) return;
+  fn(data); pending.push(fn); ui.menu=null;
+  if(preview){ pending=[]; LS.set('rally_preview_state2',data); render(); return; }
+  LS.set('rally_draft2',{state:data,rev}); ui.saveState='busy'; render();
+  clearTimeout(saveTimer); saveTimer=setTimeout(()=>doSave(false),600);
 }
-async function doSave(fromDraft){
-  if(preview||!isAdmin()) return;
-  ui.saveState='busy'; renderStatus();
+async function doSave(fromDraft, tries){
+  if(preview||!logged()) return; if(saving){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>doSave(fromDraft,tries),400); return; }
+  tries=tries||0; saving=true; ui.saveState='busy'; renderStatus();
+  const n=pending.length;
   try{
     const res=await apiPost({action:'save',token:session.token,state:data,rev});
-    if(res.ok){ rev=res.rev; ui.saveState='ok'; LS.del('rally_draft'); LS.set('rally_cache',{roster,state:data,rev}); if(fromDraft) toast(t().draftRestored); }
-    else if(res.error==='conflict'){ data=normalize(res.state); rev=res.rev; LS.del('rally_draft'); ui.saveState='ok'; toast(t().conflict); }
-    else if(res.error==='auth'){ session=null; LS.del('rally_session'); ui.saveState='err'; toast(t().authExpired); openLogin(); }
+    if(res.ok){ rev=res.rev; pending.splice(0,n); ui.saveState='ok'; if(!pending.length) LS.del('rally_draft2'); LS.set('rally_cache2',{roster,state:data,rev,months,records}); if(fromDraft) toast(t().draftRestored); }
+    else if(res.error==='conflict'){
+      const fns=pending.slice(); data=normalize(res.state); rev=res.rev; fns.forEach(f=>{ try{ f(data); }catch(e){} });
+      saving=false; render(); if(tries<4) return doSave(fromDraft,tries+1); toast(t().conflict); return;
+    }
+    else if(res.error==='auth'){ session=null; LS.del('rally_session2'); ui.saveState='err'; toast(t().authExpired); openLogin(); }
+    else if(res.error==='forbidden'){ pending=[]; LS.del('rally_draft2'); toast(t().forbidden); await refresh(true); }
     else throw new Error(res.error);
   }catch(e){ ui.saveState='err'; }
-  render();
+  saving=false; render();
+  if(pending.length&&ui.saveState==='ok'){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>doSave(false),300); }
 }
+async function refresh(force){
+  if(preview) return;
+  try{ const res=await apiGet(); if(res.ok&&(force||res.rev!==rev)){ applyPayload(res); render(); } }catch(e){}
+}
+setInterval(()=>{ if(!preview&&!ui.view&&!drag&&!ui.menu&&!ui.modal&&!ui.editing&&!pending.length&&!saving&&document.visibilityState==='visible') refresh(false); },15000);
 
-/* ═════════════ 편성 조작 ═════════════ */
-function place(name,from,fromIdx,lid,idx){
-  const a=data.assign;
-  if(from!==lid && a[lid].length>=MAX){ toast(t().full); return; }
-  let entry={name,atk:null,def:null};
-  if(from){ entry=a[from][fromIdx]; if(!entry||entry.name!==name) return; a[from].splice(fromIdx,1); if(from===lid&&idx!=null&&idx>fromIdx) idx--; }
-  else if(Object.values(a).some(arr=>arr.some(m=>m.name===name))) return;
-  if(idx==null||idx>a[lid].length) idx=a[lid].length;
-  a[lid].splice(idx,0,entry); ui.selected=null; ui.menu=null; changed();
+/* ═════════════ 편성 조작 (st = 대상 상태, 이름 기준이라 재적용 가능) ═════════════ */
+function clearCaptainIfMoved(st,name,fromRid,toRid){ if(fromRid!==toRid&&st.captain[fromRid]===name) delete st.captain[fromRid]; }
+const op = {
+  add:(name,rid)=>st=>{ if(whereIs(name,st)) return; const i=firstEmpty(rid,st); if(i<0) return; st.slots[rid][i]=name; },
+  placeAt:(name,rid,i)=>st=>{ if(whereIs(name,st)) return; const old=st.slots[rid][i]; if(old&&st.captain[rid]===old) delete st.captain[rid]; st.slots[rid][i]=name; },
+  move:(name,toRid,toI)=>st=>{ const f=whereIs(name,st); if(!f) return; if(f.rid===toRid&&f.i===toI) return; const other=st.slots[toRid][toI];
+    st.slots[toRid][toI]=name; st.slots[f.rid][f.i]=other||null; clearCaptainIfMoved(st,name,f.rid,toRid); if(other) clearCaptainIfMoved(st,other,toRid,f.rid); },
+  moveTo:(name,toRid)=>st=>{ const f=whereIs(name,st); if(!f||f.rid===toRid) return; const i=firstEmpty(toRid,st); if(i<0) return; st.slots[toRid][i]=name; st.slots[f.rid][f.i]=null; clearCaptainIfMoved(st,name,f.rid,toRid); },
+  remove:(name)=>st=>{ const f=whereIs(name,st); if(!f) return; st.slots[f.rid][f.i]=null; if(st.captain[f.rid]===name) delete st.captain[f.rid]; },
+  hero:(rid,i,key,h)=>st=>{ st.heroes[rid][i][key]=h; },
+  heroReset:(rid)=>st=>{ st.heroes[rid]=emptyHeroes(); },
+  captain:(rid,name)=>st=>{ if(st.captain[rid]===name) delete st.captain[rid]; else if(st.slots[rid].includes(name)) st.captain[rid]=name; },
+  absent:(name)=>st=>{ if(st.absent[name]) delete st.absent[name]; else st.absent[name]=true; },
+  absentReset:()=>st=>{ st.absent={}; },
+  leaderField:(li,f,v)=>st=>{ st.leaders[li][f]=v; },
+  leaderHero:(li,key,k,h)=>st=>{ st.leaders[li][key][k]=h; },
+  leaderPerson:(li,p)=>st=>{ st.leaders[li].person=p; },
+  addManual:(name,tier)=>st=>{ if(st.manual.some(m=>m.name.toLowerCase()===name.toLowerCase())) return; st.manual.push({name,tier}); },
+  delManual:(name)=>st=>{ st.manual=st.manual.filter(m=>m.name!==name); const f=whereIs(name,st); if(f){ st.slots[f.rid][f.i]=null; if(st.captain[f.rid]===name) delete st.captain[f.rid]; } delete st.absent[name]; delete st.tiers[name]; },
+  tier:(name,v)=>st=>{ st.tiers[name]=v; },
+  resetAll:()=>st=>{ RIDS.forEach(r=>st.slots[r]=emptyRow()); st.captain={}; }
+};
+
+/* 사용자 동작 → 권한 확인 → act */
+function doAdd(name,rid){
+  if(!canRally(rid)) return toast(t().noPerm);
+  const w=whereIs(name); if(w){ if(w.rid===rid) return; if(!isAdmin()) return toast(t().noPerm); if(firstEmpty(rid)<0) return toast(t().full); return act(op.moveTo(name,rid)); }
+  if(firstEmpty(rid)<0) return toast(t().full);
+  ui.selected=null; act(op.add(name,rid));
 }
-function removeAt(lid,i){ data.assign[lid].splice(i,1); ui.menu=null; changed(); }
-function setSlotHero(lid,i,key,h){ data.assign[lid][i][key]=h; ui.menu=null; changed(); }
-function setLeaderHero(li,key,k,h){ data.leaders[li][key][k]=h; ui.menu=null; changed(); }
-function slotHero(L,i,m,key){ const g=heroList(key==='atk'?L.gAtkText:L.gDefText); return m[key]==null ? (i<4?(g[i]||''):'') : m[key]; }
+function doDropOnSlot(d,rid,i){
+  if(d.from){ // 집결원 → 칸 (교환/이동)
+    if(!(isAdmin()||(myRally()===d.from&&myRally()===rid))) return toast(t().noPerm);
+    act(op.move(d.name,rid,i));
+  } else { // 풀 → 칸
+    if(!canRally(rid)) return toast(t().noPerm);
+    act(op.placeAt(d.name,rid,i));
+  }
+}
 
 /* ═════════════ 렌더 ═════════════ */
 const $app=document.getElementById('app');
 function render(){
-  if(!ui.loaded){ return; }
-  const T_=t(), admin=isAdmin(), showAtk=ui.tab!=='def', showDef=ui.tab!=='atk';
+  if(!ui.loaded) return;
+  const T_=t(), st=cur(), admin=isAdmin(), showAtk=ui.tab!=='def', showDef=ui.tab!=='atk', viewing=!!ui.view, mine=myRally();
   document.documentElement.lang=ui.lang;
-  const where={}; data.leaders.forEach(L=>data.assign[L.id].forEach(m=>where[m.name]=L.name));
+  const people=allPeople(); const where={}; RIDS.forEach((rid,li)=>st.slots[rid].forEach(n=>{ if(n) where[n]=st.leaders[li].person; }));
   const assignedCount=Object.keys(where).length;
 
-  const status = preview ? `<span class="pill"><span class="dot"></span>${T_.preview}</span>`
-    : !admin ? `<span class="pill"><span class="dot"></span>${T_.viewOnly}</span>`
-    : `<span class="pill ${ui.saveState==='ok'?'ok':ui.saveState==='busy'?'busy':ui.saveState==='err'?'err':''}" id="status">${statusHtml()}</span>`;
+  let status;
+  if(viewing) status=`<span class="pill view"><span class="dot"></span>${T_.viewing}</span>`;
+  else if(preview) status=`<span class="pill"><span class="dot"></span>${T_.preview}</span>`;
+  else if(!logged()) status=`<span class="pill"><span class="dot"></span>${T_.viewOnly}</span>`;
+  else status=`<span class="pill ${ui.saveState==='ok'?'ok':ui.saveState==='busy'?'busy':ui.saveState==='err'?'err':''}" id="status">${statusHtml()}</span>`;
+
+  const monthOpts = Array.from(new Set([data.month].concat(months).filter(Boolean)));
+  const monthSel = monthOpts.length ? `<select class="monthsel" data-month aria-label="month">${monthOpts.map(m=>`<option value="${esc(m)}" ${(ui.view?ui.view.month:data.month)===m?'selected':''}>${esc(m)}${m===data.month?' ●':(records.includes(m)?'':' ·')}</option>`).join('')}</select>` : '';
 
   const hdr=`<header class="hdr">
     <div class="brand"><img src="../logo.png" alt="KOR737"><div><h1>${T_.title}</h1>
       <div class="sub">${T_.sub}<a href="../">${T_.navCalc}</a><a href="../kvk.html">${T_.navKvk}</a></div></div></div>
     <nav class="tabs" aria-label="view">${[['all',T_.all],['atk',T_.atk],['def',T_.def]].map(([k,l])=>`<button class="tab ${ui.tab===k?'on':''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</nav>
     <div class="actions">
-      ${status}
+      ${status}${monthSel}
       <div class="seg"><button class="${ui.lang==='ko'?'on':''}" data-act="lang" data-v="ko">KO</button><button class="${ui.lang==='en'?'on':''}" data-act="lang" data-v="en">EN</button></div>
       <button class="btn" data-act="heroes"><span style="display:inline-flex;transform:${ui.heroesOpen?'rotate(180deg)':'none'}">${ICON.chev}</span>${ui.heroesOpen?T_.fold:T_.unfold}</button>
-      ${admin?`<button class="btn ${ui.edit?'active':''}" data-act="edit">${ICON.editp}${ui.edit?T_.editDone:T_.edit}</button>`:''}
+      ${admin&&!viewing?`<button class="btn ${ui.edit?'active':''}" data-act="edit">${ICON.editp}${ui.edit?T_.editDone:T_.edit}</button>`:''}
       <button class="btn primary" data-act="shot">${ICON.cam}${T_.shot}</button>
-      ${admin?`<button class="btn" data-act="reset">${T_.reset}</button>`:''}
-      ${!preview&&admin?`<span class="admin-chip" title="${esc(session.email)}">${esc(session.email)}</span><button class="btn" data-act="pw">${T_.pw}</button><button class="btn" data-act="logout">${T_.logout}</button>`:''}
-      ${!preview&&!admin?`<button class="btn" data-act="login">${ICON.lock}${T_.login}</button>`:''}
+      ${admin&&!viewing?`<button class="btn" data-act="saverecord">${ICON.save}${T_.saveRecord}</button><button class="btn" data-act="newmonth">${T_.newMonth}</button><button class="btn" data-act="reset">${T_.reset}</button>`:''}
+      ${!preview&&logged()?`<span class="admin-chip" title="${esc(session.id)}">${esc(session.id)}${mine?' · '+esc(st.leaders[RIDS.indexOf(mine)].person):''}</span>${admin?`<button class="btn" data-act="accounts">${ICON.user}${T_.accounts}</button>`:''}<button class="btn" data-act="logout">${T_.logout}</button>`:''}
+      ${!preview&&!logged()?`<button class="btn" data-act="login">${ICON.lock}${T_.login}</button>`:''}
     </div></header>`;
 
   let banners='';
   if(ui.loadErr) banners+=`<div class="banner warn">${T_.loadErr}</div>`;
-  if(admin&&ui.selected) banners+=`<div class="banner"><strong>${esc(ui.selected)}</strong><span>${T_.selectedHint}</span><button class="btn active" style="margin-left:auto;height:30px" data-act="clearsel">${T_.cancel}</button></div>`;
+  if(viewing) banners+=`<div class="banner"><strong>${esc(ui.view.month)}</strong><span>${ui.view.hasRecord?T_.viewing+(ui.view.savedAt?` · ${T_.savedAt} ${esc(String(ui.view.savedAt).slice(0,16).replace('T',' '))}`:''):T_.noRecord}</span><span style="margin-left:auto;display:flex;gap:8px">${admin&&ui.view.hasRecord?`<button class="btn active" style="height:30px" data-act="restore">${T_.restore}</button>`:''}<button class="btn" style="height:30px" data-act="back">${T_.back}</button></span></div>`;
+  if(!viewing&&logged()&&ui.selected) banners+=`<div class="banner"><strong>${esc(ui.selected)}</strong><span>${T_.selectedHint}</span><button class="btn active" style="margin-left:auto;height:30px" data-act="clearsel">${T_.cancel}</button></div>`;
 
-  const cols=data.leaders.map((L,li)=>{
-    const arr=data.assign[L.id], count=arr.length, full=count>=MAX;
-    const photo=LEADER_IMG[L.id]?`<img src="${LEADER_IMG[L.id]}" alt="${esc(L.name)}" crossorigin="anonymous">`:`<div class="ph">${esc(L.name[0])}</div>`;
+  const cols=st.leaders.map((L,li)=>{
+    const rid=RIDS[li], row=st.slots[rid], count=row.filter(Boolean).length, full=count>=MAX, can=canRally(rid);
+    const ph=photoOf(L.person);
+    const photo=ph?`<img src="${ph}" alt="${esc(L.person)}" crossorigin="anonymous">`:`<div class="ph">${esc(String(L.person)[0]||'?')}</div>`;
     const role=L.role==='main'?`<span class="role main">${T_.roleMain}</span>`:`<span class="role sub">${L.role==='c1'?T_.roleC1:T_.roleC2}</span>`;
-    const ratioBtn=(field,val,w)=> ui.editing===L.id+':'+field
+    const editLeader=admin&&ui.edit&&!viewing;
+    const ratioBtn=(field,val,w)=> ui.editing===rid+':'+field&&!viewing
       ? `<input class="rin" data-ratio="${li}:${field}" value="${esc(val)}" style="width:${w}px" aria-label="${T_.editRatio}">`
-      : `<button class="ratio" ${admin?`data-act="ratio" data-v="${L.id}:${field}"`:'tabindex="-1"'} aria-label="${T_.editRatio}"><span class="k">${T_.ratio}</span> <strong>${esc(val)}</strong>${admin?ICON.pen:''}</button>`;
+      : `<button class="ratio" ${admin&&!viewing?`data-act="ratio" data-v="${rid}:${field}"`:'tabindex="-1"'} aria-label="${T_.editRatio}"><span class="k">${T_.ratio}</span> <strong>${esc(val)}</strong>${admin&&!viewing?ICON.pen:''}</button>`;
     const hbox=(kind)=>{
-      const list=L[kind], heroes=list.map((h,k)=>`<button class="fbtn" ${admin&&ui.edit?`data-act="pickleader" data-v="${li}:${kind}:${k}"`:'disabled'} aria-label="${esc(hn(h))}">${face(h,32,kind)}<span>${esc(hn(h))}</span></button>`).join('');
+      const heroes=L[kind].map((h,k)=>`<button class="fbtn" ${editLeader?`data-act="pickleader" data-v="${li}:${kind}:${k}"`:'disabled'} aria-label="${esc(hn(h))}">${face(h,32,kind)}<span>${esc(hn(h))}</span></button>`).join('');
       return `<div class="hbox ${kind}"><div class="meta"><span class="hlabel">${kind==='atk'?ICON.sword+T_.attackLeader:ICON.shield+T_.defenseLeader}</span>${ratioBtn(kind+'Ratio',L[kind+'Ratio'],120)}</div><div class="faces">${heroes}</div></div>`;
     };
     const grow=(kind)=>{
       const rf=kind==='atk'?'gAtkRatio':'gDefRatio', tf=kind==='atk'?'gAtkText':'gDefText';
-      const right = admin&&ui.edit
-        ? `<input class="rin gtext" data-gtext="${li}:${tf}" value="${esc(L[tf])}" aria-label="heroes">`
-        : `<div class="gfaces">${heroList(L[tf]).map(h=>face(h,26,kind)).join('')}</div>`;
+      const right = editLeader ? `<input class="rin gtext" data-gtext="${li}:${tf}" value="${esc(L[tf])}" aria-label="heroes">` : `<div class="gfaces">${heroList(L[tf]).map(h=>face(h,26,kind)).join('')}</div>`;
       return `<div class="grow"><span class="badge ${kind}">${kind==='atk'?T_.onAttack:T_.onDefense}</span>${ratioBtn(rf,L[rf],64)}${right}</div>`;
     };
     let slots='';
     for(let i=0;i<MAX;i++){
-      const m=arr[i];
-      if(m){
-        const ah=slotHero(L,i,m,'atk'), dh=slotHero(L,i,m,'def'), tr=tierOf(m.name);
-        slots+=`<div class="slot" ${admin?`draggable="true"`:''} data-slot="${L.id}:${i}">
-          <span class="n">${i+1}</span><span class="nm" title="${esc(m.name)}">${esc(m.name)}</span><span class="tier ${tr}">${T_[tr]}</span>
-          ${showAtk?`<button class="fb" ${admin?`data-act="pickslot" data-v="${L.id}:${i}:atk"`:'disabled'} aria-label="${T_.pickAtk}">${face(ah,28,'atk')}</button>`:''}
-          ${showDef?`<button class="fb" ${admin?`data-act="pickslot" data-v="${L.id}:${i}:def"`:'disabled'} aria-label="${T_.pickDef}">${face(dh,28,'def')}</button>`:''}
-          ${admin?`<button class="x" data-act="remove" data-v="${L.id}:${i}" aria-label="${T_.remove}">${ICON.x}</button>`:''}
+      const n=row[i];
+      if(n){
+        const ah=slotHero(st,rid,i,'atk'), dh=slotHero(st,rid,i,'def'), tr=tierOf(n), isCap=st.captain[rid]===n, abs=!!st.absent[n];
+        const dragOk=!viewing&&(isAdmin()||mine===rid);
+        slots+=`<div class="slot ${isCap?'cap':''} ${abs?'absent':''}" ${dragOk?'draggable="true"':''} data-slot="${rid}:${i}" data-name="${esc(n)}">
+          <span class="n">${i+1}</span>${isCap?`<span class="flag" title="${T_.captainTag}">${ICON.flag}</span>`:''}<span class="nm" title="${esc(n)}">${esc(n)}</span>${isLeaderP(n)?`<span class="lbadge">${T_.leaderBadge}</span>`:''}<span class="tier ${tr}">${T_[tr]}</span>
+          ${showAtk?`<button class="fb" ${can?`data-act="pickslot" data-v="${rid}:${i}:atk"`:'disabled'} aria-label="${T_.pickAtk}">${face(ah,28,'atk')}</button>`:''}
+          ${showDef?`<button class="fb" ${can?`data-act="pickslot" data-v="${rid}:${i}:def"`:'disabled'} aria-label="${T_.pickDef}">${face(dh,28,'def')}</button>`:''}
+          ${can?`<button class="x" data-act="remove" data-v="${esc(n)}" aria-label="${T_.remove}">${ICON.x}</button>`:''}
         </div>`;
-      } else slots+=`<div class="empty-slot"><span class="n">${i+1}</span><span>${admin&&i===count?T_.dropHint:''}</span></div>`;
+      } else slots+=`<div class="empty-slot drop" data-slot="${rid}:${i}"><span class="n">${i+1}</span><span>${can&&i===firstEmpty(rid,st)?T_.dropHint:''}</span></div>`;
     }
     return `<div class="col">
-      <div class="card"><div class="lead">${photo}<div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">${role}<span class="lname">${esc(L.name)}</span></div></div>
+      <div class="card"><div class="lead"><button class="pbtn" ${editLeader?`data-act="pickperson" data-v="${li}"`:'disabled'} aria-label="${T_.pickLeader}">${photo}</button><div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:0">${role}<span class="lname">${esc(L.person)}</span></div>${mine===rid?`<span class="role main">${T_.myRally}</span>`:''}</div>
         ${ui.heroesOpen?`<div style="display:flex;flex-direction:column;gap:6px">${showAtk?hbox('atk'):''}${showDef?hbox('def'):''}</div>`:''}</div>
-      <div class="card dropzone" data-zone="${L.id}" style="padding:12px 12px 14px;gap:8px">
-        <div class="jhead"><b>${T_.joiners}</b><span>${esc(L.name)}</span><span class="cnt ${full?'full':count>=7?'good':''}">${count} / ${MAX}</span></div>
+      <div class="card dropzone" data-zone="${rid}" style="padding:12px 12px 14px;gap:8px">
+        <div class="jhead"><b>${T_.joiners}</b><span>${esc(L.person)}</span><span class="spacer"></span>${can?`<button class="hreset" data-act="heroreset" data-v="${rid}">${T_.heroReset}</button>`:''}<span class="cnt ${full?'full':count>=7?'good':''}">${count} / ${MAX}</span></div>
         <div class="guide"><span class="gt">${T_.guide}</span>${showAtk?grow('atk'):''}${showDef?grow('def'):''}</div>
         <div class="slots"><div class="shead"><span class="n"></span><span class="nm">${T_.colName}</span>${showAtk?`<span class="c atk">${T_.colAtk}</span>`:''}${showDef?`<span class="c def">${T_.colDef}</span>`:''}</div>${slots}</div>
-        ${admin&&ui.selected&&!full?`<button class="addbtn" data-act="add" data-v="${L.id}">${esc(ui.selected)} → ${esc(L.name)}${T_.addTo}</button>`:''}
+        ${!viewing&&ui.selected&&can&&!full?`<button class="addbtn" data-act="add" data-v="${rid}">${esc(ui.selected)} → ${esc(L.person)}${T_.addTo}</button>`:''}
       </div></div>`;
   }).join('');
 
-  const names=roster.map(r=>r.name);
-  Object.values(data.assign).forEach(arr=>arr.forEach(m=>{ if(!names.includes(m.name)) names.push(m.name); }));
-  const groups=['t11','t10','t7'].map(k=>{
-    const list=names.filter(n=>tierOf(n)===k), free=list.filter(n=>!where[n]).length;
-    const cards=list.map(n=>{
-      const at=where[n], sel=ui.selected===n;
-      return `<div class="pc ${k} ${at?'used':'free'} ${sel?'sel':''}" ${admin&&!at?`draggable="true"`:''} data-pool="${esc(n)}">
-        <button class="pn" ${admin&&!at?`data-act="select"`:'disabled'} data-v="${esc(n)}">${esc(n)}</button>
+  const groupDefs=[['leader',T_.leaderGroup],['t11',T_.t11],['t10',T_.t10],['t7',T_.t7]];
+  const groups=groupDefs.map(([k,label])=>{
+    const list=people.filter(p=> k==='leader' ? p.leader : (!p.leader && tierOf(p.name)===k));
+    if(!list.length&&k==='leader') return '';
+    const free=list.filter(p=>!where[p.name]).length;
+    const cards=list.map(p=>{
+      const n=p.name, at=where[n], sel=ui.selected===n, tr=tierOf(n), abs=!!st.absent[n];
+      const canPlace=!viewing&&logged()&&!at;
+      return `<div class="pc ${tr} ${p.leader?'leaderc':''} ${at?'used':'free'} ${sel?'sel':''} ${abs?'absent':''}" ${canPlace?'draggable="true"':''} data-pool="${esc(n)}">
+        <button class="pn" ${canPlace?`data-act="select"`:'disabled'} data-v="${esc(n)}">${esc(n)}</button>
+        ${canAny()?`<button class="abs" data-act="absent" data-v="${esc(n)}" aria-label="${abs?T_.present:T_.absent}">${abs?'✕ '+T_.absent:T_.absent}</button>`:''}
         ${at?`<span class="at">${T_.assignedTo} ${esc(at)}</span>`
-          : admin?`<select data-tier="${esc(n)}" aria-label="${T_.tier}">${['t11','t10','t7'].map(x=>`<option value="${x}" ${x===k?'selected':''}>${T_[x]}</option>`).join('')}</select>`
-          : `<span class="at">${T_[k]}</span>`}
+          : (admin&&!viewing?`<select data-tier="${esc(n)}" aria-label="${T_.tier}">${['t11','t10','t7'].map(x=>`<option value="${x}" ${x===tr?'selected':''}>${T_[x]}</option>`).join('')}</select>`:`<span class="at">${T_[tr]}${p.leader?' · '+T_.leaderBadge:''}</span>`)}
+        ${p.manual?`<span class="mtag">${T_.manualTag}</span>${admin&&!viewing?`<button class="del" data-act="delmanual" data-v="${esc(n)}" aria-label="${T_.delManual}">${ICON.trash}</button>`:''}`:''}
       </div>`;
     }).join('');
-    return `<div class="tgroup"><div class="tghead"><span class="tier ${k}">${T_[k]}</span><span>${free} / ${list.length}</span></div><div class="pgrid">${cards}</div></div>`;
+    return `<div class="tgroup"><div class="tghead"><span class="tier ${k==='leader'?'leader':k}">${label}</span><span>${free} / ${list.length}</span></div><div class="pgrid">${cards}</div></div>`;
   }).join('');
 
-  $app.innerHTML = hdr + `<main class="${admin?'admin':''}">${banners}
+  const poolTools = !viewing&&logged() ? `<div class="addrow">${admin?`<button class="btn" data-act="addperson">${ICON.plus}${T_.addPerson}</button>`:''}<button class="btn" data-act="absentreset">${T_.absentReset}</button></div>` : '';
+
+  $app.innerHTML = hdr + `<main class="${(admin&&!viewing)?'admin':''}">${banners}
     <section id="capture" class="cap"><div class="grid">${cols}</div></section>
-    <section class="pool dropzone" data-zone="pool"><div class="phead"><h2>${T_.pool}</h2><span class="s">${T_.total} ${names.length}${T_.people} · ${T_.assigned} ${assignedCount}${T_.people}</span><span class="h">${admin?T_.poolHintAdmin:T_.poolHintView}</span></div>${groups}</section>
+    <section class="pool dropzone" data-zone="pool"><div class="phead"><h2>${T_.pool}</h2><span class="s">${T_.total} ${people.length}${T_.people} · ${T_.assigned} ${assignedCount}${T_.people}</span><span class="h">${(!viewing&&logged())?T_.poolHintEdit:T_.poolHintView}</span></div>${poolTools}${groups}</section>
   </main><div id="overlay"></div>`;
   renderOverlay();
   const inp=$app.querySelector('.rin[data-ratio]'); if(inp){ inp.focus(); inp.select(); }
@@ -433,150 +560,214 @@ function statusHtml(){ const T_=t(); return `<span class="dot"></span>${ui.saveS
 function renderStatus(){ const el=document.getElementById('status'); if(el){ el.className='pill '+(ui.saveState==='ok'?'ok':ui.saveState==='busy'?'busy':ui.saveState==='err'?'err':''); el.innerHTML=statusHtml(); } }
 
 function renderOverlay(){
-  const ov=document.getElementById('overlay'); if(!ov) return; const T_=t(); let h='';
+  const ov=document.getElementById('overlay'); if(!ov) return; const T_=t(); let h=''; const st=cur();
   const mn=ui.menu;
   if(mn){
-    h+=`<div class="veil" data-act="closemenu"></div><div class="menu" role="menu" style="left:${mn.x}px;top:${mn.y}px;width:${mn.kind==='hero'?250:230}px">`;
-    if(mn.kind==='move'){
+    h+=`<div class="veil" data-act="closemenu"></div><div class="menu" role="menu" style="left:${mn.x}px;top:${mn.y}px;width:${mn.kind==='hero'?250:240}px">`;
+    if(mn.kind==='pool'||mn.kind==='slot'){
       h+=`<span class="mt">${esc(mn.name)} · ${T_.moveTo}</span>`;
-      data.leaders.forEach(L=>{ const c=data.assign[L.id].length, cur=mn.from===L.id, full=c>=MAX;
-        h+=`<button class="mi" role="menuitem" data-act="moveto" data-v="${L.id}" ${cur||full?'disabled':''}>${LEADER_IMG[L.id]?`<img src="${LEADER_IMG[L.id]}" alt="">`:''}<span>${esc(L.name)}</span><span class="note">${cur?T_.current:full?T_.fullNote:c+' / '+MAX}</span></button>`; });
-      if(mn.from) h+=`<button class="mi ret" role="menuitem" data-act="menureturn">${T_.backToPool}</button>`;
+      const w=whereIs(mn.name);
+      st.leaders.forEach((L,li)=>{ const rid=RIDS[li], c=st.slots[rid].filter(Boolean).length, curR=w&&w.rid===rid, full=firstEmpty(rid)<0;
+        const ok = mn.kind==='pool' ? canRally(rid) : isAdmin();
+        h+=`<button class="mi" role="menuitem" data-act="moveto" data-v="${rid}" ${curR||full||!ok?'disabled':''}>${photoOf(L.person)?`<img src="${photoOf(L.person)}" alt="">`:''}<span>${esc(L.person)}</span><span class="note">${curR?T_.current:full?T_.fullNote:c+' / '+MAX}</span></button>`; });
+      if(mn.kind==='slot'&&w&&canRally(w.rid)){
+        const isCap=st.captain[w.rid]===mn.name;
+        h+=`<button class="mi" role="menuitem" data-act="captain" style="border-top:1px solid var(--rowline);border-radius:0;margin-top:4px"><span style="color:var(--gold2);display:flex">${ICON.flag}</span><span>${isCap?T_.captainOff:T_.captain}</span></button>`;
+        h+=`<button class="mi ret" role="menuitem" data-act="menureturn">${T_.backToPool}</button>`;
+      }
+    } else if(mn.kind==='person'){
+      h+=`<span class="mt">${T_.pickLeader}</span>`;
+      allPeople().filter(p=>p.leader).forEach(p=>{ h+=`<button class="mi" role="menuitem" data-act="setperson" data-v="${esc(p.name)}">${photoOf(p.name)?`<img src="${photoOf(p.name)}" alt="">`:`<span class="face" style="width:30px;height:30px;font-size:13px;background:#3A414D">${esc(p.name[0])}</span>`}<span>${esc(p.name)}</span>${st.leaders[mn.li].person===p.name?`<span class="note">${T_.current}</span>`:''}</button>`; });
     } else {
-      let cur='', title='';
-      if(mn.target==='slot'){ const L=data.leaders.find(x=>x.id===mn.a), m=data.assign[mn.a][mn.b]; title=(m?m.name+' · ':'')+(mn.key==='atk'?T_.pickAtk:T_.pickDef); cur=m?slotHero(L,mn.b,m,mn.key):''; }
-      else { title=data.leaders[mn.a].name+' · '+(mn.key==='atk'?T_.attackLeader:T_.defenseLeader); cur=data.leaders[mn.a][mn.key][mn.b]; }
+      let curH='', title='';
+      if(mn.target==='slot'){ const nm=st.slots[mn.a][mn.b]; title=(nm?nm+' · ':'')+(mn.key==='atk'?T_.pickAtk:T_.pickDef); curH=slotHero(st,mn.a,mn.b,mn.key); }
+      else { title=st.leaders[mn.a].person+' · '+(mn.key==='atk'?T_.attackLeader:T_.defenseLeader); curH=st.leaders[mn.a][mn.key][mn.b]; }
       h+=`<span class="mt">${esc(title)}</span><div class="hgrid">`;
-      (mn.target==='slot'?HEROES.concat(['']):HEROES).forEach(x=>{ h+=`<button class="hi ${x===cur?'cur':''}" role="menuitem" data-act="sethero" data-v="${esc(x)}">${face(x,36,mn.key)}<span>${x?esc(hn(x)):T_.unset}</span></button>`; });
+      (mn.target==='slot'?HEROES.concat(['']):HEROES).forEach(x=>{ h+=`<button class="hi ${x===curH?'cur':''}" role="menuitem" data-act="sethero" data-v="${esc(x)}">${face(x,36,mn.key)}<span>${x?esc(hn(x)):T_.unset}</span></button>`; });
       h+='</div>';
     }
     h+='</div>';
   }
   if(ui.modal==='login') h+=`<div class="modal-bg"><form class="modal" id="loginForm"><h3>${T_.login}</h3>
-    <label>${T_.email}<input name="email" type="email" autocomplete="username" required value="${esc(LS.get('rally_last_email',''))}"></label>
+    <label>${T_.idLabel}<input name="uid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" required value="${esc(LS.get('rally_last_id',''))}"></label>
     <label>${T_.password}<input name="password" type="password" autocomplete="current-password" required></label>
     <div class="err" id="formErr"></div><div class="row"><button type="button" class="btn" data-act="closemodal">${T_.cancel}</button><button type="submit" class="btn primary">${T_.doLogin}</button></div></form></div>`;
-  if(ui.modal==='pw') h+=`<div class="modal-bg"><form class="modal" id="pwForm"><h3>${T_.pw}</h3>
-    <label>${T_.oldPw}<input name="old" type="password" autocomplete="current-password" required></label>
-    <label>${T_.newPw}<input name="n1" type="password" autocomplete="new-password" minlength="8" required></label>
-    <label>${T_.newPw2}<input name="n2" type="password" autocomplete="new-password" minlength="8" required></label>
-    <div class="err" id="formErr"></div><div class="row"><button type="button" class="btn" data-act="closemodal">${T_.cancel}</button><button type="submit" class="btn primary">${T_.change}</button></div></form></div>`;
+  if(ui.modal==='addperson') h+=`<div class="modal-bg"><form class="modal" id="addForm"><h3>${T_.addPerson}</h3>
+    <label>${T_.addName}<input name="pname" type="text" required maxlength="30" autocomplete="off"></label>
+    <label>${T_.tier}<select name="ptier" style="height:42px;background:#11151C;color:var(--text);border:1px solid #3A4250;border-radius:8px;padding:0 10px;font-size:15px">${['t11','t10','t7'].map(x=>`<option value="${x}">${T_[x]}</option>`).join('')}</select></label>
+    <div class="err" id="formErr"></div><div class="row"><button type="button" class="btn" data-act="closemodal">${T_.cancel}</button><button type="submit" class="btn primary">${T_.add}</button></div></form></div>`;
+  if(ui.modal==='accounts') h+=`<div class="modal-bg"><div class="modal wide"><h3>${T_.accounts}</h3>
+    ${ui.accounts?ui.accounts.map(a=>`<form class="acct" data-acct="${esc(a.id)}"><span class="aid">${esc(a.id)}<br><span class="arole">${a.role==='admin'?T_.roleAdmin:T_.roleRally+' · '+esc(data.leaders[a.rally]?data.leaders[a.rally].person:'')}</span></span><input name="np" type="text" placeholder="${T_.newPw}" autocomplete="off"><button type="submit" class="btn">${T_.change}</button></form>`).join(''):`<div class="loading" style="padding:20px">…</div>`}
+    <div class="err" id="formErr"></div><div class="row"><button type="button" class="btn" data-act="closemodal">${T_.cancel}</button></div></div></div>`;
   if(ui.toast) h+=`<div class="toast" role="status">${esc(ui.toast)}</div>`;
   ov.innerHTML=h;
-  const f=ov.querySelector('form input:not([value=""])+*')||ov.querySelector('form input');
   if(ui.modal&&!ov.dataset.focused){ const first=[...ov.querySelectorAll('form input')].find(i=>!i.value); if(first) first.focus(); ov.dataset.focused='1'; }
   if(!ui.modal) delete ov.dataset.focused;
 }
 
-/* ═════════════ 메뉴 위치 ═════════════ */
+/* ═════════════ 메뉴 ═════════════ */
 function menuPos(x,y,w,h){ return {x:Math.max(8,Math.min(x||innerWidth/2,innerWidth-w-8)), y:Math.max(8,Math.min(y||innerHeight/2,innerHeight-h-8))}; }
-function openMove(x,y,name,from,idx){ const p=menuPos(x,y,230,240); ui.menu={kind:'move',name,from,idx,x:p.x,y:p.y}; renderOverlay(); }
+function openMenu(kind,x,y,extra,w,h){ const p=menuPos(x,y,w||240,h||300); ui.menu=Object.assign({kind,x:p.x,y:p.y},extra); renderOverlay(); }
 function openLogin(){ ui.modal='login'; renderOverlay(); }
+function nextMonthName(){ const all=months.concat([data.month]).filter(Boolean).map(m=>{ const x=m.match(/(\d{4})년\s?(\d{1,2})월/); return x?(+x[1])*12+(+x[2]-1):0; }); const mx=all.length?Math.max(...all):(new Date().getFullYear()*12+new Date().getMonth()); const n=mx+1; return Math.floor(n/12)+'년'+(n%12+1)+'월'; }
 
 /* ═════════════ 이벤트 ═════════════ */
 document.addEventListener('click',async e=>{
   const el=e.target.closest('[data-act]'); if(!el) return;
-  const act=el.dataset.act, v=el.dataset.v, admin=isAdmin();
-  switch(act){
+  const a=el.dataset.act, v=el.dataset.v, T_=t();
+  switch(a){
     case 'tab': ui.tab=v; render(); break;
     case 'lang': ui.lang=v; LS.set('rally_lang',v); render(); break;
     case 'heroes': ui.heroesOpen=!ui.heroesOpen; LS.set('rally_heroes_open',ui.heroesOpen); render(); break;
-    case 'edit': if(admin){ ui.edit=!ui.edit; render(); } break;
+    case 'edit': if(isAdmin()){ ui.edit=!ui.edit; render(); } break;
     case 'shot': screenshot(); break;
-    case 'reset': if(admin&&confirm(t().resetConfirm)){ data.leaders.forEach(L=>data.assign[L.id]=[]); ui.selected=null; changed(); toast(t().resetDone); } break;
+    case 'reset': if(isAdmin()&&confirm(T_.resetConfirm)){ ui.selected=null; act(op.resetAll()); toast(T_.resetDone); } break;
     case 'login': openLogin(); break;
-    case 'logout': if(session) apiPost({action:'logout',token:session.token}).catch(()=>{}); session=null; LS.del('rally_session'); ui.edit=false; ui.selected=null; render(); toast(t().loggedOut); break;
-    case 'pw': ui.modal='pw'; renderOverlay(); break;
+    case 'logout': if(session) apiPost({action:'logout',token:session.token}).catch(()=>{}); session=null; LS.del('rally_session2'); ui.edit=false; ui.selected=null; render(); toast(T_.loggedOut); break;
+    case 'accounts': ui.modal='accounts'; ui.accounts=null; renderOverlay(); apiPost({action:'listAccounts',token:session.token}).then(r=>{ if(r.ok){ ui.accounts=r.accounts; renderOverlay(); } }); break;
     case 'closemodal': ui.modal=null; renderOverlay(); break;
     case 'retry': doSave(false); break;
     case 'clearsel': ui.selected=null; render(); break;
-    case 'select': if(admin){ ui.selected = ui.selected===v?null:v; render(); } break;
-    case 'add': if(admin&&ui.selected) place(ui.selected,null,-1,v,null); break;
-    case 'remove': if(admin){ const [lid,i]=v.split(':'); removeAt(lid,+i); } break;
-    case 'ratio': if(admin){ ui.editing=v; render(); } break;
-    case 'pickslot': if(admin){ const [lid,i,key]=v.split(':'); const p=menuPos(e.clientX,e.clientY,250,270); ui.menu={kind:'hero',target:'slot',a:lid,b:+i,key,x:p.x,y:p.y}; renderOverlay(); } break;
-    case 'pickleader': if(admin&&ui.edit){ const [li,key,k]=v.split(':'); const p=menuPos(e.clientX,e.clientY,250,250); ui.menu={kind:'hero',target:'leader',a:+li,b:+k,key,x:p.x,y:p.y}; renderOverlay(); } break;
-    case 'sethero': { const mn=ui.menu; if(!mn) break; if(mn.target==='slot') setSlotHero(mn.a,mn.b,mn.key,v||''); else setLeaderHero(mn.a,mn.key,mn.b,v); break; }
-    case 'moveto': { const mn=ui.menu; if(mn) place(mn.name,mn.from,mn.idx,v,null); break; }
-    case 'menureturn': { const mn=ui.menu; if(mn&&mn.from) removeAt(mn.from,mn.idx); break; }
+    case 'select': if(canAny()){ ui.selected = ui.selected===v?null:v; render(); } break;
+    case 'add': if(ui.selected) doAdd(ui.selected,v); break;
+    case 'remove': { const w=whereIs(v); if(w&&canRally(w.rid)) act(op.remove(v)); break; }
+    case 'ratio': if(isAdmin()&&!ui.view){ ui.editing=v; render(); } break;
+    case 'pickslot': { const [rid,i,key]=v.split(':'); if(canRally(rid)) openMenu('hero',e.clientX,e.clientY,{target:'slot',a:rid,b:+i,key},250,280); break; }
+    case 'pickleader': if(isAdmin()&&ui.edit){ const [li,key,k]=v.split(':'); openMenu('hero',e.clientX,e.clientY,{target:'leader',a:+li,b:+k,key},250,250); } break;
+    case 'pickperson': if(isAdmin()&&ui.edit) openMenu('person',e.clientX,e.clientY,{li:+v},240,420); break;
+    case 'setperson': { const mn=ui.menu; if(mn&&isAdmin()) act(op.leaderPerson(mn.li,v)); break; }
+    case 'sethero': { const mn=ui.menu; if(!mn) break; if(mn.target==='slot'){ if(canRally(mn.a)) act(op.hero(mn.a,mn.b,mn.key,v||'')); } else if(isAdmin()) act(op.leaderHero(mn.a,mn.key,mn.b,v)); break; }
+    case 'moveto': { const mn=ui.menu; if(!mn) break; if(mn.kind==='pool') doAdd(mn.name,v); else if(isAdmin()){ if(firstEmpty(v)<0) toast(T_.full); else act(op.moveTo(mn.name,v)); } break; }
+    case 'captain': { const mn=ui.menu; const w=mn&&whereIs(mn.name); if(w&&canRally(w.rid)) act(op.captain(w.rid,mn.name)); break; }
+    case 'menureturn': { const mn=ui.menu; const w=mn&&whereIs(mn.name); if(w&&canRally(w.rid)) act(op.remove(mn.name)); break; }
     case 'closemenu': ui.menu=null; renderOverlay(); break;
+    case 'heroreset': if(canRally(v)){ act(op.heroReset(v)); toast(T_.heroResetDone); } break;
+    case 'absent': if(canAny()) act(op.absent(v)); break;
+    case 'absentreset': if(canAny()&&confirm(T_.absentResetConfirm)){ act(op.absentReset()); toast(T_.absentResetDone); } break;
+    case 'addperson': if(isAdmin()){ ui.modal='addperson'; renderOverlay(); } break;
+    case 'delmanual': if(isAdmin()&&confirm(v+' — '+T_.delConfirm)) act(op.delManual(v)); break;
+    case 'back': ui.view=null; render(); break;
+    case 'restore': if(isAdmin()&&ui.view&&ui.view.hasRecord&&confirm(T_.restoreConfirm)){
+        if(preview){ data=normalize(JSON.parse(JSON.stringify(ui.view.state))); data.month=ui.view.month; ui.view=null; LS.set('rally_preview_state2',data); render(); break; }
+        const r=await apiPost({action:'restore',token:session.token,month:ui.view.month,rev}); if(r.ok){ roster=r.roster||roster; data=normalize(r.state); rev=r.rev; ui.view=null; pending=[]; render(); toast(T_.restored); } else toast(r.error); } break;
+    case 'saverecord': if(isAdmin()) saveRecord(); break;
+    case 'newmonth': if(isAdmin()) newMonth(); break;
   }
 });
+async function saveRecord(){
+  const T_=t(), m=data.month; if(!m) return toast(T_.badMonth);
+  if(records.includes(m)&&!confirm(T_.recordOverwrite)) return;
+  if(preview){ records=Array.from(new Set(records.concat([m]))); LS.set('rally_rec_'+m,{state:data,savedAt:new Date().toISOString()}); render(); return toast(T_.recordSaved); }
+  if(pending.length||saving){ await doSave(false); }
+  const r=await apiPost({action:'saveRecord',token:session.token,month:m}); if(r.ok){ records=r.records||records; render(); toast(T_.recordSaved); } else toast(r.error);
+}
+async function newMonth(){
+  const T_=t(); if(!confirm(T_.newMonthConfirm)) return;
+  const name=(prompt(T_.newMonthPrompt,nextMonthName())||'').replace(/\s/g,''); if(!name) return;
+  if(!/^\d{4}년\d{1,2}월$/.test(name)) return toast(T_.badMonth);
+  if(preview){ data.month=name; months=[name].concat(months); act(op.resetAll()); act(st=>{st.absent={};st.manual=[];st.tiers={};RIDS.forEach(r=>st.heroes[r]=emptyHeroes());}); return toast(T_.newMonthDone); }
+  if(pending.length||saving){ await doSave(false); }
+  const r=await apiPost({action:'newMonth',token:session.token,month:name});
+  if(r.ok){ roster=r.roster||[]; data=normalize(r.state); rev=r.rev; months=r.months||months; pending=[]; render(); toast(T_.newMonthDone); }
+  else toast(r.error==='exists'?T_.monthExists:r.error==='bad_month'?T_.badMonth:r.error);
+}
+async function viewMonth(m){
+  if(m===data.month){ ui.view=null; render(); return; }
+  let rec=null, rost=PREVIEW_ROSTER, savedAt=null;
+  if(preview){ const x=LS.get('rally_rec_'+m,null); if(x){ rec=x.state; savedAt=x.savedAt; } }
+  else { try{ const r=await apiGet({action:'record',month:m}); if(!r.ok) throw 0; rec=r.state; rost=r.roster||[]; savedAt=r.savedAt; }catch(e){ toast(t().loadErr); render(); return; } }
+  const st = rec ? normalize(rec) : Object.assign(DEFAULT_STATE(),{leaders:JSON.parse(JSON.stringify(data.leaders))});
+  st.month=m; ui.view={month:m,state:st,roster:rost,savedAt,hasRecord:!!rec}; ui.selected=null; ui.edit=false; render();
+}
 document.addEventListener('change',e=>{
-  const s=e.target.closest('select[data-tier]'); if(s&&isAdmin()){ data.tiers[s.dataset.tier]=s.value; changed(); }
+  const s=e.target.closest('select[data-tier]'); if(s&&isAdmin()&&!ui.view){ act(op.tier(s.dataset.tier,s.value)); return; }
+  const m=e.target.closest('select[data-month]'); if(m){ viewMonth(m.value); }
 });
 document.addEventListener('input',e=>{
-  const g=e.target.closest('input[data-gtext]'); if(g&&isAdmin()){ const [li,f]=g.dataset.gtext.split(':'); data.leaders[+li][f]=g.value; LS.set('rally_draft',{state:data,rev}); clearTimeout(saveTimer); ui.saveState='busy'; renderStatus(); saveTimer=setTimeout(()=>doSave(false),900); }
+  const g=e.target.closest('input[data-gtext]'); if(g&&isAdmin()&&!ui.view){ const [li,f]=g.dataset.gtext.split(':'); data.leaders[+li][f]=g.value; const val=g.value;
+    pending.push(st=>{ st.leaders[+li][f]=val; }); if(preview){ pending=[]; LS.set('rally_preview_state2',data); return; }
+    LS.set('rally_draft2',{state:data,rev}); clearTimeout(saveTimer); ui.saveState='busy'; renderStatus(); saveTimer=setTimeout(()=>doSave(false),900); }
 });
-function commitRatio(inp){ const [li,f]=inp.dataset.ratio.split(':'); const val=inp.value.trim(); ui.editing=null; if(data.leaders[+li][f]!==val){ data.leaders[+li][f]=val; changed(); } else render(); }
+function commitRatio(inp){ const [li,f]=inp.dataset.ratio.split(':'); const val=inp.value.trim(); ui.editing=null; if(data.leaders[+li][f]!==val) act(op.leaderField(+li,f,val)); else render(); }
 document.addEventListener('keydown',e=>{
   const r=e.target.closest&&e.target.closest('input[data-ratio]');
-  if(r&&(e.key==='Enter')){ e.preventDefault(); commitRatio(r); }
+  if(r&&e.key==='Enter'){ e.preventDefault(); commitRatio(r); }
   else if(r&&e.key==='Escape'){ ui.editing=null; render(); }
   else if(e.key==='Escape'&&(ui.menu||ui.modal)){ ui.menu=null; ui.modal=null; renderOverlay(); }
 });
 document.addEventListener('focusout',e=>{ const r=e.target.closest&&e.target.closest('input[data-ratio]'); if(r&&ui.editing) commitRatio(r); });
 
 /* 우클릭 / 길게 누르기 */
+function menuFor(target,x,y){
+  const sl=target.closest('.slot[data-slot]'), pc=target.closest('.pc.free[data-pool]');
+  if(sl){ openMenu('slot',x,y,{name:sl.dataset.name},240,320); return true; }
+  if(pc){ openMenu('pool',x,y,{name:pc.dataset.pool},240,240); return true; }
+  return false;
+}
 document.addEventListener('contextmenu',e=>{
   if(ui.menu){ e.preventDefault(); ui.menu=null; renderOverlay(); return; }
-  if(!isAdmin()) return;
-  const sl=e.target.closest('[data-slot]'), pc=e.target.closest('.pc.free[data-pool]');
-  if(sl){ e.preventDefault(); const [lid,i]=sl.dataset.slot.split(':'); openMove(e.clientX,e.clientY,data.assign[lid][+i].name,lid,+i); }
-  else if(pc){ e.preventDefault(); openMove(e.clientX,e.clientY,pc.dataset.pool,null,-1); }
+  if(ui.view||!logged()) return;
+  if(e.target.closest('.slot[data-slot],.pc.free[data-pool]')){ e.preventDefault(); menuFor(e.target,e.clientX,e.clientY); }
 });
 let lpTimer=null, lpStart=null;
 document.addEventListener('touchstart',e=>{
-  if(!isAdmin()) return; const tgt=e.target.closest('[data-slot],.pc.free[data-pool]'); if(!tgt||e.target.closest('button,select,input')&&!e.target.closest('.pn')) return;
+  if(ui.view||!logged()) return; const tgt=e.target.closest('.slot[data-slot],.pc.free[data-pool]'); if(!tgt) return;
+  if(e.target.closest('button,select,input')&&!e.target.closest('.pn')) return;
   const tch=e.touches[0]; lpStart={x:tch.clientX,y:tch.clientY};
-  lpTimer=setTimeout(()=>{ lpTimer=null;
-    if(tgt.dataset.slot){ const [lid,i]=tgt.dataset.slot.split(':'); openMove(lpStart.x,lpStart.y,data.assign[lid][+i].name,lid,+i); }
-    else openMove(lpStart.x,lpStart.y,tgt.dataset.pool,null,-1);
-    if(navigator.vibrate) navigator.vibrate(15);
-  },500);
+  lpTimer=setTimeout(()=>{ lpTimer=null; menuFor(tgt,lpStart.x,lpStart.y); if(navigator.vibrate) navigator.vibrate(15); },500);
 },{passive:true});
 ['touchend','touchcancel'].forEach(ev=>document.addEventListener(ev,()=>{ clearTimeout(lpTimer); lpTimer=null; },{passive:true}));
 document.addEventListener('touchmove',e=>{ if(!lpTimer||!lpStart) return; const tch=e.touches[0]; if(Math.abs(tch.clientX-lpStart.x)>10||Math.abs(tch.clientY-lpStart.y)>10){ clearTimeout(lpTimer); lpTimer=null; } },{passive:true});
 
 /* 드래그 앤 드롭 */
 document.addEventListener('dragstart',e=>{
-  if(!isAdmin()) return;
-  const sl=e.target.closest('[data-slot]'), pc=e.target.closest('.pc.free[data-pool]');
-  if(sl){ const [lid,i]=sl.dataset.slot.split(':'); drag={name:data.assign[lid][+i].name,from:lid,idx:+i}; }
+  if(ui.view||!logged()) return;
+  const sl=e.target.closest('.slot[data-slot]'), pc=e.target.closest('.pc.free[data-pool]');
+  if(sl){ const [rid,i]=sl.dataset.slot.split(':'); drag={name:sl.dataset.name,from:rid,idx:+i}; }
   else if(pc){ drag={name:pc.dataset.pool,from:null,idx:-1}; }
   else return;
   try{ e.dataTransfer.setData('text/plain',drag.name); e.dataTransfer.effectAllowed='move'; }catch(err){}
 });
 document.addEventListener('dragend',()=>{ drag=null; document.querySelectorAll('.over').forEach(x=>x.classList.remove('over')); });
 document.addEventListener('dragover',e=>{
-  if(!drag) return; const z=e.target.closest('[data-zone],[data-slot]'); if(!z) return;
+  if(!drag) return; const z=e.target.closest('[data-slot],[data-zone]'); if(!z) return;
   e.preventDefault(); document.querySelectorAll('.over').forEach(x=>{ if(x!==z) x.classList.remove('over'); }); z.classList.add('over');
 });
 document.addEventListener('drop',e=>{
   if(!drag) return; const d=drag; drag=null; document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));
   const sl=e.target.closest('[data-slot]'), z=e.target.closest('[data-zone]');
-  if(sl){ e.preventDefault(); const [lid,i]=sl.dataset.slot.split(':'); place(d.name,d.from,d.idx,lid,+i); }
-  else if(z){ e.preventDefault(); if(z.dataset.zone==='pool'){ if(d.from) removeAt(d.from,d.idx); } else place(d.name,d.from,d.idx,z.dataset.zone,null); }
+  if(sl){ e.preventDefault(); const [rid,i]=sl.dataset.slot.split(':'); doDropOnSlot(d,rid,+i); return; }
+  if(z){ e.preventDefault();
+    if(z.dataset.zone==='pool'){ if(d.from){ if(canRally(d.from)) act(op.remove(d.name)); else toast(t().noPerm); } return; }
+    const rid=z.dataset.zone;
+    if(!d.from) return doAdd(d.name,rid);
+    if(d.from===rid) return;
+    if(!isAdmin()) return toast(t().noPerm);
+    if(firstEmpty(rid)<0) return toast(t().full);
+    act(op.moveTo(d.name,rid));
+  }
 });
 
-/* 로그인 / 비밀번호 변경 */
+/* 폼 */
 document.addEventListener('submit',async e=>{
-  e.preventDefault(); const f=e.target, err=document.getElementById('formErr'), T_=t(); const btn=f.querySelector('[type=submit]'); btn.disabled=true;
+  e.preventDefault(); const f=e.target, err=document.getElementById('formErr'), T_=t(); const btn=f.querySelector('[type=submit]'); if(btn) btn.disabled=true;
   try{
     if(f.id==='loginForm'){
-      const email=f.email.value.trim().toLowerCase(); LS.set('rally_last_email',email);
-      const r=await apiPost({action:'login',email,password:f.password.value});
-      if(r.ok){ session={token:r.token,email:r.email,exp:r.exp}; LS.set('rally_session',session); ui.modal=null; render(); toast(T_.loggedIn); const draft=LS.get('rally_draft',null); if(draft&&draft.rev===rev){ data=normalize(draft.state); doSave(true); } }
+      const id=f.uid.value.trim().toLowerCase(); LS.set('rally_last_id',id);
+      const r=await apiPost({action:'login',id,password:f.password.value});
+      if(r.ok){ session={token:r.token,id:r.id,role:r.role,rally:r.rally,exp:r.exp}; LS.set('rally_session2',session); ui.modal=null; render(); toast(T_.loggedIn); const draft=LS.get('rally_draft2',null); if(draft&&draft.rev===rev){ data=normalize(draft.state); doSave(true); } }
       else err.textContent = r.error==='locked'?T_.locked:T_.loginErr;
-    } else if(f.id==='pwForm'){
-      if(f.n1.value!==f.n2.value){ err.textContent=T_.pwMismatch; return; }
-      if(f.n1.value.length<8){ err.textContent=T_.pwWeak; return; }
-      const r=await apiPost({action:'changePassword',token:session.token,oldPassword:f.old.value,newPassword:f.n1.value});
-      if(r.ok){ session={token:r.token,email:r.email,exp:r.exp}; LS.set('rally_session',session); ui.modal=null; render(); toast(T_.pwDone); }
-      else err.textContent = r.error==='invalid_old'?T_.pwOldWrong:r.error==='weak'?T_.pwWeak:r.error==='auth'?T_.authExpired:(r.message||r.error);
+    } else if(f.id==='addForm'){
+      const name=f.pname.value.trim(), tier=f.ptier.value; if(!name) return;
+      if(allPeople().some(p=>p.name.toLowerCase()===name.toLowerCase())){ err.textContent=T_.dup; return; }
+      ui.modal=null; act(op.addManual(name,tier));
+    } else if(f.dataset.acct){
+      const np=f.np.value; if(np.length<4){ document.getElementById('formErr').textContent=T_.pwWeak; return; }
+      const r=await apiPost({action:'setPassword',token:session.token,target:f.dataset.acct,newPassword:np});
+      if(r.ok){ f.np.value=''; toast(f.dataset.acct+' — '+T_.pwDone); } else document.getElementById('formErr').textContent=r.error;
     }
-  }catch(ex){ err.textContent=String(ex.message||ex); }
-  finally{ btn.disabled=false; }
+  }catch(ex){ if(err) err.textContent=String(ex.message||ex); }
+  finally{ if(btn) btn.disabled=false; }
 });
 
 /* 스크린샷: 집결장 3열 영역만 */

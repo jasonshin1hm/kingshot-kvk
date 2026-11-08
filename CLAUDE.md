@@ -53,12 +53,16 @@ window.EVENT_DATA = { id, name, days,
 - `items.js` = 이벤트와 무관한 **누적 아이템 마스터** `window.ITEMS = { id:{name,icon} }`. 새 아이템 등장 시 한 줄 추가 + `icons/`에 png 추가.
 - 새 이벤트 워크플로우: Jason 스샷(상점 목록·패키지·잔여수량) → event-YYYY-MM.js 작성 → 새 아이템이면 items.js+아이콘 → index.html script src 교체 → 검증 → push.
 
-## 앱 ③ KvK 캐슬 랠리 편성기 — `rally/index.html` + `rally/img/`
-집결장(CKids 메인 / Taiji 카랠1 / Jason 카랠2)별 집결원(최대 8명) 편성. 끌어넣기·우클릭(모바일 길게 누르기) 메뉴·영웅 얼굴 선택·비율 인라인 수정·스크린샷(집결장 3열만 PNG).
-- 백엔드: 기획 시트(KvK 랠리 편성, ID 1gDFKSWtW-OghQrKXhXFR6FNXZCf2yHSriN0vawFRpKM)에 바인딩된 Apps Script "KvK 랠리 편성기 API". 웹 앱 URL은 `rally/index.html`의 `API_URL`.
-  - ⚠️ 코드 수정 시 "배포 관리 → 기존 배포 편집 → 새 버전 → 배포" (새 배포 금지 — URL 바뀜). 원본 코드/설계는 Jason 로컬 `킹샷랠리편성기/` 폴더(PLAN.md, app/AppsScript_Rally.gs).
-- 풀참자 명단은 시트 "풀참자명단" 블록을 매번 읽음, 편성 상태는 숨김 시트 `앱데이터`.
-- 수정은 관리자 로그인(이메일+비밀번호, Apps Script 속성에 해시로만 저장) 필요. 비로그인은 보기 전용.
+## 앱 ③ KvK 캐슬 랠리 편성기 — `rally/index.html` + `rally/img/` (v2)
+집결장 3자리(r1 메인 / r2 카랠1 / r3 카랠2, 랠리장은 관리자가 집결장 분류에서 교체)별 집결원 8칸 편성. 기획서: 노션 "KvK 캐슬 랠리 편성기 기획서 v2".
+- 칸 고정: 빼도 당겨지지 않음, 등록은 맨 위 빈칸부터, 집결원끼리 끌어 놓으면 교환(8/8끼리도), 풀 카드를 사람 있는 칸에 놓으면 교체.
+- 영웅은 **칸(집결)에 종속**(사람 따라가지 않음). null = 기본값(1~4칸 조인영웅 순서, 5~8칸 빈칸), "영웅 초기화" = 해당 랠리 전부 null.
+- 풀참자: 집결장 / TG8·T11 / TG8·T10 / TG7 이하, 수동 추가(앱 데이터), 참여검증(불참 토글), 조장(랠리당 1명, 깃발+금색).
+- 백엔드: 기획 시트(ID 1gDFKSWtW-OghQrKXhXFR6FNXZCf2yHSriN0vawFRpKM) 바인딩 Apps Script "KvK 랠리 편성기 API". 웹 앱 URL은 `rally/index.html`의 `API_URL`.
+  - ⚠️ 코드 수정 시 "배포 관리 → 기존 배포 편집 → 새 버전 → 배포" (새 배포 금지 — URL 바뀜). 원본 코드는 Jason 로컬 `킹샷랠리편성기/app/AppsScript_Rally.gs`.
+  - 월별 탭 "2026년11월"(A~D열 풀참자명단: 집결장/TG8, T11/TG8, T10/TG7이하, H열~ 기록 저장 시 편성 결과 표), 숨김 시트 `앱데이터`(A1 현재 상태 JSON, B1 리비전, 3행~ 월별 기록).
+- 계정(스크립트 속성 ACCOUNTS, 해시만): jasonshin1hm@gmail.com·r4 = 전체 관리자, rally1~3 = 자기 자리 랠리만(서버에서도 검증). 비밀번호 변경은 관리자만(계정 관리).
+- 동시 편집: 저장 충돌 시 서버 최신본에 대기 중 변경을 재적용, 15초마다 자동 새로고침.
 
 ## 남은 TODO
 - 2026-09 연맹 전투력·멤버수 (연맹정보 스샷 받으면 data.js에 추가)
