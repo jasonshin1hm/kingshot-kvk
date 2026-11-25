@@ -741,7 +741,7 @@ function applyLang(scope){if(lang!=='en'||editing||!scope)return;
 function enArr(p,n){if(!S.en||!/^(notes|notesFree|steps|rules|summary)$/.test(p))return null;var L=S.en[p]=S.en[p]||[];while(L.length<n)L.push(p==='rules'||p==='summary'?['','']:'');return L}
 function setLang(l){lang=l;try{localStorage.setItem('sw-lang',l);document.documentElement.lang=l}catch(e){}render();if(!wp.hidden&&document.getElementById('whoform'))askWho(wp.classList.contains('bright'))}
 var menuOpen=false;
-document.addEventListener('click',function(e){if(menuOpen&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
+document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
 var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
 /* 지도 위에 고정되는 버튼: 왼쪽 위 = 지도 스타일, 왼쪽 아래 = 확대·축소 (지도를 밀어도 제자리) */
 function mapTools(){return '<div class="mtl" data-html2canvas-ignore="true">'+['A','B','C'].map(function(k){return '<button type="button" class="msb'+(mapStyle===k?' on':'')+'" data-ms="'+k+'" aria-pressed="'+(mapStyle===k)+'" title="맵 스타일 '+k+'">'+k+'</button>'}).join('')+'</div>'+
@@ -991,7 +991,7 @@ function stopEdit(){editing=false;closeFace();applyFont();render()}
 bar.addEventListener('change',function(e){if(e.target.id==='fontsel'&&editing){S.font=e.target.value;applyFont();dirty();fit(document)}
   if(e.target.id==='weeksel'&&!editing){loading=true;renderBar();loadWeek(e.target.value).catch(function(){toast('불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.')}).then(function(){loading=false;renderBar()})}});
 bar.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-act]');if(!b)return;var act=b.dataset.act;
-  if(act==='menu'){menuOpen=!menuOpen;renderBar();return}
+  if(act==='menu'){menuOpen=!menuOpen;bar.classList.toggle('open',menuOpen);b.setAttribute('aria-expanded',menuOpen);return}
   if(menuOpen){menuOpen=false;bar.classList.remove('open')}
   if(act==='lang'){setLang(lang==='en'?'ko':'en');return}
   if(act==='login'){lg.hidden=false;$('lerr').textContent='';$('aid').focus()}
