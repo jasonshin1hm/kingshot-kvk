@@ -460,6 +460,7 @@ function applyGroups(){sel=new Set(people().filter(function(p){return (freeOn&&p
 function saveMe(){try{var pm=me&&person(me);if(pm)localStorage.setItem('sw-me','n:'+pm.name);else localStorage.removeItem('sw-me')}catch(e){}}
 function viewCard(id){if(editing||admin||!me)return true;var mp=null;people().forEach(function(p){if(p.r.id===me)mp=p});if(!mp)return true;
   var myT=mp.kind==='free'?'F':mp.c;
+  if(id==='rules')return mp.kind!=='free';
   if(id.indexOf('team:')===0)return mp.kind!=='free'&&id.slice(5)===mp.c;
   if(id.indexOf('msg:')===0){var g=S.msgs[+id.slice(4)-1];return !!g&&(g.c===myT||g.c==='N')}
   return true}
@@ -710,7 +711,7 @@ function render(){
     S.map.map(labelHtml).join('')+S.missions.map(missionHtml).join('')+
     '</div>'+add('map','label','지도 라벨 추가').replace('class="add"','class="add mapadd"')+'</div></div>'+routePanel()+
     '<div class="steps">'+S.steps.map(function(s,i){return '<div class="step"><i>'+(i+1)+'</i>'+E('steps.'+i)+del('steps',i)+'</div>'}).join('')+'</div>'+add('steps','name','단계 추가')+'</div>'+zone('mid')+'</section>'+
-  '<section class="col">'+head(2)+
+  '<section class="col">'+(viewCard('rules')?head(2):'')+
     zone('right')+
     ''+
     ''+
