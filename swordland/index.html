@@ -435,6 +435,7 @@ button.r4:not(.on):hover,button.r4:not(.on):focus-visible{opacity:.7}
 .mapbox>.mbl .msb{font-size:18px}
 @media(max-width:1099px){.grid>.col:nth-child(2){order:-1}}
 .notes .ntitle{font-weight:900;color:var(--gold);font-size:12.5px;margin-bottom:4px}
+#login{z-index:60}
 .btn.navk{text-decoration:none;color:var(--mute);font-weight:500;font-size:12.5px}
 #mview{position:fixed;inset:0;z-index:300;background:rgba(5,8,14,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px}
 #mview .mvbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;color:#E8EAEE;font-size:13px}
@@ -557,10 +558,10 @@ function intro(done){var skip=admin;try{if(sessionStorage.getItem('sw-intro'))sk
 function askWho(br){var ps=people(),h='<form id="whoform"><b>이름을 선택해주세요</b><label for="whosel" class="vh">이름</label><select id="whosel"><option value="">이름 선택</option>';
   h+='<optgroup label="'+esc(S.freeTitle||'프리롤')+'">'+ps.filter(function(p){return p.kind==='free'}).map(function(p){return '<option value="'+p.r.id+'">'+esc(p.r.name)+'</option>'}).join('')+'</optgroup>';
   S.teams.forEach(function(t){h+='<optgroup label="'+esc(t.name)+'">'+t.rows.map(function(r){return '<option value="'+r.id+'">'+esc(r.name)+'</option>'}).join('')+'</optgroup>'});
-  h+='</select><p id="whoerr" role="alert"></p><div class="fr"><button class="btn" type="button" id="whoall">전체 보기</button><button class="btn primary" type="submit">확인</button></div></form>';
+  h+='</select><p id="whoerr" role="alert"></p><div class="fr"><button class="btn" type="button" id="whoadm">관리자</button><button class="btn primary" type="submit">확인</button></div></form>';
   if(br&&wp.querySelector('#emb'))wp.insertAdjacentHTML('beforeend',h);else{wp.className='';wp.innerHTML=h}wp.hidden=false;
   if(br)requestAnimationFrame(function(){requestAnimationFrame(function(){wp.classList.add('ready')})});
-  document.getElementById('whoall').onclick=function(){whoOut()};
+  document.getElementById('whoadm').onclick=function(){lg.hidden=false;$('lerr').textContent='';$('aid').focus()};
   document.getElementById('whoform').addEventListener('submit',function(e){e.preventDefault();var v=document.getElementById('whosel').value;if(!v){document.getElementById('whoerr').textContent='이름을 골라 주세요.';return}
     me=v;freeOn=false;chipTeam=null;sel=new Set([me]);saveMe();render();whoOut()})}
 var wp=document.createElement('div');wp.id='whopop';wp.hidden=true;document.body.appendChild(wp);
@@ -878,7 +879,7 @@ lg.innerHTML='<form id="loginform"><b>관리자 로그인</b><label for="aid">�
 document.body.appendChild(lg);
 $('lcancel').onclick=function(){lg.hidden=true};
 $('loginform').addEventListener('submit',function(e){e.preventDefault();var id=$('aid').value.trim(),pw=$('apw').value;
-  function okIn(){admin=true;try{sessionStorage.setItem('sw-admin','1')}catch(x){}lg.hidden=true;$('apw').value='';$('lerr').textContent='';render()}
+  function okIn(){admin=true;try{sessionStorage.setItem('sw-admin','1')}catch(x){}lg.hidden=true;$('apw').value='';$('lerr').textContent='';render();if(!wp.hidden)whoOut()}
   if(!API_URL){okIn();return}
   $('lerr').textContent='확인 중…';
   apiPost({action:'login',id:id,password:pw}).then(function(d){
