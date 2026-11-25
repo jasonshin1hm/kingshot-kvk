@@ -434,6 +434,7 @@ button.r4:not(.on):hover,button.r4:not(.on):focus-visible{opacity:.7}
 .mapbox>.mtl .msb.on{background:var(--gold);color:#201600;border-color:var(--gold)}
 .mapbox>.mbl .msb{font-size:18px}
 @media(max-width:1099px){.grid>.col:nth-child(2){order:-1}}
+.notes .ntitle{font-weight:900;color:var(--gold);font-size:12.5px;margin-bottom:4px}
 .btn.navk{text-decoration:none;color:var(--mute);font-weight:500;font-size:12.5px}
 #mview{position:fixed;inset:0;z-index:300;background:rgba(5,8,14,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px}
 #mview .mvbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;color:#E8EAEE;font-size:13px}
@@ -590,6 +591,7 @@ function teamOf(s){var m=/^\s*([A-Z])/.exec(s||'');return m?m[1]:''}
 function toast(msg){toastEl.textContent=msg;toastEl.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(function(){toastEl.style.display='none'},4200)}
 
 function migrate(){
+  if(!S.notesFree)S.notesFree=(S.notes||[]).slice();
   if(!S.free)S.free=[]; if(!S.freeTitle)S.freeTitle='프리롤'; if(!S.missions)S.missions=[];
   S.teams.forEach(function(t){
     t.rows=t.rows.map(function(r){return Array.isArray(r)?{id:uid(),role:r[0],name:r[1],face:''}:r});
@@ -701,6 +703,10 @@ function focusMap(){var key=sel===null?'':Array.from(sel).sort().join(',');if(ke
   var cx=(Math.min.apply(null,xs)+Math.max.apply(null,xs))/200,cy=(Math.min.apply(null,ys)+Math.max.apply(null,ys))/200,mr=m.getBoundingClientRect(),wr=w.getBoundingClientRect();
   var L=w.scrollLeft+(mr.left+cx*mr.width)-(wr.left+wr.width/2),T=w.scrollTop+(mr.top+cy*mr.height)-(wr.top+wr.height/2);
   try{w.scrollTo({left:L,top:T,behavior:'smooth'})}catch(e){w.scrollLeft=L;w.scrollTop=T}}
+function notesBox(list,label){return '<footer class="notes">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return '<div class="note" data-li="'+list+'|'+i+'"><span class="grip" data-ldrag="'+list+'|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E(list+'.'+i)+del(list,i)+'</div>'}).join('')+add(list,'name','공지 추가')+'</footer>'}
+/* 공지는 두 벌: 팀원용(notes)과 프리롤용(notesFree). 관리자는 둘 다, 그 외에는 자기 것만 */
+function notesHtml(){if(!S.notesFree)S.notesFree=[];if(admin||editing)return notesBox('notes','팀원용 공지 — 프리롤이 아닌 사람에게 보입니다')+notesBox('notesFree','프리롤용 공지 — 프리롤에게만 보입니다');
+  var lf=false;if(me)people().forEach(function(p){if(p.r.id===me&&p.kind==='free')lf=true});var k=lf?'notesFree':'notes';return S[k].length?notesBox(k,''):''}
 function render(){
   var w0=document.querySelector('.mapwrap'),sx0=w0?w0.scrollLeft:0,sy0=w0?w0.scrollTop:0;
   root.className=(editing?'editing':'')+(admin?' adm':'');
@@ -716,7 +722,7 @@ function render(){
     ''+
     ''+
     '</section></div>'+
-  '<footer class="notes">'+S.notes.map(function(n,i){return '<div class="note" data-li="notes|'+i+'"><span class="grip" data-ldrag="notes|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E('notes.'+i)+del('notes',i)+'</div>'}).join('')+add('notes','name','공지 추가')+'</footer>';
+  notesHtml();
   root.querySelectorAll('.ed').forEach(function(el){
     if(!editing){el.removeAttribute('contenteditable');return}
     try{el.contentEditable='plaintext-only'}catch(e){el.contentEditable='true'}
