@@ -443,7 +443,7 @@ button.r4:not(.on):hover,button.r4:not(.on):focus-visible{opacity:.7}
 <script id="app">(function(){
 var TITLE='성검쟁탈 편성표', DRAFT='swordland-draft-v3';
 /* 구글 시트(Apps Script) 백엔드 주소. ''로 두면 미리보기 모드(로그인 없이 편집, 이 브라우저에만 저장) */
-var API_URL='';
+var API_URL='https://script.google.com/macros/s/AKfycbz2W8tgYIs1XIaHDyX1QHcK2fWX0dknA_ixBz1hP131WuDobAJl6niO7YifGL7tBRPZ0w/exec';
 var week=null,weeks=[],rev=0,token=null,loading=false;try{token=sessionStorage.getItem('sw-token')||null}catch(e){}
 var FONTS_URL='https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Gothic+A1:wght@400;500;700;900&family=Nanum+Gothic:wght@400;700;800&family=Do+Hyeon&display=swap';
 var FONTS={noto:['Noto Sans KR (랠리 사이트와 동일)',"'Noto Sans KR'","'Noto Sans KR'",900],plex:['IBM Plex Sans KR',"'IBM Plex Sans KR'","'IBM Plex Sans KR'",700],gothic:['Gothic A1',"'Gothic A1'","'Gothic A1'",900],nanum:['나눔고딕',"'Nanum Gothic'","'Nanum Gothic'",800],dohyeon:['도현 제목 + Noto 본문',"'Do Hyeon'","'Noto Sans KR'",400]};
@@ -665,7 +665,7 @@ function controls(){
   var h='<div class="ctl" data-html2canvas-ignore="true"><label for="who">내 임무 보기</label><select id="who"><option value="all"'+(sel===null?' selected':'')+'>전체</option><option value="none"'+(sel&&sel.size===0?' selected':'')+'>숨기기</option>'+
     (sel&&sel.size>1?'<option value="multi" selected>선택 '+sel.size+'명</option>':'')+
     ps.map(function(p){return '<option value="'+p.r.id+'"'+(one===p.r.id?' selected':'')+'>'+esc(p.r.name)+'</option>'}).join('')+'</select>';
-  if(true){
+  if(admin){
     var brk8=0,cand=(freeOn||chipTeam)?ps.filter(function(p){return (freeOn&&p.kind==='free')||(chipTeam&&p.kind!=='free'&&p.c===chipTeam)}):ps;
     h+='<span class="adm">임무카드 필터</span><div class="tpl">'+[['all','모두선택'],['free','프리롤만']].concat(S.teams.map(function(t){return ['team:'+t.c,t.c==='S'?'대체':t.c+'팀']})).concat([['none','모두해제']]).map(function(b){return '<button type="button" class="tb'+(((chipTeam&&b[0]==='team:'+chipTeam)||(freeOn&&b[0]==='free'))?' act':'')+'" data-tpl="'+b[0]+'">'+b[1]+'</button>'}).join('')+'</div>'+
       '<div class="pchips">'+cand.map(function(p){var bk=chipTeam&&p.kind!=='free'&&!brk8?(brk8=1,'<span class="brk"></span>'):'';return bk+'<button type="button" class="pc'+(shown(p.r.id)?' on':'')+'" data-tog="'+p.r.id+'">'+esc(p.r.name)+'</button>'}).join('')+'</div>';
