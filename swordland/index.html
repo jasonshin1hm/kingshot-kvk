@@ -669,7 +669,7 @@ function controls(){
   var one=sel&&sel.size===1?Array.from(sel)[0]:null;
   var h='<div class="ctl" data-html2canvas-ignore="true"><label for="who">내 임무 보기</label><select id="who"><option value="all"'+(sel===null?' selected':'')+'>전체</option><option value="none"'+(sel&&sel.size===0?' selected':'')+'>숨기기</option>'+
     (sel&&sel.size>1?'<option value="multi" selected>선택 '+sel.size+'명</option>':'')+
-    ps.map(function(p){return '<option value="'+p.r.id+'"'+(one===p.r.id?' selected':'')+'>'+esc(p.r.name)+'</option>'}).join('')+'</select>';
+    [{n:S.freeTitle||'프리롤',r:S.free}].concat(S.teams.map(function(t){return {n:t.name,r:t.rows}})).map(function(g){return g.r.length?'<optgroup label="'+esc(g.n)+'">'+g.r.map(function(r){return '<option value="'+r.id+'"'+(one===r.id?' selected':'')+'>'+esc(r.name)+'</option>'}).join('')+'</optgroup>':''}).join('')+'</select>';
   if(admin){
     var brk8=0,cand=(freeOn||chipTeam)?ps.filter(function(p){return (freeOn&&p.kind==='free')||(chipTeam&&p.kind!=='free'&&p.c===chipTeam)}):ps;
     h+='<span class="adm">임무카드 필터</span><div class="tpl">'+[['all','모두선택'],['free','프리롤만']].concat(S.teams.map(function(t){return ['team:'+t.c,t.c==='S'?'대체':t.c+'팀']})).concat([['none','모두해제']]).map(function(b){return '<button type="button" class="tb'+(((chipTeam&&b[0]==='team:'+chipTeam)||(freeOn&&b[0]==='free'))?' act':'')+'" data-tpl="'+b[0]+'">'+b[1]+'</button>'}).join('')+'</div>'+
