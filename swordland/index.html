@@ -424,6 +424,15 @@ button.r4:not(.on):hover,button.r4:not(.on):focus-visible{opacity:.7}
 .editing .notes .grip{display:inline-block;flex:0 0 auto}
 .msgbar .mtx{text-align:left}
 .msgbar .mtx:empty::before{content:"각 팀별 공지사항 입력"}
+.mapbox{position:relative;min-width:0}
+.mapwrap{overflow:auto}
+#map>.mstyle,#map>.mundo{display:none!important}
+.mapbox>.mtl{position:absolute;left:18px;top:18px;z-index:7;display:flex;gap:4px}
+.mapbox>.mbl{position:absolute;left:18px;bottom:18px;z-index:7;display:flex;flex-direction:column;gap:4px}
+.mapbox>.mundo{right:18px;top:18px;z-index:7}
+.mapbox>.mtl .msb,.mapbox>.mbl .msb{width:32px;height:32px;font-size:14px;background:rgba(15,19,26,.78);box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.mapbox>.mtl .msb.on{background:var(--gold);color:#201600;border-color:var(--gold)}
+.mapbox>.mbl .msb{font-size:18px}
 .btn.navk{text-decoration:none;color:var(--mute);font-weight:500;font-size:12.5px}
 /*END*/
 </style>
@@ -668,14 +677,34 @@ function routePanel(){if(!(sel&&sel.size===1))return '';var id=Array.from(sel)[0
   var rows=Object.keys(by).sort().map(function(k){return '<div class="pair"><span class="k">'+k+'차</span><span class="v">'+by[k].map(esc).join(' / ')+'</span></div>'}).join('');
   return '<div class="card"><h3>'+esc(r.name)+' 이동 경로</h3>'+(rows||'<div class="pair"><span class="v">배치된 임무카드가 없습니다.</span></div>')+'</div>'}
 
+var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
+/* 지도 위에 고정되는 버튼: 왼쪽 위 = 지도 스타일, 왼쪽 아래 = 확대·축소 (지도를 밀어도 제자리) */
+function mapTools(){return '<div class="mtl" data-html2canvas-ignore="true">'+['A','B','C'].map(function(k){return '<button type="button" class="msb'+(mapStyle===k?' on':'')+'" data-ms="'+k+'" aria-pressed="'+(mapStyle===k)+'" title="맵 스타일 '+k+'">'+k+'</button>'}).join('')+'</div>'+
+  '<div class="mbl" data-html2canvas-ignore="true"><button type="button" class="msb" data-mz="1" title="지도 확대" aria-label="지도 확대">＋</button><button type="button" class="msb" data-mz="-1" title="지도 축소" aria-label="지도 축소">－</button></div>'+
+  (editing?'<button type="button" class="mundo" data-undo="1" data-html2canvas-ignore="true" title="방금 작업 되돌리기">↶ 되돌리기</button>':'')}
+function applyZoom(keep){var m=$('map'),w=m&&m.parentNode;if(!m)return;var fx=.5,fy=.5,ps=['width','min-width','max-width'];
+  if(keep&&w.scrollWidth){fx=(w.scrollLeft+w.clientWidth/2)/w.scrollWidth;fy=(w.scrollTop+w.clientHeight/2)/w.scrollHeight}
+  ps.forEach(function(p){m.style.removeProperty(p)});w.style.maxHeight='';
+  if(mapZoom!==1){var bw=m.getBoundingClientRect().width,bh=w.clientHeight;if(mapZoom>1)w.style.maxHeight=bh+'px';
+    ps.forEach(function(p){m.style.setProperty(p,(bw*mapZoom)+'px','important')})}
+  fit(document);
+  if(keep){w.scrollLeft=fx*w.scrollWidth-w.clientWidth/2;w.scrollTop=fy*w.scrollHeight-w.clientHeight/2}}
+/* 보는 사람(또는 고른 팀)의 임무카드가 있는 쪽으로 지도를 옮김. 선택이 바뀔 때만 */
+function focusMap(){var key=sel===null?'':Array.from(sel).sort().join(',');if(key===focusKey)return;focusKey=key;if(sel===null||editing)return;
+  var w=document.querySelector('.mapwrap'),m=$('map');if(!w||!m)return;var xs=[],ys=[];
+  S.missions.forEach(function(x){if(shown(x.pid)&&person(x.pid)){xs.push(x.x);ys.push(x.y)}});if(!xs.length)return;
+  var cx=(Math.min.apply(null,xs)+Math.max.apply(null,xs))/200,cy=(Math.min.apply(null,ys)+Math.max.apply(null,ys))/200,mr=m.getBoundingClientRect(),wr=w.getBoundingClientRect();
+  var L=w.scrollLeft+(mr.left+cx*mr.width)-(wr.left+wr.width/2),T=w.scrollTop+(mr.top+cy*mr.height)-(wr.top+wr.height/2);
+  try{w.scrollTo({left:L,top:T,behavior:'smooth'})}catch(e){w.scrollLeft=L;w.scrollTop=T}}
 function render(){
+  var w0=document.querySelector('.mapwrap'),sx0=w0?w0.scrollLeft:0,sy0=w0?w0.scrollTop:0;
   root.className=(editing?'editing':'')+(admin?' adm':'');
   root.innerHTML=
   '<header class="top"><h1>'+E('title')+'</h1><p>'+E('sub')+'</p></header><div class="grid">'+
   '<section class="col">'+head(0)+zone('left')+'</section>'+
-  '<section class="col">'+head(1)+controls()+'<div class="stick"><div class="mapwrap"><div class="map s'+mapStyle+'" id="map"><div class="mstyle" data-html2canvas-ignore="true">'+['A','B','C'].map(function(k){return '<button type="button" class="msb'+(mapStyle===k?' on':'')+'" data-ms="'+k+'" aria-pressed="'+(mapStyle===k)+'" title="맵 스타일 '+k+'">'+k+'</button>'}).join('')+'</div>'+(editing?'<button type="button" class="mundo" data-undo="1" data-html2canvas-ignore="true" title="방금 작업 되돌리기">↶ 되돌리기</button>':'')+
+  '<section class="col">'+head(1)+controls()+'<div class="stick"><div class="mapbox">'+mapTools()+'<div class="mapwrap"><div class="map s'+mapStyle+'" id="map"><div class="mstyle" data-html2canvas-ignore="true">'+['A','B','C'].map(function(k){return '<button type="button" class="msb'+(mapStyle===k?' on':'')+'" data-ms="'+k+'" aria-pressed="'+(mapStyle===k)+'" title="맵 스타일 '+k+'">'+k+'</button>'}).join('')+'</div>'+(editing?'<button type="button" class="mundo" data-undo="1" data-html2canvas-ignore="true" title="방금 작업 되돌리기">↶ 되돌리기</button>':'')+
     S.map.map(labelHtml).join('')+S.missions.map(missionHtml).join('')+
-    '</div>'+add('map','label','지도 라벨 추가').replace('class="add"','class="add mapadd"')+'</div>'+routePanel()+
+    '</div>'+add('map','label','지도 라벨 추가').replace('class="add"','class="add mapadd"')+'</div></div>'+routePanel()+
     '<div class="steps">'+S.steps.map(function(s,i){return '<div class="step"><i>'+(i+1)+'</i>'+E('steps.'+i)+del('steps',i)+'</div>'}).join('')+'</div>'+add('steps','name','단계 추가')+'</div>'+zone('mid')+'</section>'+
   '<section class="col">'+head(2)+
     zone('right')+
@@ -688,7 +717,7 @@ function render(){
     try{el.contentEditable='plaintext-only'}catch(e){el.contentEditable='true'}
     if(el.contentEditable!=='plaintext-only')el.contentEditable='true';
     el.spellcheck=false});
-  fit(document);renderBar();
+  applyZoom(false);var w1=document.querySelector('.mapwrap');if(w1){w1.scrollLeft=sx0;w1.scrollTop=sy0}focusMap();renderBar();
 }
 function fit(doc){var m=doc.getElementById('map');if(!m)return;m.style.fontSize=(m.clientWidth/820*16)+'px';
   Array.prototype.slice.call(m.querySelectorAll('.route')).forEach(function(n){n.parentNode.removeChild(n)});
@@ -727,6 +756,7 @@ root.addEventListener('paste',function(e){if(activeFace)return;var el=e.target.c
 root.addEventListener('click',function(e){
   var q=function(s){return e.target.closest&&e.target.closest(s)},b;
   if(q('[data-undo]')){if(editing)undo();return}
+  if(b=q('[data-mz]')){var zi=ZL.indexOf(mapZoom)+(+b.dataset.mz);if(zi<0||zi>=ZL.length){mtoast(zi<0?'가장 작게 본 상태입니다.':'가장 크게 본 상태입니다.');return}mapZoom=ZL[zi];applyZoom(true);mtoast('지도 '+Math.round(mapZoom*100)+'%');return}
   if(b=q('[data-ms]')){mapStyle=b.dataset.ms;try{localStorage.setItem('sw-mapstyle',mapStyle)}catch(x){}render();mtoast('맵 스타일 '+mapStyle+'를 선택했습니다.');return}
   if(b=q('[data-tpl]')){var k=b.dataset.tpl,ps=people(),ids=function(f){return new Set(ps.filter(f).map(function(p){return p.r.id}))};
     if(k==='all'){freeOn=false;chipTeam=null;sel=null}else if(k==='none'){freeOn=false;chipTeam=null;sel=new Set()}else{if(k==='free')freeOn=!freeOn;else{var tk=k.slice(5);chipTeam=chipTeam===tk?null:tk}applyGroups()}render();return;
@@ -901,7 +931,7 @@ function save(){
 }
 function saveImage(){
   if(!downloads||!window.html2canvas)return;busyImg=true;renderBar();
-  html2canvas(root,{backgroundColor:'#0b1226',scale:2,windowWidth:1480,width:Math.max(root.scrollWidth,1100),onclone:function(doc){doc.getElementById('root').classList.add('cap');fit(doc)}}).then(function(cv){
+  html2canvas(root,{backgroundColor:'#0b1226',scale:2,windowWidth:1480,width:Math.max(root.scrollWidth,1100),onclone:function(doc){doc.getElementById('root').classList.add('cap');var cm=doc.getElementById('map');if(cm){['width','min-width','max-width'].forEach(function(p){cm.style.removeProperty(p)});cm.parentNode.style.maxHeight=''}fit(doc)}}).then(function(cv){
     return new Promise(function(res){cv.toBlob(res,'image/png')})}).then(function(blob){
     return downloads.save({filename:(S.title||'성검쟁탈').replace(/[\\/:*?"<>|]/g,' ')+'.png',data:blob})}).then(function(){toast('이미지를 저장했습니다.')})
   .catch(function(err){if(!(err&&err.code==='declined'))toast('이미지를 저장하지 못했습니다. 화면 캡처를 이용해 주세요.')})
