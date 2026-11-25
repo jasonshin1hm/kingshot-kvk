@@ -1,6 +1,7 @@
 /**
  * 성검쟁탈 편성표 — Apps Script 백엔드 v1
  *
+ * v3 (2026-11-25): 글 구역에 영어 줄(└ English) — state.en
  * v2 (2026-11-25): 주차 탭 아래 "글" 구역(공지·팀별 공지사항·단계·원칙을 시트에서 수정), 변경 감지용 sig, 확인 현황
  *
  * 배포: 코드 수정 시 반드시 "배포 관리 → 기존 배포 편집(연필) → 버전: 새 버전 → 배포"
@@ -26,7 +27,7 @@ var CHUNK = 45000;
 var MARK = '¶'; // 조각 맨 앞에 붙여 시트가 수식·숫자로 바꾸지 못하게 함
 var HELP = '이름·역할·R4만 바꾸면 사이트에 그대로 반영되고 임무 경로는 유지됩니다. 사람을 빼려면 이름 칸을 비우세요(그 자리의 임무카드도 사라집니다). 줄 순서와 2~3행은 바꾸지 마세요. 이 탭을 복사해서 이름을 바꾸면 새 주차가 됩니다.';
 var TEXT_MARK = '■ 글';
-var TEXT_HELP = '아래 "내용" 칸을 고치면 사이트에 반영됩니다. 종류·구분 칸은 그대로 두세요. 공지는 줄을 추가하면 늘어나고, 내용을 비우면 빠집니다.';
+var TEXT_HELP = '아래 "내용" 칸을 고치면 사이트에 반영됩니다. 종류·구분 칸은 그대로 두세요. 공지는 줄을 추가하면 늘어나고, 내용을 비우면 빠집니다. 파란 "└ English" 줄은 영어 화면에 나오는 글입니다(비우면 자동 번역).';
 var SEEN_SHEET = '확인현황';
 var COLORS = { '프리롤': '#F2C14E', 'A': '#E5484D', 'B': '#4C8DF0', 'C': '#3DB862', 'D': '#A066E8', 'E': '#17998E', 'S': '#94A3B8' };
 
@@ -188,23 +189,36 @@ function readRoster_(week) {
 }
 /* ── 글 구역: 명단 아래. A=종류, B=구분, C=내용 ── */
 function msgLabel_(c) { return c === 'F' ? '프리롤' : c === 'N' ? '대체' : c + '팀'; }
-function textRows_(state) {
-  var rows = [['제목', '', state.title || ''], ['부제', '', state.sub || '']];
-  (state.notes || []).forEach(function (t, i) { rows.push(['팀원용 공지', String(i + 1), t]); });
-  (state.notesFree || state.notes || []).forEach(function (t, i) { rows.push(['프리롤용 공지', String(i + 1), t]); });
-  (state.msgs || []).forEach(function (m) { rows.push(['팀별 공지사항', msgLabel_(m.c), m.text || '']); });
-  (state.steps || []).forEach(function (t, i) { rows.push(['단계', String(i + 1), t]); });
-  (state.rules || []).forEach(function (r) { rows.push(['운영 원칙', r[0], r[1]]); });
-  (state.summary || []).forEach(function (r) { rows.push(['팀별 운영 요약', r[0], r[1]]); });
-  return rows;
+var EN_ROW = '└ English';
+/** 글 항목 목록: {ty 종류, lb 구분, tx 내용, elb 영어 구분, etx 영어 내용} */
+function textItems_(state) {
+  var en = state.en || {}, it = [];
+  function ar(k) { return en[k] || []; }
+  function pr(k, i, j) { var r = ar(k)[i]; return (r && r[j]) || ''; }
+  it.push({ ty: '제목', lb: '', tx: state.title || '', elb: '', etx: en.title || '' });
+  it.push({ ty: '부제', lb: '', tx: state.sub || '', elb: '', etx: en.sub || '' });
+  (state.heads || []).forEach(function (h, i) {
+    it.push({ ty: '머리글', lb: String(i + 1), tx: h[0] || '', elb: '', etx: pr('heads', i, 0) });
+    it.push({ ty: '머리글 설명', lb: String(i + 1), tx: h[1] || '', elb: '', etx: pr('heads', i, 1) });
+  });
+  (state.notes || []).forEach(function (t, i) { it.push({ ty: '팀원용 공지', lb: String(i + 1), tx: t, elb: '', etx: ar('notes')[i] || '' }); });
+  (state.notesFree || state.notes || []).forEach(function (t, i) { it.push({ ty: '프리롤용 공지', lb: String(i + 1), tx: t, elb: '', etx: ar('notesFree')[i] || '' }); });
+  (state.msgs || []).forEach(function (m, i) { it.push({ ty: '팀별 공지사항', lb: msgLabel_(m.c), tx: m.text || '', elb: '', etx: ar('msgs')[i] || '' }); });
+  (state.steps || []).forEach(function (t, i) { it.push({ ty: '단계', lb: String(i + 1), tx: t, elb: '', etx: ar('steps')[i] || '' }); });
+  (state.rules || []).forEach(function (r, i) { it.push({ ty: '운영 원칙', lb: r[0], tx: r[1], elb: pr('rules', i, 0), etx: pr('rules', i, 1) }); });
+  (state.summary || []).forEach(function (r, i) { it.push({ ty: '팀별 운영 요약', lb: r[0], tx: r[1], elb: pr('summary', i, 0), etx: pr('summary', i, 1) }); });
+  return it;
 }
 function writeTexts_(sh, r0, state) {
-  var rows = textRows_(state), vals = [[TEXT_MARK, TEXT_HELP, ''], ['종류', '구분', '내용']].concat(rows), need = r0 + vals.length + 10;
+  var items = textItems_(state), vals = [[TEXT_MARK, TEXT_HELP, ''], ['종류', '구분', '내용']];
+  items.forEach(function (x) { vals.push([x.ty, x.lb, x.tx]); vals.push([EN_ROW, x.elb, x.etx]); });
+  var need = r0 + vals.length + 10;
   if (sh.getMaxRows() < need) sh.insertRowsAfter(sh.getMaxRows(), need - sh.getMaxRows());
   sh.getRange(r0, 1, vals.length, 3).setValues(vals).setVerticalAlignment('top');
   sh.getRange(r0, 1, 1, 3).setFontWeight('bold').setBackground('#333333').setFontColor('#FFFFFF');
   sh.getRange(r0 + 1, 1, 1, 3).setFontWeight('bold').setBackground('#EEEEEE');
-  sh.getRange(r0 + 2, 1, rows.length, 2).setFontColor('#666666');
+  sh.getRange(r0 + 2, 1, vals.length - 2, 2).setFontColor('#666666');
+  for (var i = 0; i < items.length; i++) sh.getRange(r0 + 3 + i * 2, 1, 1, 3).setFontColor('#1A73E8');
   sh.getRange(r0, 2, vals.length, 2).setWrapStrategy(SpreadsheetApp.WrapStrategy.OVERFLOW);
 }
 /** 화면값 2차원 배열에서 글 구역 시작 줄(0부터) — 없으면 -1 */
@@ -214,19 +228,36 @@ function readTexts_(week) {
   var H = sh.getLastRow(); if (H < 4) return null;
   var v = sh.getRange(1, 1, H, 3).getDisplayValues(), tm = textMarkRow_(v); if (tm < 0) return null;
   var out = [];
-  for (var r = tm + 2; r < H; r++) { var ty = trim_(v[r][0]); if (ty) out.push([ty, trim_(v[r][1]), String(v[r][2] || '').replace(/\s+$/, '')]); }
+  for (var r = tm + 2; r < H; r++) {
+    var ty = trim_(v[r][0]), lb = trim_(v[r][1]), tx = String(v[r][2] || '').replace(/\s+$/, '');
+    if (!ty) continue;
+    if (ty.charAt(0) === '└') { if (out.length) { out[out.length - 1].elb = lb; out[out.length - 1].etx = tx; } continue; }
+    out.push({ ty: ty, lb: lb, tx: tx, elb: '', etx: '' });
+  }
   return out;
 }
-function mergeTexts_(state, rows) {
-  function of(ty) { return rows.filter(function (x) { return x[0] === ty; }); }
+function mergeTexts_(state, items) {
+  function of(ty) { return items.filter(function (x) { return x.ty === ty; }); }
+  var en = { heads: [], notes: [], notesFree: [], msgs: [], steps: [], rules: [], summary: [] };
   var t = of('제목')[0], s = of('부제')[0];
-  if (t) state.title = t[2]; if (s) state.sub = s[2];
-  state.notes = of('팀원용 공지').map(function (x) { return x[2]; }).filter(function (x) { return x; });
-  state.notesFree = of('프리롤용 공지').map(function (x) { return x[2]; }).filter(function (x) { return x; });
-  var ms = of('팀별 공지사항'); (state.msgs || []).forEach(function (m, i) { if (ms[i]) m.text = ms[i][2]; });
-  var st = of('단계'); if (st.length) state.steps = st.map(function (x) { return x[2]; }).filter(function (x) { return x; });
-  var ru = of('운영 원칙'); if (ru.length) state.rules = ru.filter(function (x) { return x[1] || x[2]; }).map(function (x) { return [x[1], x[2]]; });
-  var su = of('팀별 운영 요약'); if (su.length) state.summary = su.filter(function (x) { return x[1] || x[2]; }).map(function (x) { return [x[1], x[2]]; });
+  if (t) { state.title = t.tx; en.title = t.etx; }
+  if (s) { state.sub = s.tx; en.sub = s.etx; }
+  var hs = of('머리글'), hd = of('머리글 설명');
+  (state.heads || []).forEach(function (h, i) {
+    if (hs[i]) h[0] = hs[i].tx; if (hd[i]) h[1] = hd[i].tx;
+    en.heads.push([hs[i] ? hs[i].etx : '', hd[i] ? hd[i].etx : '']);
+  });
+  var n1 = of('팀원용 공지').filter(function (x) { return x.tx; }), n2 = of('프리롤용 공지').filter(function (x) { return x.tx; });
+  state.notes = n1.map(function (x) { return x.tx; }); en.notes = n1.map(function (x) { return x.etx; });
+  state.notesFree = n2.map(function (x) { return x.tx; }); en.notesFree = n2.map(function (x) { return x.etx; });
+  var ms = of('팀별 공지사항'); (state.msgs || []).forEach(function (m, i) { if (ms[i]) m.text = ms[i].tx; en.msgs.push(ms[i] ? ms[i].etx : ''); });
+  var st = of('단계').filter(function (x) { return x.tx; });
+  if (st.length) { state.steps = st.map(function (x) { return x.tx; }); en.steps = st.map(function (x) { return x.etx; }); }
+  var ru = of('운영 원칙').filter(function (x) { return x.lb || x.tx; });
+  if (ru.length) { state.rules = ru.map(function (x) { return [x.lb, x.tx]; }); en.rules = ru.map(function (x) { return [x.elb, x.etx]; }); }
+  var su = of('팀별 운영 요약').filter(function (x) { return x.lb || x.tx; });
+  if (su.length) { state.summary = su.map(function (x) { return [x.lb, x.tx]; }); en.summary = su.map(function (x) { return [x.elb, x.etx]; }); }
+  state.en = en;
   return state;
 }
 /** 변경 감지용 서명: 탭에 보이는 값 전체 + 리비전 */
