@@ -71,7 +71,7 @@ window.EVENT_DATA = { id, name, days,
 성검쟁탈(Swordland Showdown) 군단 편성·임무 경로 작전판. 한 파일짜리 페이지(스타일 `#css`, 코드 `#app`, 기본 편성 `#state` JSON 내장).
 - 화면: 인트로(검이 꽂히고 좌우로 갈라짐, 1.35초, 탭당 1회·관리자는 생략) → 이름 선택 → 내 임무만 보기. 팀 카드, 지도 위 임무카드와 경로 화살표, 팀별 공지사항, 공지, 구역 운영 원칙.
 - 백엔드: 구글 시트(ID 1Al5z2mk1E3l_E-ItfIVgfgyp112D4UfgEF_uBKDiIlk) 바인딩 Apps Script. 웹 앱 URL은 `swordland/index.html`의 `API_URL`. `''`이면 미리보기 모드(로그인 없이 편집, localStorage 저장).
-  - ⚠️ 코드 수정 시 "배포 관리 → 기존 배포 편집 → 새 버전 → 배포" (새 배포 금지). 원본 코드는 Jason 로컬 `성검쟁탈편성표/app/AppsScript_Swordland.gs` (비밀번호 해시가 들어 있어 리포에는 올리지 않음).
+  - ⚠️ 코드 수정 시 "배포 관리 → 기존 배포 편집 → 새 버전 → 배포" (새 배포 금지). 코드는 `swordland/AppsScript_Swordland.gs`(비밀번호 솔트·해시 자리는 `__SALT__`/`__HASH__`로 비워 둠 — 실제 값이 든 사본은 Jason 로컬 `성검쟁탈편성표/app/`).
   - 주차별 탭(왼쪽이 최신, 사이트 "주차" 드롭다운에 그대로 나옴): 팀마다 4열(역할·이름·R4·빈칸), 2행 = 팀 코드(프리롤/A~E/S)와 팀 이름, 3행 = 머리글, 4행부터 사람. 시트에서 이름만 바꾸면 그 자리의 임무 경로가 유지됨(자리 = 줄 위치). 탭을 복사해 이름을 바꾸면 새 주차.
   - 숨김 시트 `앱데이터`: A 주차, B 리비전, C 저장시각, D 조각수, E~ JSON 조각(45,000자씩, 맨 앞 ¶ 표시). `__faces__` 줄 = 이름별 프로필 사진 모음.
   - API: GET `?action=load&week=` (주차 목록 + 편성), POST `login`/`save`/`newWeek`/`whoami`/`logout`/`setPassword` (본문은 text/plain JSON).
