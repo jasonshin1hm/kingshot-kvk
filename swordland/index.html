@@ -669,7 +669,7 @@ function missionHtml(m,i){var r=person(m.pid);if(!r||!shown(m.pid))return '';
 function controls(){
   var ps=people(), withM=ps.filter(function(p){return S.missions.some(function(m){return m.pid===p.r.id})});
   var one=sel&&sel.size===1?Array.from(sel)[0]:null;
-  var h='<div class="ctl" data-html2canvas-ignore="true"><label for="who">내 임무 보기</label><select id="who"><option value="all"'+(sel===null?' selected':'')+'>전체</option><option value="none"'+(sel&&sel.size===0?' selected':'')+'>숨기기</option>'+
+  var h='<div class="ctl" data-html2canvas-ignore="true"><label for="who">내 임무 보기</label><select id="who">'+(admin?'<option value="all"'+(sel===null?' selected':'')+'>전체</option>':(sel===null?'<option value="" selected disabled>이름 선택</option>':''))+'<option value="none"'+(sel&&sel.size===0?' selected':'')+'>숨기기</option>'+
     (sel&&sel.size>1?'<option value="multi" selected>선택 '+sel.size+'명</option>':'')+
     [{n:S.freeTitle||'프리롤',r:S.free}].concat(S.teams.map(function(t){return {n:t.name,r:t.rows}})).map(function(g){return g.r.length?'<optgroup label="'+esc(g.n)+'">'+g.r.map(function(r){return '<option value="'+r.id+'"'+(one===r.id?' selected':'')+'>'+esc(r.name)+'</option>'}).join('')+'</optgroup>':''}).join('')+'</select>';
   if(admin){
