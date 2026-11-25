@@ -526,7 +526,7 @@ function render(){
 
   const hdr=`<header class="hdr">
     <div class="brand"><img src="../logo.png" alt="KOR737"><div><h1>${T_.title}</h1>
-      <div class="sub">${T_.sub}<a href="../">${T_.navCalc}</a><a href="../kvk.html">${T_.navKvk}</a></div></div></div>
+      <div class="sub">${T_.sub}<a href="../">${T_.navCalc}</a><a href="../kvk.html">${T_.navKvk}</a><a href="../swordland/">성검쟁탈</a></div></div></div>
     <nav class="tabs" aria-label="view">${[['all',T_.all],['atk',T_.atk],['def',T_.def]].map(([k,l])=>`<button class="tab ${ui.tab===k?'on':''}" data-act="tab" data-v="${k}">${l}</button>`).join('')}</nav>
     <div class="actions">
       ${status}${monthSel}

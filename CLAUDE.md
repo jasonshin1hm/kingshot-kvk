@@ -8,6 +8,7 @@
 - KvK 통계: https://jasonshin1hm.github.io/kingshot-kvk/kvk.html
 - 이벤트 계산기: https://jasonshin1hm.github.io/kingshot-kvk/
 - 랠리 편성기: https://jasonshin1hm.github.io/kingshot-kvk/rally/
+- 성검쟁탈 편성표: https://jasonshin1hm.github.io/kingshot-kvk/swordland/
 - 앱들은 상단 topnav로 상호 링크. 페이지를 추가하면 양쪽 topnav도 갱신할 것.
 
 ## 앱 ① KvK 통계 — `kvk.html` + `data.js`
@@ -65,6 +66,17 @@ window.EVENT_DATA = { id, name, days,
 - 동시 편집: 저장 충돌 시 서버 최신본에 대기 중 변경을 재적용, 15초마다 자동 새로고침.
 - v2.1: 참여검증 3상태(참여/일부/불참) + "참여검증 저장"(로그인 전원, 추가·일부·불참·조장 목록 덮어쓰기 + 왼쪽 명단 취소선) / 실행취소·다시실행(↶↷, Ctrl+Z/Y, 내 변경만 경로 단위 되돌림, localStorage 50개) / 조장 배지(이름 뒤 깃발+"조장" 샤인) / 집결장 사진 글로우.
 - 미리보기: `API_URL`을 ''로 두면 전 권한 + localStorage 저장 모드로 동작(배포 전 확인용).
+
+## 앱 ④ 성검쟁탈 편성표 — `swordland/index.html` + 그림·글꼴 파일 (v1, 2026-11-25)
+성검쟁탈(Swordland Showdown) 군단 편성·임무 경로 작전판. 한 파일짜리 페이지(스타일 `#css`, 코드 `#app`, 기본 편성 `#state` JSON 내장).
+- 화면: 인트로(검이 꽂히고 좌우로 갈라짐, 1.35초, 탭당 1회·관리자는 생략) → 이름 선택 → 내 임무만 보기. 팀 카드, 지도 위 임무카드와 경로 화살표, 팀별 공지사항, 공지, 구역 운영 원칙.
+- 백엔드: 구글 시트(ID 1Al5z2mk1E3l_E-ItfIVgfgyp112D4UfgEF_uBKDiIlk) 바인딩 Apps Script. 웹 앱 URL은 `swordland/index.html`의 `API_URL`. `''`이면 미리보기 모드(로그인 없이 편집, localStorage 저장).
+  - ⚠️ 코드 수정 시 "배포 관리 → 기존 배포 편집 → 새 버전 → 배포" (새 배포 금지). 원본 코드는 Jason 로컬 `성검쟁탈편성표/app/AppsScript_Swordland.gs` (비밀번호 해시가 들어 있어 리포에는 올리지 않음).
+  - 주차별 탭(왼쪽이 최신, 사이트 "주차" 드롭다운에 그대로 나옴): 팀마다 4열(역할·이름·R4·빈칸), 2행 = 팀 코드(프리롤/A~E/S)와 팀 이름, 3행 = 머리글, 4행부터 사람. 시트에서 이름만 바꾸면 그 자리의 임무 경로가 유지됨(자리 = 줄 위치). 탭을 복사해 이름을 바꾸면 새 주차.
+  - 숨김 시트 `앱데이터`: A 주차, B 리비전, C 저장시각, D 조각수, E~ JSON 조각(45,000자씩, 맨 앞 ¶ 표시). `__faces__` 줄 = 이름별 프로필 사진 모음.
+  - API: GET `?action=load&week=` (주차 목록 + 편성), POST `login`/`save`/`newWeek`/`whoami`/`logout`/`setPassword` (본문은 text/plain JSON).
+- 계정: `admin` 하나(스크립트 속성 ACCOUNTS, 해시만). 보기는 로그인 없이, 편집·저장·새 주차는 관리자만.
+- 원본은 claude.ai 아티팩트에서 만들었고, 이 리포 버전은 저장·로그인·주차 선택만 시트용으로 바꾼 것.
 
 ## 남은 TODO
 - 2026-09 연맹 전투력·멤버수 (연맹정보 스샷 받으면 data.js에 추가)
