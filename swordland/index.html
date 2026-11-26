@@ -531,6 +531,7 @@ function saveMe(){try{var pm=me&&person(me);if(pm)localStorage.setItem('sw-me','
 function viewCard(id){if(editing||admin||!me)return true;var mp=null;people().forEach(function(p){if(p.r.id===me)mp=p});if(!mp)return true;
   var myT=mp.kind==='free'?'F':mp.c;
   if(id==='rules')return true;
+  if(id==='steps')return mp.kind!=='free';
   if(id.indexOf('team:')===0)return mp.kind!=='free'&&id.slice(5)===mp.c;
   if(id.indexOf('msg:')===0){var g=S.msgs[+id.slice(4)-1];return !!g&&(g.c===myT||(g.c==='N'&&myT==='S'))}
   return true}
@@ -850,13 +851,10 @@ function render(){
   '<section class="col">'+head(1)+controls()+'<div class="stick"><div class="mapbox">'+mapTools()+'<div class="mapwrap"><div class="map s'+mapStyle+'" id="map"><div class="mstyle" data-html2canvas-ignore="true">'+['A','B','C'].map(function(k){return '<button type="button" class="msb'+(mapStyle===k?' on':'')+'" data-ms="'+k+'" aria-pressed="'+(mapStyle===k)+'" title="맵 스타일 '+k+'">'+k+'</button>'}).join('')+'</div>'+(editing?'<button type="button" class="mundo" data-undo="1" data-html2canvas-ignore="true" title="방금 작업 되돌리기">↶ 되돌리기</button>':'')+
     S.map.map(labelHtml).join('')+S.missions.map(missionHtml).join('')+
     '</div>'+add('map','label','지도 라벨 추가').replace('class="add"','class="add mapadd"')+'</div></div>'+routePanel()+
-    '<div class="steps">'+S.steps.map(function(s,i){return '<div class="step"><i>'+(i+1)+'</i>'+E('steps.'+i)+del('steps',i)+'</div>'}).join('')+'</div>'+add('steps','name','단계 추가')+'</div>'+zone('mid')+'</section>'+
+    (viewCard('steps')?'<div class="steps">'+S.steps.map(function(s,i){return '<div class="step"><i>'+(i+1)+'</i>'+E('steps.'+i)+del('steps',i)+'</div>'}).join('')+'</div>'+add('steps','name','단계 추가'):'')+'</div>'+zone('mid')+'</section>'+
   '<section class="col">'+(viewCard('rules')?head(2):'')+
-    zone('right')+
-    ''+
-    ''+
-    '</section></div>'+
-  notesHtml();
+    zone('right')+notesHtml()+
+    '</section></div>';
   root.querySelectorAll('.ed').forEach(function(el){
     if(!editing){el.removeAttribute('contenteditable');return}
     try{el.contentEditable='plaintext-only'}catch(e){el.contentEditable='true'}
