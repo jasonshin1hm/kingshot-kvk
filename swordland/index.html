@@ -471,6 +471,21 @@ button.r4:not(.on):hover,button.r4:not(.on):focus-visible{opacity:.7}
 .tlzoom{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:10px;cursor:zoom-out;overflow:auto}
 .tlzoom img{max-width:100%;max-height:100%;border-radius:8px}
 .tlhelp{padding:8px 12px;font-size:12px;color:var(--mute);line-height:1.5;border-top:1px dashed var(--line)}
+.notes.nx{padding:6px 14px 4px;word-break:keep-all}
+.notes.nx .ntitle{padding:8px 0 2px;margin:0;font-size:12px;color:#C8A24A}
+.nx .ni{display:grid;grid-template-columns:24px 1fr;gap:10px;padding:11px 0;border-top:1px solid rgba(255,255,255,.07)}
+.nx .ni:first-of-type{border-top:0}
+.nx .ni .no{width:22px;height:22px;border-radius:50%;background:rgba(242,200,102,.15);border:1px solid rgba(242,200,102,.6);color:#F7DC93;font-weight:900;font-size:11.5px;display:grid;place-items:center;margin-top:1px}
+.nx h4{margin:0;font-size:14.5px;font-weight:900;line-height:1.45;color:#F3F5F8;overflow-wrap:anywhere}
+.nx p{margin:3px 0 0;font-size:12.5px;font-weight:500;color:#AEB6C4;line-height:1.55;overflow-wrap:anywhere}
+.nx b.g{color:#F7DC93;font-weight:900}
+.nx .tg{display:inline-block;font-size:10.5px;font-weight:900;border-radius:99px;padding:1px 8px;margin-right:6px;vertical-align:2px;line-height:1.5}
+.nx .tg.imp{background:#C8363E;color:#fff}.nx .tg.tip{background:rgba(110,168,250,.2);color:#9CC3FF;border:1px solid rgba(110,168,250,.5)}.nx .tg.warn{background:rgba(242,200,102,.18);color:#F7DC93;border:1px solid rgba(242,200,102,.5)}
+.nx .ni.imp{box-shadow:inset 3px 0 0 #E24A52;margin-left:-14px;padding-left:14px;background:linear-gradient(90deg,rgba(226,74,82,.1),transparent 60%)}
+.nx .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;margin-top:7px}
+.nx .tiles div{background:#1A202B;border:1px solid rgba(242,200,102,.35);border-radius:10px;padding:7px 4px;text-align:center}
+.nx .tiles small{display:block;font-size:11px;color:#AEB6C4;font-weight:700}.nx .tiles b{font-size:16px;color:#F7DC93;font-weight:900}
+.notes .nhelp{font-size:12px;color:var(--mute);line-height:1.5;padding:6px 0 2px;border-top:1px dashed var(--line);margin-top:6px}
 #bar.xb{position:sticky;top:0;z-index:20;display:flex;flex-wrap:nowrap;align-items:center;gap:10px;height:48px;padding:0 12px 0 14px;background:linear-gradient(180deg,#141922,#0F131A);border-bottom:1px solid rgba(242,200,102,.28);box-shadow:0 6px 18px rgba(0,0,0,.35)}
 #bar.xb .br{display:flex;align-items:center;gap:8px;color:#F2C866;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden}
 #bar.xb .br b{font-family:'Cinzel',serif;font-weight:900;font-size:15px;letter-spacing:.14em;background:linear-gradient(180deg,#fff3c8,#f1b84c 60%,#b8862c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -792,6 +807,15 @@ document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)r
 
 /* 다시 들어오면 처음 고른 이름(내 이름)으로 시작. 아직 없으면 이름 선택 창을 띄움 */
 try{if(window.top===window.self){var w0=localStorage.getItem('sw-who');if(w0)localStorage.setItem('sw-me','n:'+w0);else localStorage.removeItem('sw-me')}}catch(e){}
+/* ---- 공지(B안): 첫 줄 = 제목([중요] [주의] [팁] 꼬리표 가능), 나머지 줄 = 설명, '칸: 이름 값 / 이름 값' = 숫자 칸, *단어* = 금색 ---- */
+var NX_TAG={'중요':'imp','important':'imp','주의':'warn','caution':'warn','팁':'tip','tip':'tip'},NX_LB={imp:['중요','Important'],warn:['주의','Caution'],tip:['팁','Tip']};
+function noteItem(list,i){var en=lang==='en'&&!editing,v=String((en&&enOf(list+'.'+i))||S[list][i]||''),head='',kind='',det=[],tiles=[];
+  v.split('\n').forEach(function(x){x=x.trim();if(!x)return;var t=x.match(/^(?:칸|tiles?)\s*[:：]\s*(.+)$/i);
+    if(t){t[1].split('/').forEach(function(c){c=c.trim();var m=c.match(/^(.*\S)\s+(\S+)$/);if(m)tiles.push([m[1],m[2]]);else if(c)tiles.push(['',c])});return}
+    if(!head){var g=x.match(/^\[([^\]]+)\]\s*(.*)$/);if(g&&NX_TAG[g[1].toLowerCase()]){kind=NX_TAG[g[1].toLowerCase()];x=g[2]}head=x||' '}else det.push(x)});
+  return '<div class="ni'+(kind==='imp'?' imp':'')+'"><span class="no">'+(i+1)+'</span><div><h4>'+(kind?'<span class="tg '+kind+'">'+NX_LB[kind][en?1:0]+'</span>':'')+tlFmt(head.trim())+'</h4>'+
+    (tiles.length?'<div class="tiles">'+tiles.map(function(c){return '<div>'+(c[0]?'<small>'+tlFmt(c[0])+'</small>':'')+'<b>'+esc(c[1])+'</b></div>'}).join('')+'</div>':'')+
+    (det.length?'<p>'+det.map(tlFmt).join('<br>')+'</p>':'')+'</div></div>'}
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
 var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
@@ -813,7 +837,7 @@ function focusMap(){var key=sel===null?'':Array.from(sel).sort().join(',');if(ke
   var cx=(Math.min.apply(null,xs)+Math.max.apply(null,xs))/200,cy=(Math.min.apply(null,ys)+Math.max.apply(null,ys))/200,mr=m.getBoundingClientRect(),wr=w.getBoundingClientRect();
   var L=w.scrollLeft+(mr.left+cx*mr.width)-(wr.left+wr.width/2),T=w.scrollTop+(mr.top+cy*mr.height)-(wr.top+wr.height/2);
   try{w.scrollTo({left:L,top:T,behavior:'smooth'})}catch(e){w.scrollLeft=L;w.scrollTop=T}}
-function notesBox(list,label){return '<footer class="notes">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return '<div class="note" data-li="'+list+'|'+i+'"><span class="grip" data-ldrag="'+list+'|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E(list+'.'+i)+del(list,i)+'</div>'}).join('')+add(list,'name','공지 추가')+'</footer>'}
+function notesBox(list,label){if(!editing)return '<footer class="notes nx">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return noteItem(list,i)}).join('')+'</footer>';return '<footer class="notes">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return '<div class="note" data-li="'+list+'|'+i+'"><span class="grip" data-ldrag="'+list+'|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E(list+'.'+i)+del(list,i)+'</div>'}).join('')+add(list,'name','공지 추가')+'<div class="nhelp">쓰는 법 · 첫 줄 = 굵은 제목 (맨 앞에 [중요] [주의] [팁] 을 쓰면 꼬리표) · 다음 줄부터 = 작은 설명 · "칸: 성소 6,000 / 수도원 3,000" 줄 = 숫자 칸 · *단어* = 금색</div></footer>'}
 /* 공지는 두 벌: 팀원용(notes)과 프리롤용(notesFree). 관리자는 둘 다, 그 외에는 자기 것만 */
 function notesHtml(){if(!S.notesFree)S.notesFree=[];if(admin||editing)return notesBox('notes','팀원용 공지 — 프리롤이 아닌 사람에게 보입니다')+notesBox('notesFree','프리롤용 공지 — 프리롤에게만 보입니다');
   var lf=false;if(me)people().forEach(function(p){if(p.r.id===me&&p.kind==='free')lf=true});var k=lf?'notesFree':'notes';return S[k].length?notesBox(k,''):''}
