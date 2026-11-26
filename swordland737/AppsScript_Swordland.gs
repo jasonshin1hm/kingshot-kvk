@@ -1,6 +1,7 @@
 /**
  * 성검쟁탈 편성표 — Apps Script 백엔드 v1
  *
+ * v4 (2026-11-26): 팀 코드 — 코드(또는 관리자 로그인) 없이는 아무것도 내려주지 않고, 코드가 있으면 그 팀 분량만 내려줌
  * v3 (2026-11-25): 글 구역에 영어 줄(└ English) — state.en
  * v2 (2026-11-25): 주차 탭 아래 "글" 구역(공지·팀별 공지사항·단계·원칙을 시트에서 수정), 변경 감지용 sig, 확인 현황
  *
@@ -29,6 +30,8 @@ var HELP = '이름·역할·R4만 바꾸면 사이트에 그대로 반영되고 
 var TEXT_MARK = '■ 글';
 var TEXT_HELP = '아래 "내용" 칸을 고치면 사이트에 반영됩니다. 종류·구분 칸은 그대로 두세요. 공지는 줄을 추가하면 늘어나고, 내용을 비우면 빠집니다. 파란 "└ English" 줄은 영어 화면에 나오는 글입니다(비우면 자동 번역).';
 var SEEN_SHEET = '확인현황';
+var CODE_SHEET = '팀코드';
+var CODE_TEAMS = [['프리롤', 'F'], ['A', 'A'], ['B', 'B'], ['C', 'C'], ['D', 'D'], ['E', 'E'], ['대체', 'S']];
 var COLORS = { '프리롤': '#F2C14E', 'A': '#E5484D', 'B': '#4C8DF0', 'C': '#3DB862', 'D': '#A066E8', 'E': '#17998E', 'S': '#94A3B8' };
 
 // 초기 계정 (비밀번호 원문 없음 — 해시만). 공개 리포에는 해시도 올리지 않음: 실제 값은 Apps Script 편집기와 Jason 로컬 사본에만 있음
@@ -40,14 +43,8 @@ var INITIAL_ACCOUNTS = {
 
 function doGet(e) {
   var p = (e && e.parameter) || {};
-  try {
-    if (p.action === 'ping') return json_({ ok: true, time: new Date().toISOString() });
-    if (p.action === 'list') return json_({ ok: true, weeks: weeks_() });
-    if (p.action === 'sig') { var ws = weeks_(), wk = (p.week && ws.indexOf(String(p.week)) >= 0) ? String(p.week) : (ws[0] || null); return json_({ ok: true, weeks: ws, week: wk, sig: wk ? sig_(wk) : '' }); }
-    return json_(load_(p.week));
-  } catch (err) {
-    return json_({ ok: false, error: 'server_error', message: String(err) });
-  }
+  if (p.action === 'ping') return json_({ ok: true, time: new Date().toISOString() });
+  return json_({ ok: false, error: 'code' }); // 편성은 POST(load) + 팀 코드 또는 관리자 로그인으로만
 }
 
 function doPost(e) {
@@ -61,7 +58,11 @@ function doPost(e) {
       case 'logout': return json_(logout_(b.token));
       case 'save': return json_(save_(b.token, b.week, b.state, b.rev));
       case 'newWeek': return json_(newWeek_(b.token, b.week, b.from));
-      case 'seen': return json_(seen_(b.week, b.name));
+      case 'load': return json_(loadFor_(b.week, b.token, b.code));
+      case 'sig': return json_(sigFor_(b.week, b.token, b.code));
+      case 'codes': return json_(codesList_(b.token));
+      case 'newCodes': return json_(newCodes_(b.token));
+      case 'seen': return json_(seen_(b.week, b.name, b.code));
       case 'seenList': return json_(seenList_(b.token, b.week));
       case 'setPassword': return json_(setPassword_(b.token, b.target, b.newPassword));
       default: return json_({ ok: false, error: 'unknown_action' });
@@ -127,7 +128,7 @@ function latestBlob_() {
 /* ───────────────────────── 주차 탭(팀별 명단) ───────────────────────── */
 
 function isRosterSheet_(sh) {
-  if (sh.getName() === DATA_SHEET || sh.getName() === SEEN_SHEET) return false;
+  if (sh.getName() === DATA_SHEET || sh.getName() === SEEN_SHEET || sh.getName() === CODE_SHEET) return false;
   if (sh.getLastRow() < 3) return false;
   return trim_(sh.getRange(3, 1).getDisplayValue()) === '역할';
 }
@@ -304,7 +305,7 @@ function load_(week) {
   var blob = week ? readBlob_(week) : null, own = !!blob;
   if (!blob) blob = latestBlob_();
   if (!blob) { // 아직 저장된 편성이 없음: 비어 있는 첫 탭 이름을 첫 주차 이름으로 제안
-    var first = ss_().getSheets().filter(function (s) { return s.getName() !== DATA_SHEET; })[0];
+    var first = ss_().getSheets().filter(function (s) { return s.getName() !== DATA_SHEET && s.getName() !== CODE_SHEET && s.getName() !== SEEN_SHEET; })[0];
     return { ok: true, empty: true, weeks: ws, week: week || (first ? first.getName() : null) };
   }
   var state = JSON.parse(blob.json), roster = week ? readRoster_(week) : null;
@@ -374,11 +375,12 @@ function seenSheet_() {
   return sh;
 }
 /** 연맹원이 이름을 고르면 기록 (로그인 불필요, 그 주차 명단에 있는 이름만) */
-function seen_(week, name) {
+function seen_(week, name, code) {
   week = trim_(week); name = trim_(name);
+  var T = codeTeam_(code); if (!T) return { ok: false, error: 'code' };
   if (!week || !name || name.length > 60) return { ok: false, error: 'bad' };
   var ro = readRoster_(week); if (!ro) return { ok: false, error: 'no_week' };
-  var known = false; ro.forEach(function (b) { b.rows.forEach(function (r) { if (r.name === name) known = true; }); });
+  var known = false; ro.forEach(function (b) { var bt = b.code === FREE_CODE ? 'F' : b.code; if (bt === T) b.rows.forEach(function (r) { if (r.name === name) known = true; }); });
   if (!known) return { ok: false, error: 'unknown' };
   var lock = LockService.getScriptLock(); lock.waitLock(15000);
   try {
@@ -401,6 +403,97 @@ function seenList_(token, week) {
     if (String(r[0]) === String(week)) out[String(r[1])] = { first: r[2] instanceof Date ? r[2].getTime() : 0, last: r[3] instanceof Date ? r[3].getTime() : 0, count: Number(r[4]) || 0 };
   });
   return { ok: true, week: week, seen: out };
+}
+
+/* ───────────────────────── 팀 코드 / 보는 사람별 편성 ───────────────────────── */
+
+function randCode_() {
+  var al = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', h = sha_(Utilities.getUuid() + ':' + new Date().getTime()), s = '';
+  for (var i = 0; i < 6; i++) s += al.charAt(parseInt(h.substr(i * 4, 4), 16) % al.length);
+  return s;
+}
+function codeSheet_() {
+  var ss = ss_(), sh = ss.getSheetByName(CODE_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(CODE_SHEET, ss.getNumSheets());
+    sh.getRange('A:B').setNumberFormat('@');
+    sh.getRange(1, 1, 1, 3).setValues([['팀', '코드', '코드 칸을 고치면 바로 바뀝니다. 그 팀 사람들에게만 알려 주세요. 코드를 넣은 사람은 자기 팀 편성만 볼 수 있습니다.']]).setFontWeight('bold');
+    var rows = CODE_TEAMS.map(function (t) { return [t[0], randCode_()]; });
+    sh.getRange(2, 1, rows.length, 2).setValues(rows);
+  }
+  return sh;
+}
+/** [{label, team, code}] — 빠진 팀이 있으면 줄을 채움 */
+function codes_() {
+  var sh = codeSheet_(), n = sh.getLastRow(), v = n >= 2 ? sh.getRange(2, 1, n - 1, 2).getDisplayValues() : [], out = [];
+  CODE_TEAMS.forEach(function (t) {
+    var c = '';
+    for (var i = 0; i < v.length; i++) if (trim_(v[i][0]) === t[0]) c = trim_(v[i][1]);
+    if (!c) { c = randCode_(); var r = sh.getLastRow() + 1; sh.getRange(r, 1, 1, 2).setNumberFormat('@'); sh.getRange(r, 1, 1, 2).setValues([[t[0], c]]); }
+    out.push({ label: t[0], team: t[1], code: c });
+  });
+  return out;
+}
+function normCode_(c) { return String(c == null ? '' : c).replace(/[\s-]/g, '').toUpperCase(); }
+/** 코드 → 팀 글자(F/A~E/S). 맞는 코드가 없으면 null */
+function codeTeam_(code) {
+  var c = normCode_(code); if (c.length < 4 || c.length > 20) return null;
+  var cs = codes_();
+  for (var i = 0; i < cs.length; i++) if (normCode_(cs[i].code) === c) return cs[i].team;
+  return null;
+}
+function codesList_(token) { if (!requireAdmin_(token)) return { ok: false, error: 'auth' }; return { ok: true, codes: codes_() }; }
+function newCodes_(token) {
+  if (!requireAdmin_(token)) return { ok: false, error: 'auth' };
+  var sh = codeSheet_(), rows = CODE_TEAMS.map(function (t) { return [t[0], randCode_()]; });
+  if (sh.getLastRow() >= 2) sh.getRange(2, 1, sh.getLastRow() - 1, 2).clearContent();
+  sh.getRange(2, 1, rows.length, 2).setNumberFormat('@');
+  sh.getRange(2, 1, rows.length, 2).setValues(rows);
+  return { ok: true, codes: codes_() };
+}
+function access_(token, code) {
+  if (token && requireAdmin_(token)) return { admin: true };
+  var T = codeTeam_(code); return T ? { team: T } : null;
+}
+function loadFor_(week, token, code) {
+  var a = access_(token, code); if (!a) return { ok: false, error: 'code' };
+  var d = load_(week); if (!d.ok || !d.state || a.admin) return d;
+  d.state = filterState_(d.state, a.team); d.team = a.team; d.rev = 0;
+  return d;
+}
+function sigFor_(week, token, code) {
+  if (!access_(token, code)) return { ok: false, error: 'code' };
+  var ws = weeks_(), wk = (week && ws.indexOf(String(week)) >= 0) ? String(week) : (ws[0] || null);
+  return { ok: true, weeks: ws, week: wk, sig: wk ? sig_(wk) : '' };
+}
+function imgIds_(t) { var o = []; String(t || '').split('\n').forEach(function (x) { var m = trim_(x).match(/^\[(?:그림|img)\s*:\s*([\w-]+)\]$/i); if (m) o.push(m[1]); }); return o; }
+/** 그 팀이 봐야 하는 것만 남김. 줄 번호로 짝을 맞추는 목록(팀별 공지사항)은 지우지 않고 비움 */
+function filterState_(st, T) {
+  var isF = T === 'F', en = st.en || {}, keep = {};
+  st.free = (st.free || []).filter(function (r) { return isF || String(r.c || '') === T; });
+  st.teams = (st.teams || []).map(function (t) { return String(t.c) === T ? t : { c: t.c, name: t.c === 'S' ? '대체(Sub)' : t.c + '팀', rows: [] }; });
+  eachRow_(st, function (r) { keep[r.id] = 1; });
+  st.missions = (st.missions || []).filter(function (m) { return keep[m.pid] || m.pid === 'T:' + T; });
+  (st.msgs || []).forEach(function (m, i) {
+    if (m.c === T || (m.c === 'N' && T === 'S')) return;
+    m.text = ''; m.on = false; if (en.msgs) en.msgs[i] = '';
+  });
+  if (isF) { st.notes = []; en.notes = []; st.steps = []; en.steps = []; }
+  else { st.notesFree = []; en.notesFree = []; }
+  if (!isF) {
+    var ks = []; (st.summary || []).forEach(function (r, i) { var m = /^\s*([A-Z])/.exec(r[0] || ''); if (m && m[1] === T) ks.push(i); });
+    var es = en.summary || [];
+    st.summary = ks.map(function (i) { return st.summary[i]; }); en.summary = ks.map(function (i) { return es[i] || ['', '']; });
+  }
+  st.abbey = []; st.support = []; st.subs = [];
+  if (st.imgs) {
+    var use = {};
+    (st.rules || []).forEach(function (r) { imgIds_(r[1]).forEach(function (id) { use[id] = 1; }); });
+    (st.notes || []).concat(st.notesFree || []).forEach(function (t) { imgIds_(t).forEach(function (id) { use[id] = 1; }); });
+    Object.keys(st.imgs).forEach(function (id) { if (!use[id]) delete st.imgs[id]; });
+  }
+  st.en = en;
+  return st;
 }
 
 /* ───────────────────────── 계정 / 인증 ───────────────────────── */
