@@ -1,6 +1,7 @@
 /**
  * 성검쟁탈 편성표 — Apps Script 백엔드 v1
  *
+ * v6 (2026-11-27): 사람별 메모(row.memo) — 프리롤의 메모는 프리롤 코드에만 보냄
  * v5 (2026-11-26): 프리롤 코드는 각 팀의 팀장 한 명·그 임무카드·팀 공지사항까지 받음
  * v4 (2026-11-26): 팀 코드 — 코드(또는 관리자 로그인) 없이는 아무것도 내려주지 않고, 코드가 있으면 그 팀 분량만 내려줌
  * v3 (2026-11-25): 글 구역에 영어 줄(└ English) — state.en
@@ -472,6 +473,7 @@ function imgIds_(t) { var o = []; String(t || '').split('\n').forEach(function (
 function filterState_(st, T) {
   var isF = T === 'F', en = st.en || {}, keep = {};
   st.free = (st.free || []).filter(function (r) { return isF || String(r.c || '') === T; });
+  if (!isF) st.free.forEach(function (r) { delete r.memo; }); // 프리롤 개인 메모는 프리롤 코드로만
   st.teams = (st.teams || []).map(function (t) {
     if (String(t.c) === T) return t;
     if (!isF) return { c: t.c, name: t.c === 'S' ? '대체(Sub)' : t.c + '팀', rows: [] };
