@@ -464,8 +464,9 @@ button.r4:not(.on):hover,button.r4:not(.on):focus-visible{opacity:.7}
 .tlx .br i{font-style:normal;font-weight:900;display:block;margin-bottom:1px}
 .tlx .ok{background:rgba(98,210,131,.13);border:1px solid rgba(98,210,131,.5)}.tlx .ok i{color:#7BE39A}
 .tlx .no{background:rgba(242,118,124,.12);border:1px solid rgba(242,118,124,.5)}.tlx .no i{color:#FF9AA0}
-.tlx .tli{display:block;width:100%;height:auto;border-radius:10px;margin-top:8px;border:1px solid rgba(255,255,255,.18);cursor:zoom-in}
+.tlx .tli,.nx .tli{display:block;width:100%;height:auto;border-radius:10px;margin-top:8px;border:1px solid rgba(255,255,255,.18);cursor:zoom-in}
 .tlth{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 10px 34px}
+.notes .tlth{padding:2px 0 8px 30px}
 .tlth span{position:relative;display:block}.tlth img{display:block;height:84px;width:auto;border-radius:8px;border:1px solid rgba(255,255,255,.2)}
 .tlth button{position:absolute;right:-6px;top:-6px;width:22px;height:22px;border-radius:50%;border:0;background:#C8363E;color:#fff;font-weight:900;line-height:1;padding:0}
 .tlzoom{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:10px;cursor:zoom-out;overflow:auto}
@@ -793,31 +794,34 @@ var IMG_RE=/^\[(?:그림|img)\s*:\s*([\w-]+)\]$/i;
 function tlIds(t){var o=[];String(t||'').split('\n').forEach(function(x){var g=x.trim().match(IMG_RE);if(g)o.push(g[1])});return o}
 /* 편집 화면: 단계마다 "그림" 버튼, 넣은 그림은 아래에 작게 보이고 ✕ 로 뺌 */
 function tlEdit(){return S.rules.map(function(r,j){var ids=tlIds(r[1]);
-  return '<div class="pair" data-li="rules|'+j+'"><span class="grip" data-ldrag="rules|'+j+'" title="끌어서 순서 바꾸기">⠿</span><span class="k">'+E('rules.'+j+'.0')+'</span>'+E('rules.'+j+'.1','v')+'<button type="button" class="tgl" data-tlimg="'+j+'" title="이 단계에 그림 넣기">그림</button>'+del('rules',j)+'</div>'+
-    (ids.length?'<div class="tlth">'+ids.map(function(id){return S.imgs&&S.imgs[id]?'<span><img alt="" src="'+S.imgs[id]+'"><button type="button" data-tlrm="'+j+'|'+id+'" aria-label="그림 빼기">×</button></span>':''}).join('')+'</div>':'')}).join('')}
-function tlPrune(){if(!S.imgs)return;var use={};S.rules.forEach(function(r){tlIds(r[1]).forEach(function(id){use[id]=1})});Object.keys(S.imgs).forEach(function(id){if(!use[id])delete S.imgs[id]});if(!Object.keys(S.imgs).length)delete S.imgs}
-var tlTarget=-1,tlFile=document.createElement('input');tlFile.type='file';tlFile.accept='image/*';tlFile.hidden=true;document.body.appendChild(tlFile);
-tlFile.addEventListener('change',function(){var f=tlFile.files[0],j=tlTarget;tlFile.value='';if(!f||!S.rules[j])return;if(!/^image\//.test(f.type)){toast('이미지 파일만 넣을 수 있습니다.');return}
+  return '<div class="pair" data-li="rules|'+j+'"><span class="grip" data-ldrag="rules|'+j+'" title="끌어서 순서 바꾸기">⠿</span><span class="k">'+E('rules.'+j+'.0')+'</span>'+E('rules.'+j+'.1','v')+'<button type="button" class="tgl" data-tlimg="rules|'+j+'" title="이 단계에 그림 넣기">그림</button>'+del('rules',j)+'</div>'+imThumbs('rules',j,ids)}).join('')}
+function imGet(l,j){return l==='rules'?(S.rules[j]?S.rules[j][1]:null):(S[l]?S[l][j]:null)}
+function imSet(l,j,v){if(l==='rules')S.rules[j][1]=v;else S[l][j]=v}
+function imEn(l,j,f){var e=S.en&&S.en[l];if(!e||e[j]==null)return;if(l==='rules'){if(e[j])e[j][1]=f(e[j][1])}else e[j]=f(e[j])}
+function imThumbs(l,j,ids){return ids.length?'<div class="tlth">'+ids.map(function(id){return S.imgs&&S.imgs[id]?'<span><img alt="" src="'+S.imgs[id]+'"><button type="button" data-tlrm="'+l+'|'+j+'|'+id+'" aria-label="그림 빼기">×</button></span>':''}).join('')+'</div>':''}
+function tlPrune(){if(!S.imgs)return;var use={};S.rules.forEach(function(r){tlIds(r[1]).forEach(function(id){use[id]=1})});['notes','notesFree'].forEach(function(l){(S[l]||[]).forEach(function(t){tlIds(t).forEach(function(id){use[id]=1})})});Object.keys(S.imgs).forEach(function(id){if(!use[id])delete S.imgs[id]});if(!Object.keys(S.imgs).length)delete S.imgs}
+var tlTarget=null,tlFile=document.createElement('input');tlFile.type='file';tlFile.accept='image/*';tlFile.hidden=true;document.body.appendChild(tlFile);
+tlFile.addEventListener('change',function(){var f=tlFile.files[0],tg=tlTarget;tlFile.value='';if(!f||!tg||imGet(tg[0],tg[1])==null)return;if(!/^image\//.test(f.type)){toast('이미지 파일만 넣을 수 있습니다.');return}
   var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var W=Math.min(im.width,1000),H=Math.round(im.height*W/im.width),c=document.createElement('canvas');c.width=W;c.height=H;c.getContext('2d').drawImage(im,0,0,W,H);
-      var id='g'+Date.now().toString(36);S.imgs=S.imgs||{};S.imgs[id]=c.toDataURL('image/jpeg',.8);S.rules[j][1]=String(S.rules[j][1]||'').replace(/\s+$/,'')+'\n[그림:'+id+']';dirty();render()};
+      var id='g'+Date.now().toString(36);S.imgs=S.imgs||{};S.imgs[id]=c.toDataURL('image/jpeg',.8);imSet(tg[0],tg[1],String(imGet(tg[0],tg[1])||'').replace(/\s+$/,'')+'\n[그림:'+id+']');dirty();render()};
     im.onerror=function(){toast('이미지를 읽지 못했습니다.')};im.src=fr.result};fr.readAsDataURL(f)});
 document.addEventListener('click',function(e){var t=e.target;if(!t||!t.closest)return;var b=t.closest('[data-tlimg]');
-  if(b&&editing){tlTarget=+b.getAttribute('data-tlimg');tlFile.click();return}
-  b=t.closest('[data-tlrm]');if(b&&editing){var a=b.getAttribute('data-tlrm').split('|'),j=+a[0],id=a[1];function cut(x){return String(x||'').split('\n').filter(function(l){var g=l.trim().match(IMG_RE);return !(g&&g[1]===id)}).join('\n')}
-    if(S.rules[j])S.rules[j][1]=cut(S.rules[j][1]);if(S.en&&S.en.rules&&S.en.rules[j])S.en.rules[j][1]=cut(S.en.rules[j][1]);if(S.imgs)delete S.imgs[id];dirty();render();return}
+  if(b&&editing){var q=b.getAttribute('data-tlimg').split('|');tlTarget=[q[0],+q[1]];tlFile.click();return}
+  b=t.closest('[data-tlrm]');if(b&&editing){var a=b.getAttribute('data-tlrm').split('|'),l=a[0],j=+a[1],id=a[2];function cut(x){return String(x||'').split('\n').filter(function(l){var g=l.trim().match(IMG_RE);return !(g&&g[1]===id)}).join('\n')}
+    if(imGet(l,j)!=null)imSet(l,j,cut(imGet(l,j)));imEn(l,j,cut);if(S.imgs)delete S.imgs[id];dirty();render();return}
   if(t.classList&&t.classList.contains('tli')){var o=document.createElement('div');o.className='tlzoom';o.innerHTML='<img alt="" src="'+t.src+'">';o.onclick=function(){o.parentNode.removeChild(o)};document.body.appendChild(o);return}});
 
 /* 다시 들어오면 처음 고른 이름(내 이름)으로 시작. 아직 없으면 이름 선택 창을 띄움 */
 try{if(window.top===window.self){var w0=localStorage.getItem('sw-who');if(w0)localStorage.setItem('sw-me','n:'+w0);else localStorage.removeItem('sw-me')}}catch(e){}
 /* ---- 공지(B안): 첫 줄 = 제목([중요] [주의] [팁] 꼬리표 가능), 나머지 줄 = 설명, '칸: 이름 값 / 이름 값' = 숫자 칸, *단어* = 금색 ---- */
 var NX_TAG={'중요':'imp','important':'imp','주의':'warn','caution':'warn','팁':'tip','tip':'tip'},NX_LB={imp:['중요','Important'],warn:['주의','Caution'],tip:['팁','Tip']};
-function noteItem(list,i){var en=lang==='en'&&!editing,v=String((en&&enOf(list+'.'+i))||S[list][i]||''),head='',kind='',det=[],tiles=[];
-  v.split('\n').forEach(function(x){x=x.trim();if(!x)return;var t=x.match(/^(?:칸|tiles?)\s*[:：]\s*(.+)$/i);
+function noteItem(list,i){var en=lang==='en'&&!editing,v=String((en&&enOf(list+'.'+i))||S[list][i]||''),head='',kind='',det=[],tiles=[],im=[];
+  v.split('\n').forEach(function(x){x=x.trim();if(!x)return;var gi=x.match(IMG_RE);if(gi){im.push(gi[1]);return}var t=x.match(/^(?:칸|tiles?)\s*[:：]\s*(.+)$/i);
     if(t){t[1].split('/').forEach(function(c){c=c.trim();var m=c.match(/^(.*\S)\s+(\S+)$/);if(m)tiles.push([m[1],m[2]]);else if(c)tiles.push(['',c])});return}
     if(!head){var g=x.match(/^\[([^\]]+)\]\s*(.*)$/);if(g&&NX_TAG[g[1].toLowerCase()]){kind=NX_TAG[g[1].toLowerCase()];x=g[2]}head=x||' '}else det.push(x)});
   return '<div class="ni'+(kind==='imp'?' imp':'')+'"><span class="no">'+(i+1)+'</span><div><h4>'+(kind?'<span class="tg '+kind+'">'+NX_LB[kind][en?1:0]+'</span>':'')+tlFmt(head.trim())+'</h4>'+
     (tiles.length?'<div class="tiles">'+tiles.map(function(c){return '<div>'+(c[0]?'<small>'+tlFmt(c[0])+'</small>':'')+'<b>'+esc(c[1])+'</b></div>'}).join('')+'</div>':'')+
-    (det.length?'<p>'+det.map(tlFmt).join('<br>')+'</p>':'')+'</div></div>'}
+    (det.length?'<p>'+det.map(tlFmt).join('<br>')+'</p>':'')+(im.length?im:tlIds(S[list][i])).map(function(id){return S.imgs&&S.imgs[id]?'<img class="tli" alt="" src="'+S.imgs[id]+'">':''}).join('')+'</div></div>'}
 var hidAt=0;document.addEventListener('visibilitychange',function(){if(document.hidden){hidAt=Date.now();return}if(hidAt&&Date.now()-hidAt>INTRO_GAP&&!admin&&!editing&&window.top===window.self){try{localStorage.removeItem('sw-intro-t')}catch(e){}location.reload()}});
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
@@ -840,7 +844,7 @@ function focusMap(){var key=sel===null?'':Array.from(sel).sort().join(',');if(ke
   var cx=(Math.min.apply(null,xs)+Math.max.apply(null,xs))/200,cy=(Math.min.apply(null,ys)+Math.max.apply(null,ys))/200,mr=m.getBoundingClientRect(),wr=w.getBoundingClientRect();
   var L=w.scrollLeft+(mr.left+cx*mr.width)-(wr.left+wr.width/2),T=w.scrollTop+(mr.top+cy*mr.height)-(wr.top+wr.height/2);
   try{w.scrollTo({left:L,top:T,behavior:'smooth'})}catch(e){w.scrollLeft=L;w.scrollTop=T}}
-function notesBox(list,label){if(!editing)return '<footer class="notes nx">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return noteItem(list,i)}).join('')+'</footer>';return '<footer class="notes">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return '<div class="note" data-li="'+list+'|'+i+'"><span class="grip" data-ldrag="'+list+'|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E(list+'.'+i)+del(list,i)+'</div>'}).join('')+add(list,'name','공지 추가')+'<div class="nhelp">쓰는 법 · 첫 줄 = 굵은 제목 (맨 앞에 [중요] [주의] [팁] 을 쓰면 꼬리표) · 다음 줄부터 = 작은 설명 · "칸: 성소 6,000 / 수도원 3,000" 줄 = 숫자 칸 · *단어* = 금색</div></footer>'}
+function notesBox(list,label){if(!editing)return '<footer class="notes nx">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return noteItem(list,i)}).join('')+'</footer>';return '<footer class="notes">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return '<div class="note" data-li="'+list+'|'+i+'"><span class="grip" data-ldrag="'+list+'|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E(list+'.'+i)+'<button type="button" class="tgl" data-tlimg="'+list+'|'+i+'" title="이 공지에 그림 넣기">그림</button>'+del(list,i)+'</div>'+imThumbs(list,i,tlIds(n))}).join('')+add(list,'name','공지 추가')+'<div class="nhelp">쓰는 법 · 첫 줄 = 굵은 제목 (맨 앞에 [중요] [주의] [팁] 을 쓰면 꼬리표) · 다음 줄부터 = 작은 설명 · "칸: 성소 6,000 / 수도원 3,000" 줄 = 숫자 칸 · *단어* = 금색 · 그림 버튼 = 그 공지 아래에 그림 넣기</div></footer>'}
 /* 공지는 두 벌: 팀원용(notes)과 프리롤용(notesFree). 관리자는 둘 다, 그 외에는 자기 것만 */
 function notesHtml(){if(!S.notesFree)S.notesFree=[];if(admin||editing)return notesBox('notes','팀원용 공지 — 프리롤이 아닌 사람에게 보입니다')+notesBox('notesFree','프리롤용 공지 — 프리롤에게만 보입니다');
   var lf=false;if(me)people().forEach(function(p){if(p.r.id===me&&p.kind==='free')lf=true});var k=lf?'notesFree':'notes';return S[k].length?notesBox(k,''):''}
