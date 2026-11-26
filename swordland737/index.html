@@ -538,7 +538,8 @@ function undo(){if(!undoStack.length){mtoast('되돌릴 작업이 없습니다.'
 var chipTeam=null,freeOn=false,me=null,mapStyle='A';
 function applyGroups(){sel=new Set(people().filter(function(p){return (freeOn&&p.kind==='free')||(chipTeam&&p.kind!=='free'&&p.c===chipTeam)}).map(function(p){return p.r.id}))}
 function saveMe(){try{var pm=me&&person(me);if(pm)localStorage.setItem('sw-me','n:'+pm.name);else localStorage.removeItem('sw-me')}catch(e){}markSeen()}
-function viewCard(id){if(editing||admin||!me)return true;var mp=null;people().forEach(function(p){if(p.r.id===me)mp=p});if(!mp)return true;
+function viewCard(id){if(editing||admin||!me)return true;
+  if(tView()){var vt=me.slice(2);if(id==='steps')return false;if(id.indexOf('team:')===0)return id.slice(5)===vt;if(id.indexOf('msg:')===0){var g0=S.msgs[+id.slice(4)-1];return !!g0&&(g0.c===vt||(g0.c==='N'&&vt==='S'))}return true}var mp=null;people().forEach(function(p){if(p.r.id===me)mp=p});if(!mp)return true;
   var myT=mp.kind==='free'?'F':mp.c;
   if(id==='rules')return true;
   if(id==='steps')return mp.kind!=='free';
@@ -637,7 +638,7 @@ function intro(done){var skip=admin;try{if(Date.now()-(+localStorage.getItem('sw
     INTRO.play(function(){done(true)});if(cv.parentNode)cv.parentNode.removeChild(cv)})}
 function askWho(br){var ps=people(),h='<form id="whoform"><b>이름을 선택해주세요</b><label for="whosel" class="vh">이름</label><select id="whosel"><option value="">이름 선택</option>';
   if(S.free.length)h+='<optgroup label="'+esc(S.freeTitle||'프리롤')+'">'+ps.filter(function(p){return p.kind==='free'}).map(function(p){return '<option value="'+p.r.id+'">'+esc(p.r.name)+'</option>'}).join('')+'</optgroup>';
-  S.teams.forEach(function(t){if(!t.rows.length)return;h+='<optgroup label="'+esc(t.name)+'">'+t.rows.map(function(r){return '<option value="'+r.id+'">'+esc(r.name)+'</option>'}).join('')+'</optgroup>'});
+  S.teams.forEach(function(t){if(!t.rows.length||myTeam==='F')return;h+='<optgroup label="'+esc(t.name)+'">'+t.rows.map(function(r){return '<option value="'+r.id+'">'+esc(r.name)+'</option>'}).join('')+'</optgroup>'});
   h+='</select><p id="whoerr" role="alert"></p><div class="fr"><button class="btn" type="button" id="wholang">'+(lang==='en'?'한국어':'English')+'</button><button class="btn" type="button" id="whoadm">관리자</button><button class="btn primary" type="submit">확인</button></div></form>';
   var of0=document.getElementById('whoform');if(of0)of0.parentNode.removeChild(of0);if(br&&wp.querySelector('#emb'))wp.insertAdjacentHTML('beforeend',h);else{wp.className='';wp.innerHTML=h}wp.hidden=false;applyLang(wp);
   if(br)requestAnimationFrame(function(){requestAnimationFrame(function(){wp.classList.add('ready')})});
@@ -750,10 +751,10 @@ function missionHtml(m,i){var r=person(m.pid);if(!r||!shown(m.pid))return '';
     (editing||m.text?'<div class="ed mt" data-p="missions.'+i+'.text" data-ph="임무 입력">'+esc(m.text)+'</div>':'')+'</div>'}
 function controls(){
   var ps=people(), withM=ps.filter(function(p){return S.missions.some(function(m){return m.pid===p.r.id})});
-  var one=sel&&sel.size===1?Array.from(sel)[0]:null;
+  var one=tView()?me:(sel&&sel.size===1?Array.from(sel)[0]:null);
   var h='<div class="ctl" data-html2canvas-ignore="true"><label for="who">내 임무 보기</label><select id="who">'+(admin?'<option value="all"'+(sel===null?' selected':'')+'>전체</option>':(sel===null?'<option value="" selected disabled>이름 선택</option>':''))+'<option value="none"'+(sel&&sel.size===0?' selected':'')+'>숨기기</option>'+
-    (sel&&sel.size>1?'<option value="multi" selected>선택 '+sel.size+'명</option>':'')+
-    [{n:S.freeTitle||'프리롤',r:S.free}].concat(S.teams.map(function(t){return {n:t.name,r:t.rows}})).map(function(g){return g.r.length?'<optgroup label="'+esc(g.n)+'">'+g.r.map(function(r){return '<option value="'+r.id+'"'+(one===r.id?' selected':'')+'>'+esc(r.name)+'</option>'}).join('')+'</optgroup>':''}).join('')+'</select>';
+    (sel&&sel.size>1&&!tView()?'<option value="multi" selected>선택 '+sel.size+'명</option>':'')+
+    [{n:S.freeTitle||'프리롤',r:S.free}].concat(S.teams.map(function(t){return {n:t.name,r:t.rows}})).filter(function(g,gi){return !(fView()&&gi>0)}).map(function(g){return g.r.length?'<optgroup label="'+esc(g.n)+'">'+g.r.map(function(r){return '<option value="'+r.id+'"'+(one===r.id?' selected':'')+'>'+esc(r.name)+'</option>'}).join('')+'</optgroup>':''}).join('')+(fView()?'<optgroup label="팀 보기">'+S.teams.map(function(t){return '<option value="T:'+t.c+'"'+(one==='T:'+t.c?' selected':'')+'>'+esc(t.name)+'</option>'}).join('')+'</optgroup>':'')+'</select>';
   if(admin){
     var brk8=0,cand=(freeOn||chipTeam)?ps.filter(function(p){return (freeOn&&p.kind==='free')||(chipTeam&&p.kind!=='free'&&p.c===chipTeam)}):ps;
     h+='<span class="adm">임무카드 필터</span><div class="tpl">'+[['all','모두선택'],['free','프리롤만']].concat(S.teams.map(function(t){return ['team:'+t.c,t.c==='S'?'대체':t.c+'팀']})).concat([['none','모두해제']]).map(function(b){return '<button type="button" class="tb'+(((chipTeam&&b[0]==='team:'+chipTeam)||(freeOn&&b[0]==='free'))?' act':'')+'" data-tpl="'+b[0]+'">'+b[1]+'</button>'}).join('')+'</div>'+
@@ -773,7 +774,7 @@ var ICN={"dots": "<svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hid
 var BT={'이미지로 저장':'Save as image','관리자 로그인':'Admin login','관리자 로그아웃':'Admin logout','KvK 사이트':'KvK site','모바일 화면':'Mobile view','메뉴':'Menu','주차':'Week','불러오는 중…':'Loading…','편성이 업데이트되었습니다.':'The roster was updated.','팀 코드':'Team code','확인 중…':'Checking…','코드가 맞지 않습니다.':'That code does not match.','팀 코드를 입력해 주세요.':'Please enter your team code.','서버에 연결하지 못했습니다.':'Could not reach the server.'};
 function tt(k){return lang==='en'&&BT[k]?BT[k]:k}
 /* 화면 고정 문구(글자 전체가 일치할 때) */
-var UI={'내 임무 보기':'My missions','숨기기':'Hide','이름 선택':'Select name','이름을 선택해주세요':'Choose your name','팀 코드를 입력해주세요':'Enter your team code','팀장에게 받은 코드를 넣으면 우리 팀 편성이 열립니다.':'Enter the code from your team leader to open your team plan.','확인':'OK','관리자':'Admin','이름을 골라 주세요.':'Please choose your name.','배치된 임무카드가 없습니다.':'No mission cards yet.','(임무 미입력)':'(no mission)','구역 운영 원칙':'Zone rules','시간대별 진행 설명':'Timeline','시간대별 진행':'Timeline','팀별 운영 요약':'Team summary','전체':'All','프리롤':'Free Role'};
+var UI={'내 임무 보기':'My missions','숨기기':'Hide','이름 선택':'Select name','이름을 선택해주세요':'Choose your name','팀 코드를 입력해주세요':'Enter your team code','팀장에게 받은 코드를 넣으면 우리 팀 편성이 열립니다.':'Enter the code from your team leader to open your team plan.','확인':'OK','관리자':'Admin','이름을 골라 주세요.':'Please choose your name.','배치된 임무카드가 없습니다.':'No mission cards yet.','(임무 미입력)':'(no mission)','구역 운영 원칙':'Zone rules','팀 보기':'View a team','시간대별 진행 설명':'Timeline','시간대별 진행':'Timeline','팀별 운영 요약':'Team summary','전체':'All','프리롤':'Free Role'};
 /* 용어집: 건물·역할 이름을 영어로 (시트에 영어 글이 없을 때의 자동 변환) */
 var GL=[[/성검쟁탈 군단/g,'Swordland Legion'],[/성검쟁탈/g,'Swordland Showdown'],[/성검\s?제단/g,'Swordshrine'],[/북서\s?성소/g,'NW Sanctum'],[/남동\s?성소/g,'SE Sanctum'],[/성소/g,'Sanctum'],[/제\s?(\d)\s?수도원/g,'Abbey $1'],[/수도원/g,'Abbey'],[/시계탑/g,'Bell Tower'],[/마구간/g,'Royal Stables'],[/교화의\s?홀|교화홀/g,'Hall of Reformation'],[/용병\s?주둔지|용병단/g,'Mercenary Camp'],[/땅굴/g,'Undercellar'],
   [/\(?(\d+)초\s?뒤 이동\)?/g,'(move after $1s)'],[/(\d{1,2})시/g,"$1 o'clock"],[/([A-E])팀/g,'Team $1'],[/([A-E])구역/g,'Zone $1'],[/구역/g,'zone'],[/북서/g,'NW'],[/남동/g,'SE'],[/(\d)차/g,'Step $1'],
@@ -858,6 +859,9 @@ function showCodes(){apiPost({action:'codes',token:token}).then(function(d){if(!
     var armed=false;$('cdnew').onclick=function(){if(!armed){armed=true;this.textContent='정말 바꿀까요? 지금 코드는 모두 못 쓰게 됩니다';return}this.disabled=true;
       apiPost({action:'newCodes',token:token}).then(function(r){if(r.ok)draw(r.codes);else toast('바꾸지 못했습니다.')}).catch(function(){toast('서버에 연결하지 못했습니다.')})}}
   bx.onclick=function(e){if(e.target===bx)bx.parentNode.removeChild(bx)};draw(d.codes)}).catch(function(){toast('서버에 연결하지 못했습니다.')})}
+var myTeam='';
+function fView(){return myTeam==='F'&&!admin&&!editing}
+function tView(){return fView()&&String(me||'').indexOf('T:')===0}
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
 var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
@@ -882,7 +886,7 @@ function focusMap(){var key=sel===null?'':Array.from(sel).sort().join(',');if(ke
 function notesBox(list,label){if(!editing)return '<footer class="notes nx">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return noteItem(list,i)}).join('')+'</footer>';return '<footer class="notes">'+(label?'<div class="ntitle">'+label+'</div>':'')+S[list].map(function(n,i){return '<div class="note" data-li="'+list+'|'+i+'"><span class="grip" data-ldrag="'+list+'|'+i+'" title="끌어서 순서 바꾸기">⠿</span>'+E(list+'.'+i)+'<button type="button" class="tgl" data-tlimg="'+list+'|'+i+'" title="이 공지에 그림 넣기">그림</button>'+del(list,i)+'</div>'+imThumbs(list,i,tlIds(n))}).join('')+add(list,'name','공지 추가')+'<div class="nhelp">쓰는 법 · 첫 줄 = 굵은 제목 (맨 앞에 [중요] [주의] [팁] 을 쓰면 꼬리표) · 다음 줄부터 = 작은 설명 · "칸: 성소 6,000 / 수도원 3,000" 줄 = 숫자 칸 · *단어* = 금색 · 그림 버튼 = 그 공지 아래에 그림 넣기</div></footer>'}
 /* 공지는 두 벌: 팀원용(notes)과 프리롤용(notesFree). 관리자는 둘 다, 그 외에는 자기 것만 */
 function notesHtml(){if(!S.notesFree)S.notesFree=[];if(admin||editing)return notesBox('notes','팀원용 공지 — 프리롤이 아닌 사람에게 보입니다')+notesBox('notesFree','프리롤용 공지 — 프리롤에게만 보입니다');
-  var lf=false;if(me)people().forEach(function(p){if(p.r.id===me&&p.kind==='free')lf=true});var k=lf?'notesFree':'notes';return S[k].length?notesBox(k,''):''}
+  var lf=myTeam==='F';if(me)people().forEach(function(p){if(p.r.id===me&&p.kind==='free')lf=true});var k=lf?'notesFree':'notes';return S[k].length?notesBox(k,''):''}
 function render(){
   var w0=document.querySelector('.mapwrap'),sx0=w0?w0.scrollLeft:0,sy0=w0?w0.scrollTop:0;
   root.className=(editing?'editing':'')+(admin?' adm':'');
@@ -940,7 +944,7 @@ function addMission(pid,x,y){var nm={id:uid(),pid:pid,round:1,text:'',x:Math.rou
 
 root.addEventListener('input',function(e){var el=e.target.closest&&e.target.closest('[data-p]');if(!el||!editing)return;set(el.dataset.p,el.innerText.replace(/\n+$/,''));dirty()});
 root.addEventListener('change',function(e){var t=e.target;
-  if(t.id==='who'){freeOn=false;chipTeam=null;if(t.value==='all'){me=null;sel=null}else if(t.value==='none'){sel=new Set()}else if(t.value!=='multi'){me=t.value;sel=new Set([me])}saveMe();render();return}
+  if(t.id==='who'){freeOn=false;chipTeam=null;if(t.value==='all'){me=null;sel=null}else if(t.value==='none'){sel=new Set()}else if(t.value.indexOf('T:')===0){me=t.value;var tq7=S.teams.filter(function(x){return x.c===me.slice(2)})[0];sel=new Set([me].concat(tq7?tq7.rows.map(function(r){return r.id}):[]))}else if(t.value!=='multi'){me=t.value;sel=new Set([me])}saveMe();render();return}
   if(t.dataset&&t.dataset.round!=null&&editing){S.missions[+t.dataset.round].round=+t.value;dirty();render()}});
 root.addEventListener('paste',function(e){if(activeFace)return;var el=e.target.closest&&e.target.closest('[data-p]');if(!el||el.contentEditable==='plaintext-only')return;
   e.preventDefault();var t=(e.clipboardData||window.clipboardData).getData('text');document.execCommand('insertText',false,t)});
@@ -1094,7 +1098,7 @@ function showSeen(){apiPost({action:'seenList',token:token,week:week}).then(func
     var bx=document.createElement('div');bx.id='seenbox';bx.innerHTML=h;document.body.appendChild(bx);$('sbs').textContent='확인 '+ok+'명 / 전체 '+tot+'명 · 아직 안 본 사람 '+(tot-ok)+'명';
     $('sbclose').onclick=function(){bx.parentNode.removeChild(bx)};bx.onclick=function(e){if(e.target===bx)bx.parentNode.removeChild(bx)}}).catch(function(){toast('서버에 연결하지 못했습니다.')})}
 function loadWeek(w){return apiPost({action:'load',week:w||'',token:admin?token:null,code:code}).then(function(d){
-  if(!d.ok){if(d.error==='code'){setLocked(true);render();return d}throw d}setLocked(false);if(d.empty){weeks=d.weeks||[];if(!week)week=d.week||todayName();DRAFT='sw-draft:'+week;renderBar();return d}useState(d);return d})}
+  if(!d.ok){if(d.error==='code'){setLocked(true);render();return d}throw d}setLocked(false);myTeam=d.team||'';if(d.empty){weeks=d.weeks||[];if(!week)week=d.week||todayName();DRAFT='sw-draft:'+week;renderBar();return d}useState(d);return d})}
 function dropAdmin(){admin=false;token=null;try{sessionStorage.removeItem('sw-admin');sessionStorage.removeItem('sw-token')}catch(e){}}
 
 function buildDoc(){

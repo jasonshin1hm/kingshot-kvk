@@ -1,6 +1,7 @@
 /**
  * 성검쟁탈 편성표 — Apps Script 백엔드 v1
  *
+ * v5 (2026-11-26): 프리롤 코드는 각 팀의 팀장 한 명·그 임무카드·팀 공지사항까지 받음
  * v4 (2026-11-26): 팀 코드 — 코드(또는 관리자 로그인) 없이는 아무것도 내려주지 않고, 코드가 있으면 그 팀 분량만 내려줌
  * v3 (2026-11-25): 글 구역에 영어 줄(└ English) — state.en
  * v2 (2026-11-25): 주차 탭 아래 "글" 구역(공지·팀별 공지사항·단계·원칙을 시트에서 수정), 변경 감지용 sig, 확인 현황
@@ -471,11 +472,17 @@ function imgIds_(t) { var o = []; String(t || '').split('\n').forEach(function (
 function filterState_(st, T) {
   var isF = T === 'F', en = st.en || {}, keep = {};
   st.free = (st.free || []).filter(function (r) { return isF || String(r.c || '') === T; });
-  st.teams = (st.teams || []).map(function (t) { return String(t.c) === T ? t : { c: t.c, name: t.c === 'S' ? '대체(Sub)' : t.c + '팀', rows: [] }; });
+  st.teams = (st.teams || []).map(function (t) {
+    if (String(t.c) === T) return t;
+    if (!isF) return { c: t.c, name: t.c === 'S' ? '대체(Sub)' : t.c + '팀', rows: [] };
+    // 프리롤: 다른 팀은 팀장 한 명(과 그 임무카드)만 — 팀원 개개인은 보내지 않음
+    t.rows = (t.rows || []).filter(function (r) { return /팀장|집결장/.test(r.role || '') && !/부팀장/.test(r.role || ''); }).slice(0, 1);
+    return t;
+  });
   eachRow_(st, function (r) { keep[r.id] = 1; });
-  st.missions = (st.missions || []).filter(function (m) { return keep[m.pid] || m.pid === 'T:' + T; });
+  st.missions = (st.missions || []).filter(function (m) { return keep[m.pid] || m.pid === 'T:' + T || (isF && String(m.pid).indexOf('T:') === 0); });
   (st.msgs || []).forEach(function (m, i) {
-    if (m.c === T || (m.c === 'N' && T === 'S')) return;
+    if (isF || m.c === T || (m.c === 'N' && T === 'S')) return;
     m.text = ''; m.on = false; if (en.msgs) en.msgs[i] = '';
   });
   if (isF) { st.notes = []; en.notes = []; st.steps = []; en.steps = []; }
