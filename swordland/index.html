@@ -611,7 +611,7 @@ function askWho(br){var ps=people(),h='<form id="whoform"><b>이름을 선택해
   document.getElementById('wholang').onclick=function(){setLang(lang==='en'?'ko':'en')};
   document.getElementById('whoadm').onclick=function(){lg.hidden=false;$('lerr').textContent='';$('aid').focus()};
   document.getElementById('whoform').addEventListener('submit',function(e){e.preventDefault();var v=document.getElementById('whosel').value;if(!v){document.getElementById('whoerr').textContent='이름을 골라 주세요.';return}
-    me=v;freeOn=false;chipTeam=null;sel=new Set([me]);saveMe();render();whoOut()})}
+    me=v;freeOn=false;chipTeam=null;sel=new Set([me]);setWho();saveMe();render();whoOut()})}
 var wp=document.createElement('div');wp.id='whopop';wp.hidden=true;document.body.appendChild(wp);
 try{mapStyle=localStorage.getItem('sw-mapstyle')||'A'}catch(e){}
 if(!/^[ABC]$/.test(mapStyle))mapStyle='A';
@@ -766,6 +766,8 @@ function tlHtml(){var en=(lang==='en'&&!editing&&S.en&&S.en.rules)||[];
     return '<div class="st"><span class="tm'+(key?' key':'')+'">'+esc(tm)+'</span><div>'+(nm?'<div class="nm">'+esc(nm)+'</div>':'')+(head?'<h4>'+tlFmt(head)+'</h4>':'')+
       (det.length?'<p>'+det.map(tlFmt).join('<br>')+'</p>':'')+
       (ok.length||no.length?'<div class="br">'+(ok.length?'<div class="ok"><i>✓ '+(lang==='en'&&!editing?'Success':'성공')+'</i>'+ok.map(tlFmt).join('<br>')+'</div>':'')+(no.length?'<div class="no"><i>✕ '+(lang==='en'&&!editing?'Fail':'실패')+'</i>'+no.map(tlFmt).join('<br>')+'</div>':'')+'</div>':'')+'</div></div>'}).join('')+'</div>'}
+/* 다시 들어오면 처음 고른 이름(내 이름)으로 시작. 아직 없으면 이름 선택 창을 띄움 */
+try{if(window.top===window.self){var w0=localStorage.getItem('sw-who');if(w0)localStorage.setItem('sw-me','n:'+w0);else localStorage.removeItem('sw-me')}}catch(e){}
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
 var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
@@ -982,12 +984,15 @@ function apiPost(b){return fetch(API_URL,{method:'POST',headers:{'Content-Type':
 function todayName(){var n=new Date();return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2)}
 function resolveMe(){me=null;var v=null;try{v=localStorage.getItem('sw-me')}catch(e){}
   if(v){if(v.indexOf('n:')===0){var nm=v.slice(2);people().forEach(function(p){if(!me&&p.r.name===nm)me=p.r.id})}else if(person(v))me=v}
+  if(!me){var w1='';try{w1=localStorage.getItem('sw-who')||''}catch(e){}if(w1)people().forEach(function(p){if(!me&&p.r.name===w1)me=p.r.id})}
   sel=me?new Set([me]):null;chipTeam=null;freeOn=false}
 function useState(d){weeks=d.weeks||weeks;if(d.week)week=d.week;rev=d.rev||0;sig=d.sig||'';if(d.state){S=d.state;migrate();prune()}DRAFT='sw-draft:'+(week||'');
   try{var d1=JSON.parse(localStorage.getItem(DRAFT)||'null');if(admin&&d1&&d1.s&&d1.t>(S.saved||0)){S=d1.s;setTimeout(function(){toast('저장하지 않은 수정본을 불러왔습니다. 저장을 누르면 확정됩니다.')},300)}}catch(e){}
   undoStack=[];resolveMe();applyFont();render();lastSnap=JSON.stringify(S);markSeen()}
 /* 확인 현황: 이름을 고른 연맹원을 주차별로 한 번 기록 (관리자는 기록하지 않음) */
-function markSeen(){if(!API_URL||admin||!me||!week)return;var pm=person(me);if(!pm||String(me).indexOf('T:')===0)return;var k='sw-seen:'+week+':'+pm.name;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}catch(e){}apiPost({action:'seen',week:week,name:pm.name}).catch(function(){})}
+function whoKnown(w){var ok=false;if(w)people().forEach(function(p){if(p.r.name===w)ok=true});return ok}
+function setWho(){try{var pm=me&&person(me);if(!pm)return;if(!whoKnown(localStorage.getItem('sw-who')))localStorage.setItem('sw-who',pm.name)}catch(e){}}
+function markSeen(){if(!API_URL||admin||!week)return;var w='';try{w=localStorage.getItem('sw-who')||''}catch(e){}if(!whoKnown(w))return;var k='sw-seen:'+week+':'+w;try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}catch(e){}apiPost({action:'seen',week:week,name:w}).catch(function(){})}
 /* 자동 새로고침: 20초마다 시트의 변경 서명만 확인하고, 바뀌었을 때만 다시 불러옴 */
 function pollSig(){if(!API_URL||editing||loading||saving||!week||document.visibilityState==='hidden'||document.getElementById('mview'))return;
   fetch(API_URL+'?action=sig&week='+encodeURIComponent(week)+'&t='+Date.now()).then(function(r){return r.json()}).then(function(d){if(!d.ok||editing||loading)return;
