@@ -502,16 +502,15 @@ body.locked #root{visibility:hidden}
 .memo .mtxt b.g{color:#F7DC93;font-weight:900}
 .editing .memo .mtxt{display:block;min-height:1.5em}
 .editing .memo .mtxt:empty::before{content:"이 사람에게만 보이는 메모 입력 (*단어* = 금색)";opacity:.6;font-weight:500}
-.msgbar .mfx{white-space:normal;text-align:left;word-break:keep-all;padding:5px 0}
-.mfx h5{margin:0 0 7px;font-size:15px;font-weight:900;line-height:1.4}
-.mfx .in{background:rgba(0,0,0,.24);border-radius:8px;padding:7px 10px;text-shadow:none}
-.mfx .it{position:relative;padding:2.5px 0 2.5px 13px;font-size:12.8px;line-height:1.45;font-weight:500;color:rgba(255,255,255,.93)}
-.mfx .it:before{content:"";position:absolute;left:1px;top:.78em;width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.75)}
-.mfx .it b{font-weight:900;color:#fff}
-.mfx .ft{margin-top:7px;font-size:12px;font-weight:700;line-height:1.45;opacity:.95}
-.mfx .ft span{display:inline-block;font-weight:900;font-size:10.5px;border:1px solid currentColor;border-radius:99px;padding:0 7px;margin-right:6px;opacity:.9}
-.msgbar.cF .mfx .in{background:rgba(42,29,5,.82)}.msgbar.cF .mfx .it{color:#F6E7BD}.msgbar.cF .mfx .it b{color:#FFE9A8}.msgbar.cF .mfx .it:before{background:#F2C866}
-.msgbar.cN .mfx .in{background:rgba(255,255,255,.07)}
+.msgbar .mfx{white-space:normal;text-align:left;word-break:keep-all;padding:4px 0}
+.mfx .it{display:grid;grid-template-columns:20px 1fr;gap:8px;padding:3.5px 0;font-size:13px;line-height:1.45;font-weight:500;color:rgba(255,255,255,.88)}
+.mfx .it i{font-style:normal;width:19px;height:19px;border-radius:50%;background:rgba(0,0,0,.28);color:#fff;font-weight:900;font-size:11px;display:grid;place-items:center;margin-top:1px;text-shadow:none}
+.mfx .it.k{font-size:14.5px;font-weight:900;color:#fff}
+.mfx .it b{font-weight:900;color:#fff;background:linear-gradient(transparent 62%,rgba(255,255,255,.34) 62%)}
+.mfx .ft{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.3);font-size:12px;font-weight:700;line-height:1.45;color:rgba(255,255,255,.85)}
+.mfx .ft span{display:inline-block;font-weight:900;font-size:10.5px;background:rgba(0,0,0,.28);border-radius:99px;padding:1px 7px;margin-right:6px;color:#fff;text-shadow:none}
+.msgbar.cF .mfx .it{color:rgba(42,29,5,.88)}.msgbar.cF .mfx .it.k,.msgbar.cF .mfx .it b{color:#2A1D05}.msgbar.cF .mfx .it i,.msgbar.cF .mfx .ft span{background:rgba(42,29,5,.8);color:#FBE7A8}.msgbar.cF .mfx .it b{background:linear-gradient(transparent 62%,rgba(255,255,255,.6) 62%)}.msgbar.cF .mfx .ft{border-top-color:rgba(42,29,5,.35);color:rgba(42,29,5,.88)}
+.msgbar.cN .mfx .it i,.msgbar.cN .mfx .ft span{background:rgba(255,255,255,.14)}
 #bar.xb{position:sticky;top:0;z-index:20;display:flex;flex-wrap:nowrap;align-items:center;gap:10px;height:48px;padding:0 12px 0 14px;background:linear-gradient(180deg,#141922,#0F131A);border-bottom:1px solid rgba(242,200,102,.28);box-shadow:0 6px 18px rgba(0,0,0,.35)}
 #bar.xb .br{display:flex;align-items:center;gap:8px;color:#F2C866;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden}
 #bar.xb .br b{font-family:'Cinzel',serif;font-weight:900;font-size:15px;letter-spacing:.14em;background:linear-gradient(180deg,#fff3c8,#f1b84c 60%,#b8862c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
@@ -885,7 +884,7 @@ function msgFmt(mi){var en=lang==='en'&&!editing,v=String((en&&enOf('msgs.'+mi))
   v.split('\n').forEach(function(x){if(!x.trim())return;var f=x.trim().match(/^\((공통|all|common)\)\s*(.*)$/i);if(f){ft.push(f[2]);return}
     var cont=/^[\s(]/.test(x)&&items.length,t=x.trim().replace(/^[·•\-]\s*/,'');if(cont)items[items.length-1]+='\n'+t;else items.push(t)});
   function ln(t){return t.split('\n').map(b).join('<br>')}
-  return '<div class="mtx mfx">'+(items.length?'<h5>'+ln(items[0].replace(/\*/g,''))+'</h5>':'')+(items.length>1?'<div class="in">'+items.slice(1).map(function(t){return '<div class="it">'+ln(t)+'</div>'}).join('')+'</div>':'')+ft.map(function(t){return '<div class="ft"><span>'+(en?'All':'공통')+'</span>'+b(t)+'</div>'}).join('')+'</div>'}
+  return '<div class="mtx mfx">'+items.map(function(t,i){return '<div class="it'+(i?'':' k')+'"><i>'+(i+1)+'</i><div>'+ln(t)+'</div></div>'}).join('')+ft.map(function(t){return '<div class="ft"><span>'+(en?'All':'공통')+'</span>'+b(t)+'</div>'}).join('')+'</div>'}
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
 var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
