@@ -618,8 +618,9 @@ function play(done){var o=build();document.body.appendChild(o);start=performance
   setTimeout(function(){cancelAnimationFrame(raf);if(o.parentNode)o.parentNode.removeChild(o);done()},T*1000)}
 return {ready:ready,play:play,estart:estart,estop:estop}})();
 function whoOut(){if(wp.classList.contains('bright')){wp.classList.add('out');setTimeout(function(){wp.hidden=true;wp.className='';wp.innerHTML='';INTRO.estop()},820)}else wp.hidden=true}
-function intro(done){var skip=admin;try{if(sessionStorage.getItem('sw-intro'))skip=true}catch(e){}try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true}catch(e){}
-  if(skip){done(false);return}try{sessionStorage.setItem('sw-intro','1')}catch(e){}
+var INTRO_GAP=10*60*1000;
+function intro(done){var skip=admin;try{if(Date.now()-(+localStorage.getItem('sw-intro-t')||0)<INTRO_GAP)skip=true}catch(e){}try{if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)skip=true}catch(e){}
+  if(skip){done(false);return}try{localStorage.setItem('sw-intro-t',String(Date.now()))}catch(e){}
   var cv=document.createElement('div');cv.id='introwait';document.body.appendChild(cv);
   INTRO.ready(function(ok){if(!ok){if(cv.parentNode)cv.parentNode.removeChild(cv);done(false);return}
     wp.className='bright';wp.innerHTML='<canvas id="emb"></canvas>';wp.hidden=false;INTRO.estart();
@@ -817,6 +818,7 @@ function noteItem(list,i){var en=lang==='en'&&!editing,v=String((en&&enOf(list+'
   return '<div class="ni'+(kind==='imp'?' imp':'')+'"><span class="no">'+(i+1)+'</span><div><h4>'+(kind?'<span class="tg '+kind+'">'+NX_LB[kind][en?1:0]+'</span>':'')+tlFmt(head.trim())+'</h4>'+
     (tiles.length?'<div class="tiles">'+tiles.map(function(c){return '<div>'+(c[0]?'<small>'+tlFmt(c[0])+'</small>':'')+'<b>'+esc(c[1])+'</b></div>'}).join('')+'</div>':'')+
     (det.length?'<p>'+det.map(tlFmt).join('<br>')+'</p>':'')+'</div></div>'}
+var hidAt=0;document.addEventListener('visibilitychange',function(){if(document.hidden){hidAt=Date.now();return}if(hidAt&&Date.now()-hidAt>INTRO_GAP&&!admin&&!editing&&window.top===window.self){try{localStorage.removeItem('sw-intro-t')}catch(e){}location.reload()}});
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
 var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
