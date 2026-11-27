@@ -662,7 +662,7 @@ function askWho(br){var ps=people(),h='<form id="whoform"><b>이름을 선택해
   document.getElementById('whoform').addEventListener('submit',function(e){e.preventDefault();var v=document.getElementById('whosel').value;if(!v){document.getElementById('whoerr').textContent='이름을 골라 주세요.';return}
     me=v;freeOn=false;chipTeam=null;sel=new Set([me]);setWho();saveMe();render();whoOut()})}
 var wp=document.createElement('div');wp.id='whopop';wp.hidden=true;document.body.appendChild(wp);
-try{mapStyle=localStorage.getItem('sw-mapstyle')||'A'}catch(e){}
+try{mapStyle=localStorage.getItem('sw-mapstyle')||(window.innerWidth<1100?'B':'A')}catch(e){}
 if(!/^[ABC]$/.test(mapStyle))mapStyle='A';
 var mtEl=document.createElement('div');mtEl.id='mtoast';mtEl.setAttribute('role','status');document.body.appendChild(mtEl);
 function mtoast(msg){var m=document.getElementById('map'),r=m?m.getBoundingClientRect():null;mtEl.textContent=msg;
@@ -899,7 +899,7 @@ function seqPlay(m){m=m||$('map');if(!m||!m.animate)return;try{if(window.matchMe
 document.addEventListener('click',function(e){var b=e.target&&e.target.closest&&e.target.closest('[data-seq]');if(b&&!editing)seqPlay()});
 var menuOpen=false;
 document.addEventListener('click',function(e){if(menuOpen&&e.target.isConnected&&!bar.contains(e.target)){menuOpen=false;bar.classList.remove('open')}});
-var mapZoom=1,ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
+var mapZoom=(window.innerWidth<1100?.75:1),ZL=[.55,.75,1,1.25,1.5,2,2.5],focusKey='';
 /* 지도 위에 고정되는 버튼: 왼쪽 위 = 지도 스타일, 왼쪽 아래 = 확대·축소 (지도를 밀어도 제자리) */
 function mapTools(){return '<div class="mtl" data-html2canvas-ignore="true">'+['A','B','C'].map(function(k){return '<button type="button" class="msb'+(mapStyle===k?' on':'')+'" data-ms="'+k+'" aria-pressed="'+(mapStyle===k)+'" title="맵 스타일 '+k+'">'+k+'</button>'}).join('')+'</div>'+
   '<div class="mbl" data-html2canvas-ignore="true"><button type="button" class="msb" data-mz="1" title="지도 확대" aria-label="지도 확대">＋</button><button type="button" class="msb" data-mz="-1" title="지도 축소" aria-label="지도 축소">－</button>'+(editing?'':'<button type="button" class="msb" data-seq="1" title="순서 다시 보기" aria-label="순서 다시 보기">▶</button>')+'</div>'+
